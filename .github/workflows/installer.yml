@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -40,7 +40,7 @@ jobs:
       - name: Setup CMake
         uses: ./.github/actions/cmake
         with:
-          qt_version: 6.7.2
+          qt_version: 6.7.3
           qt_arch: win64_mingw
           use_qt6: ON
           modules: qtserialport qtmultimedia
