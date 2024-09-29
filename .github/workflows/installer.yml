@@ -2,7 +2,7 @@ name: Installer
 
 on:
   push:
-    branches: [ "master", "qe3" ]
+    branches: [ "master", "qe3", "qe3_wf_test" ]
   pull_request:
     branches: [ "master", "qe3" ]
 
