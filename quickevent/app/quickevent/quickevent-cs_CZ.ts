@@ -407,7 +407,7 @@
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="81"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This service will listen for HTTP requests for integration with web services.&lt;/p&gt;&lt;p&gt;For example, &lt;a href=&quot;https://github.com/sakhnik/qr-o-punch&quot;&gt;qr-o-punch&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported methods and endpoints:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;POST /card&lt;/code&gt; — upload a card readout&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tato služba bude naslouchat požadavkům HTTP pro integraci s webovými službami.&lt;/p&gt;&lt;p&gt;Například &lt;a href=&quot;https://github.com/sakhnik/qr-o-punch&quot;&gt;qr-o-punch&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Podporované metody a koncové body:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;POST /card&lt;/code&gt; — načtení údaje z čipu&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.cpp" line="74"/>
@@ -3966,7 +3966,7 @@ V případě chyb neváhejte napsat na support@oresults.eu</translation>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="567"/>
         <source>Each row should have following columns: &lt;ol&gt;&lt;li&gt;Club abbr &lt;i&gt;- key (part1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Relay name &lt;i&gt;- key (part2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Start number (Bib)&lt;/li&gt;&lt;li&gt;Class (Optional - if not filed, trying to guess from the starting number)&lt;/li&gt;&lt;/ol&gt;</source>
         <oldsource>Each row should have following columns: &lt;ol&gt;&lt;li&gt;Club abbr &lt;i&gt;- key (part1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Relay name &lt;i&gt;- key (part2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Start number (Bib)&lt;/li&gt;&lt;li&gt;Class (Optional - if not fileed, trying to guess from the starting number)&lt;/li&gt;&lt;/ol&gt;</oldsource>
-        <translation type="unfinished">Každý řádek by měl mít následující sloupce:&lt;ol&gt;&lt;li&gt;Zkratka klubu &lt;i&gt;- klíč (část1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Název štafety&lt;i&gt; - klíč (část2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Startovní číslo&lt;/li&gt;&lt;li&gt;Kategorii (Volitelné - pokud není vyplněno,  zkouší se kategorie odhadnout podle startovního čísla)&lt;/li&gt;&lt;/ol&gt;</translation>
+        <translation>Každý řádek by měl mít následující sloupce:&lt;ol&gt;&lt;li&gt;Zkratka klubu &lt;i&gt;- klíč (část1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Název štafety&lt;i&gt; - klíč (část2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Startovní číslo&lt;/li&gt;&lt;li&gt;Kategorii (Volitelné - pokud není vyplněno, zkouší se kategorie odhadnout podle startovního čísla)&lt;/li&gt;&lt;/ol&gt;</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="579"/>
