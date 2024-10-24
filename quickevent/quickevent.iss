@@ -69,50 +69,50 @@ Source: {#PSQL_DIR}\bin\liblz4.dll; DestDir: {app}; Flags: ignoreversion
 Source: {#PSQL_DIR}\bin\zlib1.dll; DestDir: {app}; Flags: ignoreversion
 
 #ifdef INCLUDE_QT
-Source: {#QT_ROOT_DIR}\bin\Qt5Core.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Gui.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Widgets.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5XmlPatterns.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Network.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Sql.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Xml.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Qml.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Quick.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Svg.dll; DestDir: {app}; Flags: ignoreversion
-;Source: {#QT_ROOT_DIR}\bin\Qt5Script.dll; DestDir: {app}; Flags: ignoreversion
-;Source: {#QT_ROOT_DIR}\bin\Qt5ScriptTools.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5PrintSupport.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5SerialPort.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\Qt5Multimedia.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Core.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Gui.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Widgets.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5XmlPatterns.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Network.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Sql.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Xml.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Qml.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Quick.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Svg.dll; DestDir: {app}; Flags: ignoreversion
+;Source: {#QT_DIR}\bin\Qt5Script.dll; DestDir: {app}; Flags: ignoreversion
+;Source: {#QT_DIR}\bin\Qt5ScriptTools.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5PrintSupport.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5SerialPort.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\Qt5Multimedia.dll; DestDir: {app}; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\platforms\qwindows.dll; DestDir: {app}\platforms; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\platforms\qwindows.dll; DestDir: {app}\platforms; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\styles\qwindowsvistastyle.dll; DestDir: {app}\styles; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\styles\qwindowsvistastyle.dll; DestDir: {app}\styles; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\printsupport\windowsprintersupport.dll; DestDir: {app}\printsupport; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\printsupport\windowsprintersupport.dll; DestDir: {app}\printsupport; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\audio\qtaudio_windows.dll; DestDir: {app}\audio; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\audio\qtaudio_windows.dll; DestDir: {app}\audio; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\imageformats\qjpeg.dll; DestDir: {app}\imageformats; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\plugins\imageformats\qsvg.dll; DestDir: {app}\imageformats; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\imageformats\qjpeg.dll; DestDir: {app}\imageformats; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\imageformats\qsvg.dll; DestDir: {app}\imageformats; Flags: ignoreversion
 
-Source: {#QT_ROOT_DIR}\plugins\sqldrivers\qsqlite.dll; DestDir: {app}\sqldrivers; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\plugins\sqldrivers\qsqlpsql.dll; DestDir: {app}\sqldrivers; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\sqldrivers\qsqlite.dll; DestDir: {app}\sqldrivers; Flags: ignoreversion
+Source: {#QT_DIR}\plugins\sqldrivers\qsqlpsql.dll; DestDir: {app}\sqldrivers; Flags: ignoreversion
 
-;Source: {#QT_ROOT_DIR}\qml\QtQml\*; DestDir: {app}\QtQml; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: {#QT_ROOT_DIR}\qml\QtQuick\Window.2\*; DestDir: {app}\QtQuick\Window.2; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: {#QT_ROOT_DIR}\qml\QtQuick\WidgetsPrivate\*; DestDir: {app}\QtQuick\WidgetsPrivate; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: {#QT_ROOT_DIR}\qml\QtQuick.2\*; DestDir: {app}\QtQuick.2; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: {#QT_DIR}\qml\QtQml\*; DestDir: {app}\QtQml; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: {#QT_DIR}\qml\QtQuick\Window.2\*; DestDir: {app}\QtQuick\Window.2; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: {#QT_DIR}\qml\QtQuick\WidgetsPrivate\*; DestDir: {app}\QtQuick\WidgetsPrivate; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: {#QT_DIR}\qml\QtQuick.2\*; DestDir: {app}\QtQuick.2; Excludes: "*d.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-Source: {#QT_ROOT_DIR}\bin\libgcc_s_seh-1.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\libwinpthread-1.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\libstdc++-6.dll; DestDir: {app}; Flags: ignoreversion
-;Source: {#QT_ROOT_DIR}\bin\icudt54.dll; DestDir: {app}; Flags: ignoreversion
-;Source: {#QT_ROOT_DIR}\bin\icuin54.dll; DestDir: {app}; Flags: ignoreversion
-;Source: {#QT_ROOT_DIR}\bin\icuuc54.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\libEGL.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\libGLESv2.dll; DestDir: {app}; Flags: ignoreversion
-Source: {#QT_ROOT_DIR}\bin\opengl32sw.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\libgcc_s_seh-1.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\libwinpthread-1.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\libstdc++-6.dll; DestDir: {app}; Flags: ignoreversion
+;Source: {#QT_DIR}\bin\icudt54.dll; DestDir: {app}; Flags: ignoreversion
+;Source: {#QT_DIR}\bin\icuin54.dll; DestDir: {app}; Flags: ignoreversion
+;Source: {#QT_DIR}\bin\icuuc54.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\libEGL.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\libGLESv2.dll; DestDir: {app}; Flags: ignoreversion
+Source: {#QT_DIR}\bin\opengl32sw.dll; DestDir: {app}; Flags: ignoreversion
 
 #endif
 
