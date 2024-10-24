@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
 set(WITH_QE_SHVAPI OFF CACHE BOOL "Build SHV API service with QuickEvent")
+set(QF_BUILD_QML_PLUGINS ON CACHE BOOL "Build with QML Plugins support")
 
 project(quickbox LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -14,7 +15,8 @@ endif()
 
 if (WIN32)
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		set(CMAKE_WIN32_EXECUTABLE ON) # Don't open a console window for Windows apps on Relase mode.
+ 		# comment out winmain temporarily to work around CI bug "indefined symbol __api___args" 
+		# set(CMAKE_WIN32_EXECUTABLE ON) # Don't open a console window for Windows apps on Relase mode.
 	endif()
 endif (WIN32)
 

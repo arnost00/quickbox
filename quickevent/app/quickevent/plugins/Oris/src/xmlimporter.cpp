@@ -14,7 +14,7 @@
 #include <qf/core/sql/transaction.h>
 #include <QInputDialog>
 
-namespace qfw = qf::qmlwidgets;
+// namespace qfw = qf::qmlwidgets;
 namespace qfd = qf::qmlwidgets::dialogs;
 using qf::qmlwidgets::framework::getPlugin;
 using Event::EventPlugin;
@@ -125,7 +125,11 @@ bool XmlImporter::readPersonNode (SPerson &s, QXmlStreamReader &reader, [[maybe_
 bool XmlImporter::readRaceNode(SRace &s, QXmlStreamReader &reader)
 {
 	QDateTime dt;
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 	dt.setTimeSpec(Qt::UTC);
+#else
+	dt.setTimeZone(QTimeZone::utc());
+#endif
 	while(reader.readNextStartElement()) {
 		if (reader.name().toString() == "Name")
 			s.name = reader.readElementText();
@@ -145,7 +149,7 @@ bool XmlImporter::readRaceNode(SRace &s, QXmlStreamReader &reader)
 		else
 			reader.skipCurrentElement();
 	}
-	s.datetime = dt.toTimeSpec(Qt::LocalTime);
+	s.datetime = dt.toLocalTime();
 	return s.number != 0 && s.datetime.isValid();
 }
 
@@ -157,7 +161,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 	while(q.next()) {
 		classes_map[q.value(1).toString()] = q.value(0).toInt();
 	}
-	if (classes_map.size() == 0){
+	if (classes_map.isEmpty()){
 		qfError() << "Undefined classes for entries";
 		return false;
 	}
@@ -168,7 +172,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 		while(q.next()) {
 			clubs_map[q.value(1).toInt()] = q.value(0).toString();
 		}
-		if (clubs_map.size() == 0){
+		if (clubs_map.isEmpty()){
 			qfError() << "Undefined clubs for entries";
 			return false;
 		}
@@ -184,7 +188,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 			SPerson person;
 			if (readPersonNode(person,reader, creator)) {
 
-				if (selected_race != 0 && person.enterRaces.size() > 0 && !person.enterRaces.contains(selected_race)) {
+				if (selected_race != 0 && !person.enterRaces.isEmpty() && !person.enterRaces.contains(selected_race)) {
 					qfInfo() << "Skip entry" << person.nameGiven << person.nameFamily << "- not participate in this race";
 				}
 				else {
@@ -391,7 +395,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 				else
 					reader.skipCurrentElement();
 			}
-			if (races.size() > 0) {
+			if (!races.isEmpty()) {
 				// when defined some races ...
 				if (races.size() == 1)
 					selected_race = races.first();
@@ -403,7 +407,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 						it++;
 					}
 					bool ok;
-					QString item = QInputDialog::getItem(qf::qmlwidgets::framework::MainWindow::frameWork(), tr("Select which race import)"),
+					QString item = QInputDialog::getItem(qf::qmlwidgets::framework::MainWindow::frameWork(), tr("Select which race import"),
 														 tr("Races:"), items, 0, false, &ok);
 					if (ok && !item.isEmpty())
 						selected_race = races[item];
@@ -467,9 +471,8 @@ bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators crea
 			while(reader.readNextStartElement()) {
 				if (reader.name().toString() == "Name")
 					class_name = reader.readElementText();
-				else if (reader.name().toString() == "Id" && reader.attributes().hasAttribute("type") && reader.attributes().value("type").toString() == "ORIS" && creator == XmlCreators::Oris)
-					class_id = reader.readElementText().toInt();
-				else if (reader.name().toString() == "Id" && reader.attributes().hasAttribute("type") && reader.attributes().value("type").toString() == "IOF" && creator == XmlCreators::Eventor)
+				else if ((reader.name().toString() == "Id" && reader.attributes().hasAttribute("type") && reader.attributes().value("type").toString() == "ORIS" && creator == XmlCreators::Oris)
+						 || (reader.name().toString() == "Id" && reader.attributes().hasAttribute("type") && reader.attributes().value("type").toString() == "IOF" && creator == XmlCreators::Eventor))
 					class_id = reader.readElementText().toInt();
 				else if (reader.name().toString() == "Leg") {
 					legs_cnt++;
@@ -532,8 +535,7 @@ QString XmlImporter::genFakeCzClubAbbr(QString country)
 	QString result = QString("%1%2").arg(c).arg(pos,2,36,QLatin1Char('0')).toUpper();
 	if (result == country)
 		return genFakeCzClubAbbr(country);
-	else
-		return result;
+	return result;
 }
 
 
@@ -665,7 +667,7 @@ bool XmlImporter::importRegistration(QXmlStreamReader &reader, const XmlCreators
 		while(q.next()) {
 			clubs_map[q.value(1).toInt()] = q.value(0).toString();
 		}
-		if (clubs_map.size() == 0){
+		if (clubs_map.isEmpty()){
 			qfError() << "Undefined clubs for registration";
 			return false;
 		}
@@ -766,7 +768,7 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 			reader.skipCurrentElement();
 	}
 	SRace event_race; // if event has more races in (defined in Event), selected race
-	if (races.size() > 0) {
+	if (!races.isEmpty()) {
 		// when defined some races ...
 		if (races.size() == 1)
 			event_race = races.first();
@@ -778,7 +780,7 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 				it++;
 			}
 			bool ok;
-			QString item = QInputDialog::getItem(qf::qmlwidgets::framework::MainWindow::frameWork(), tr("Select which race import)"),
+			QString item = QInputDialog::getItem(qf::qmlwidgets::framework::MainWindow::frameWork(), tr("Select which race import"),
 												 tr("Races:"), items, 0, false, &ok);
 			if (ok && !item.isEmpty())
 				event_race = races[item];
@@ -834,18 +836,18 @@ bool XmlImporter::importXML30()
 
 		if (reader.name().toString() == "EntryList")
 			return importEntries(reader, creator);
-		else if (reader.name().toString() == "StartList")
+		if (reader.name().toString() == "StartList")
 			return importStartlist(reader, creator);
-		else if (reader.name().toString() == "ClassList")
+		if (reader.name().toString() == "ClassList")
 			return importClasses(reader, creator);
-		else if (reader.name().toString() == "OrganisationList") // clubs
+		if (reader.name().toString() == "OrganisationList") // clubs
 			return importClubs(reader, creator);
-		else if (reader.name().toString() == "CompetitorList") // registration
+		if (reader.name().toString() == "CompetitorList") // registration
 			return importRegistration(reader, creator);
-		else if (reader.name().toString() == "EventList")
+		if (reader.name().toString() == "EventList")
 			return importEvent(reader, creator);
-		else
-			qfd::MessageBox::showWarning(fwk, QString(tr("Unsuported IOF XML 3.0 type (%1)")).arg(reader.name()));
+
+		qfd::MessageBox::showWarning(fwk, QString(tr("Unsuported IOF XML 3.0 type (%1)")).arg(reader.name()));
 	}
 	return false;
 }
