@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: [ "master" ]
+   branches: [ "master", "qe3", "qe3_wf_test" ]
   pull_request:
     branches: [ "master", "qe3" ]
 
@@ -15,7 +15,7 @@ jobs:
       CXX: clang++
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
           
@@ -32,7 +32,7 @@ jobs:
       CXX: clang++
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
