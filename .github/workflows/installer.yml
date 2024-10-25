@@ -33,10 +33,8 @@ jobs:
       - name: Get libraries
 #         if: steps.cache-libs.outputs.cache-hit != 'true'
         run: |
-#          choco install openssl.light --params "/InstallDir:C:\openssl" --version 3.1.4 -y
           choco install openssl.light --params "/InstallDir:C:\openssl" --version 1.1.1 -y
-          choco install postgresql14 -y
-#          choco install postgresql14 --version 14.5.1 -y
+          choco install postgresql14 --version 14.5.1 -y
         shell: cmd
 
       - name: Setup CMake
@@ -67,8 +65,8 @@ jobs:
 
       - name: Copy PostgreSQL runtime libraries
         run: |
-          cd "C:/Program Files/PostgreSQL/16/bin"
-          cp *.dll '${{ github.workspace }}/install/bin/psql'
+          cd "C:/Program Files/PostgreSQL/14/bin"
+          cp libiconv-2.dll libintl-9.dll liblz4.dll zlib1.dll libpq.dll '${{ github.workspace }}/install/bin/'
           cd "C:\openssl"
           cp libssl-1_1-x64.dll libcrypto-1_1-x64.dll '${{ github.workspace }}/install/bin/'
         shell: bash
