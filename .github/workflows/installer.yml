@@ -16,24 +16,11 @@ jobs:
         with:
           submodules: true
 
-#       - name: Cache libraries
-#         id: cache-libs
-#         uses: actions/cache@v3
-#         with:
-#           path: |
-#             C:/openssl/bin/libssl-1_1-x64.dll
-#             C:/openssl/bin/libcrypto-1_1-x64.dll
-#             C:/Program Files/PostgreSQL/14/bin/libiconv-2.dll
-#             C:/Program Files/PostgreSQL/14/bin/libintl-9.dll
-#             C:/Program Files/PostgreSQL/14/bin/liblz4.dll
-#             C:/Program Files/PostgreSQL/14/bin/zlib1.dll
-#             C:/Program Files/PostgreSQL/14/bin/libpq.dll
-#           key: ${{ runner.os }}-library-cache
-
       - name: Get libraries
 #         if: steps.cache-libs.outputs.cache-hit != 'true'
         run: |
-          choco install openssl.light --params "/InstallDir:C:\openssl" --version 1.1.1 -y
+#          choco install openssl.light --params "/InstallDir:C:\openssl" --version 1.1.1 -y
+          choco install openssl.light --params "/InstallDir:C:\openssl" --version=3.1.4 -y
           choco install postgresql17 -y
           choco install innosetup -y
         shell: cmd
@@ -69,29 +56,12 @@ jobs:
           cd "C:/Program Files/PostgreSQL/17/bin"
           cp libiconv-2.dll libintl-9.dll liblz4.dll zlib1.dll libpq.dll '${{ github.workspace }}/install/bin/'
           cd "C:\openssl"
-          cp libssl-1_1-x64.dll libcrypto-1_1-x64.dll '${{ github.workspace }}/install/bin/'
+          cp libssl-3-x64.dll libcrypto-3-x64.dll '${{ github.workspace }}/install/bin/'
         shell: bash
 
       - name: Get app version
         run: echo "VERSION=$(grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\" -f2)" >> "$GITHUB_ENV"
         shell: bash
-
-#      - name: Install InnoSetup
-#        shell: pwsh
-#        run: |
-#          Invoke-WebRequest -Uri https://jrsoftware.org/download.php/is.exe -OutFile D:\\is.exe
-#          Start-Process -FilePath D:\\is.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", -Wait
-#          $env:Path += ";C:\\Program Files (x86)\\Inno Setup 6"
-#          [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Process)
-
-#      - name: Verify Inno Setup Installation
-#        run: |
-#           if (!(Get-Command iscc -ErrorAction SilentlyContinue)) {
-#             throw "Inno Setup Compiler (iscc) not found in PATH"
-#           } else {
-#             Write-Host "Inno Setup Compiler (iscc) found in PATH"
-#           }
-#        shell: pwsh
 
       - name: Create installer
         run: iscc "-DBUILD_DIR=${{ github.workspace }}/install" "-DVERSION=${{ env.VERSION }}" quickevent/quickevent.iss
