@@ -82,12 +82,6 @@ jobs:
           Start-Process -FilePath D:\\is.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", -Wait
           $env:Path += ";C:\\Program Files (x86)\\Inno Setup 6"
 
-      - name: Test
-        run: |
-        Start-Process -FilePath dir -ArgumentList "c:\\Program Files (x86)\\" /s
-        Start-Process -FilePath dir -ArgumentList "c:\\Program Files\\" /s
-        shell: pwsh
-
       - name: Verify Inno Setup Installation
         run: |
           if (!(Get-Command iscc -ErrorAction SilentlyContinue)) {
