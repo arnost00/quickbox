@@ -80,6 +80,7 @@ jobs:
         run: |
           Invoke-WebRequest -Uri https://jrsoftware.org/download.php/is.exe -OutFile D:\\is.exe
           Start-Process -FilePath D:\\is.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", -Wait
+          $env:Path += ";C:\\Program Files (x86)\\Inno Setup 6"
       - name: Create installer
         run: iscc "-DBUILD_DIR=${{ github.workspace }}/install" "-DVERSION=${{ env.VERSION }}" quickevent/quickevent.iss
 
