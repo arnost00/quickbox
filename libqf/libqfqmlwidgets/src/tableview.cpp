@@ -57,12 +57,12 @@ TableView::TableView(QWidget *parent) :
 	qfLogFuncFrame() << this;
 	setItemDelegate(new TableItemDelegate(this));
 	{
-		HeaderView *h = new HeaderView(Qt::Horizontal, this);
+		auto h = new HeaderView(Qt::Horizontal, this);
 		setHorizontalHeader(h);
 		connect(this, &TableView::seekStringChanged, h, &HeaderView::setSeekString);
 	}
 	{
-		HeaderView *h = new HeaderView(Qt::Vertical, this);
+		auto h = new HeaderView(Qt::Vertical, this);
 		setVerticalHeader(h);
 	}
 	setSortingEnabled(true);
@@ -132,7 +132,7 @@ QAbstractProxyModel* TableView::lastProxyModel() const
 {
 	QAbstractProxyModel *ret = nullptr;
 	for(auto m=Super::model(); m; ) {
-		QAbstractProxyModel *pxm = qobject_cast<QAbstractProxyModel*>(m);
+		auto pxm = qobject_cast<QAbstractProxyModel*>(m);
 		if(pxm) {
 			ret = pxm;
 			m = pxm->sourceModel();
@@ -156,7 +156,7 @@ void TableView::setModel(QAbstractItemModel *model)
 
 qf::core::model::TableModel *TableView::tableModel() const
 {
-	qf::core::model::TableModel *ret = qobject_cast<qf::core::model::TableModel *>(lastProxyModel()->sourceModel());
+	auto ret = qobject_cast<qf::core::model::TableModel *>(lastProxyModel()->sourceModel());
 	return ret;
 }
 
@@ -523,7 +523,7 @@ void TableView::paste()
 	try {
 		dialogs::Dialog dlg(this);
 		dlg.setButtons(QDialogButtonBox::Ok);
-		internal::TableViewCopyToDialogWidget *w = new internal::TableViewCopyToDialogWidget();
+		auto w = new internal::TableViewCopyToDialogWidget();
 		dlg.setCentralWidget(w);
 		int col_cnt = 0;
 		{
@@ -567,7 +567,7 @@ void TableView::paste()
 					r.clearEditFlags();
 				}
 				TableView *tv = w->tableView();
-				qfm::TableModel *tm = new qfm::TableModel(tv);
+				auto tm = new qfm::TableModel(tv);
 				tm->setTable(t);
 				tv->setTableModel(tm);
 				tv->setContextMenuActions(tv->contextMenuActionsForGroups(AllActions));
@@ -644,7 +644,7 @@ void TableView::setValueInSelection_helper(const QVariant &new_val)
 	}
 	else if(selected_row_indexes.count() > 1) {
 		qfc::sql::Connection conn;
-		qfc::model::SqlTableModel *sql_m = qobject_cast<qfc::model::SqlTableModel *>(tableModel());
+		auto sql_m = qobject_cast<qfc::model::SqlTableModel *>(tableModel());
 		if(sql_m) {
 			try {
 				conn = sql_m->sqlConnection();
@@ -698,7 +698,7 @@ void TableView::editCellContentInEditor()
 			cell_text = QString::fromUtf8(cell_value.toByteArray());
 		else
 			cell_text = cell_value.toString();
-		TextEditWidget *w = new TextEditWidget(this);
+		auto w = new TextEditWidget(this);
 		w->setText(cell_text);
 		w->setSuggestedFileName("new_file.txt");
 		/*
@@ -708,7 +708,7 @@ void TableView::editCellContentInEditor()
 		}
 		*/
 		dialogs::Dialog dlg(this);
-		DialogButtonBox *bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
+		auto bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
 		QAbstractButton *bt_save = bb->addButton(QDialogButtonBox::Save);
 		connect(bt_save, &QAbstractButton::clicked, &dlg, &QDialog::accept);
 		dlg.setButtonBox(bb);
@@ -742,13 +742,13 @@ void TableView::exportCSV()
 	if(!m)
 		return;
 
-	qf::qmlwidgets::ExportCsvTableViewWidget *w = new qf::qmlwidgets::ExportCsvTableViewWidget(this, this);
+	auto w = new qf::qmlwidgets::ExportCsvTableViewWidget(this, this);
 	if(!persistentSettingsPath().isEmpty()) {
 		w->setPersistentOptionsPath(persistentSettingsPath() + "/exportCSV");
 		w->loadPersistentOptions();
 	}
 	dialogs::Dialog dlg(this);
-	DialogButtonBox *bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
+	auto bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
 	QAbstractButton *bt_apply = bb->addButton(QDialogButtonBox::Apply);
 	connect(bt_apply, &QAbstractButton::clicked, w, &qf::qmlwidgets::ExportCsvTableViewWidget::applyOptions, Qt::QueuedConnection);
 	dlg.setButtonBox(bb);
@@ -762,13 +762,13 @@ void TableView::exportCSV()
 void TableView::exportReport()
 {
 	qfLogFuncFrame();
-	reports::PrintTableViewWidget *w = new reports::PrintTableViewWidget(this);
+	auto w = new reports::PrintTableViewWidget(this);
 	if(!persistentSettingsPath().isEmpty()) {
 		w->setPersistentOptionsPath(persistentSettingsPath() + "/exportReport");
 		w->loadPersistentOptions();
 	}
 	dialogs::Dialog dlg(this);
-	DialogButtonBox *bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
+	auto bb = new DialogButtonBox(QDialogButtonBox::Cancel, this);
 	QAbstractButton *bt_apply = bb->addButton(QDialogButtonBox::Apply);
 	connect(bt_apply, &QAbstractButton::clicked, w, &reports::PrintTableViewWidget::applyOptions, Qt::QueuedConnection);
 	dlg.setButtonBox(bb);
@@ -931,7 +931,7 @@ void TableView::exportReport_helper(const QVariant& _options)
 
 		//qfInfo() << ttable.toString();
 
-		reports::ReportViewWidget *rw = new reports::ReportViewWidget(nullptr);
+		auto rw = new reports::ReportViewWidget(nullptr);
 		rw->setTableData(QString(), ttable);
 		QString report_fn = opts.value("report").toMap().value("fileName").toString();
 		rw->setReport(report_fn);
@@ -1310,7 +1310,7 @@ void TableView::loadPersistentSettings()
 	QString path = persistentSettingsPath();
 	qfLogFuncFrame() << path;
 	if(!path.isEmpty()) {
-		HeaderView *horiz_header = qobject_cast<HeaderView*>(horizontalHeader());
+		auto horiz_header = qobject_cast<HeaderView*>(horizontalHeader());
 		if(!horiz_header || horiz_header->count() == 0) {
 			qfDebug() << path << "Cannot load persistent settings, horizontal header does not exist or it is empty.";
 			return;
