@@ -20,9 +20,7 @@
 
 namespace qfm = qf::core::model;
 
-namespace qf {
-namespace qmlwidgets {
-namespace framework {
+namespace qf::qmlwidgets::framework {
 
 LogWidgetTableView::LogWidgetTableView(QWidget *parent)
 	: Super(parent)
@@ -259,7 +257,7 @@ void LogWidget::addCategoryActions(const QString &caption, const QString &id, Ne
 	a->setData(id);
 	a->setMenu(m);
 	tableMenuButton()->addAction(a);
-	QActionGroup *ag_loglevel = new QActionGroup(a);
+	auto ag_loglevel = new QActionGroup(a);
 	for (int i = static_cast<int>(NecroLog::Level::Invalid); i <= static_cast<int>(NecroLog::Level::Debug); i++) {
 		if(i == static_cast<int>(NecroLog::Level::Fatal))
 			continue;
@@ -364,6 +362,4 @@ void LogWidget::checkScrollToLastEntry()
 	}
 }
 
-} // namespace framework
-} // namespace qmlwiggets
-} // namespace qf
+} // namespace framework::qmlwiggets::qf

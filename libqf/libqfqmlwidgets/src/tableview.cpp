@@ -1151,7 +1151,7 @@ void TableView::rowExternallySaved(const QVariant &id, int mode)
 				tmd->qfm::TableModel::removeRowNoOverload(ri, !qf::core::Exception::Throw);
 				return;
 			}
-			else if(reloaded_row_cnt != 1) {
+			if(reloaded_row_cnt != 1) {
 				qfWarning() << "Inserted/Copied row id:" << id.toString() << "reloaded in" << reloaded_row_cnt << "instances.";
 				return;
 			}
@@ -1341,7 +1341,7 @@ void TableView::savePersistentSettings()
 	if(!path.isEmpty()) {
 		QSettings settings;
 		settings.beginGroup(path);
-		HeaderView *horiz_header = qobject_cast<HeaderView*>(horizontalHeader());
+		auto horiz_header = qobject_cast<HeaderView*>(horizontalHeader());
 
 		QByteArray header_state = horiz_header->saveState();
 		settings.setValue("horizontalheader", QString::fromLatin1(header_state.toBase64()));
@@ -1375,12 +1375,12 @@ void TableView::keyPressEvent(QKeyEvent *e)
 			e->accept();
 			return;
 		}
-		else if(e->key() == Qt::Key_V) {
+		if(e->key() == Qt::Key_V) {
 			paste();
 			e->accept();
 			return;
 		}
-		else if(e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+		if(e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
 			qfDebug() << "\tCTRL+ENTER";
 			postRow();
 			e->accept();
@@ -1458,9 +1458,7 @@ void TableView::keyPressEvent(QKeyEvent *e)
 		e->accept();
 		return;
 	}
-	else {
-		cancelSeek();
-	}
+	cancelSeek();
 	//bool event_should_be_accepted = false;
 	/// nejedna se o inkrementalni vyhledavani, zkusime editaci
 	if(state() == EditingState) {
@@ -1808,7 +1806,7 @@ void TableView::createActions()
 		a->setOid("select");
 		m_actionGroups[SelectActions] << a->oid();
 		m_actions[a->oid()] = a;
-		QMenu *m = new QMenu(this);
+		auto m = new QMenu(this);
 		a->setMenu(m);
 		{
 			a = new Action(tr("Select current column"), this);
@@ -1835,7 +1833,7 @@ void TableView::createActions()
 		a->setOid("calculate");
 		m_actionGroups[CalculateActions] << a->oid();
 		m_actions[a->oid()] = a;
-		QMenu *m = new QMenu(this);
+		auto m = new QMenu(this);
 		a->setMenu(m);
 		{
 			a = new Action(tr("Sum column"), this);
@@ -1855,7 +1853,7 @@ void TableView::createActions()
 		a->setOid("export");
 		m_actionGroups[ExportActions] << a->oid();
 		m_actions[a->oid()] = a;
-		QMenu *m = new QMenu(this);
+		auto m = new QMenu(this);
 		a->setMenu(m);
 		{
 			a = new Action(tr("Report"), this);
@@ -1900,7 +1898,7 @@ void TableView::createActions()
 		a->setOid("import");
 		m_actionGroups[ImportActions] << a->oid();
 		m_actions[a->oid()] = a;
-		QMenu *m = new QMenu(this);
+		auto m = new QMenu(this);
 		a->setMenu(m);
 		{
 			a = new Action(tr("CSV"), this);
@@ -2126,7 +2124,7 @@ void TableView::insertRowInline()
 		if(tri < 0) {
 			qfWarning() << "Valid proxy model index has invalid table model index!";
 			/// this can happen when one inserts to empty table ???? why ????
-			tri = ri = 0;
+			tri = 0;
 		}
 	}
 	tableModel()->insertRow(tri);
