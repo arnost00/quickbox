@@ -22,10 +22,10 @@ using namespace qf::qmlwidgets::reports;
 //                              ReportItemMetaPaint
 //=================================================
 //const QString ReportItemMetaPaint::currentPageReportSubstitution = "@{#}";
-const QString ReportItemMetaPaint::pageCountReportSubstitution = QLatin1String("@{n}");
+//const QString ReportItemMetaPaint::pageCountReportSubstitution = QLatin1String("@{n}");
 //const QString ReportItemMetaPaint::checkOnReportSubstitution = "@{check:1}";
-const QString ReportItemMetaPaint::checkReportSubstitution = QLatin1String("@{check:${STATE}}");
-const QRegularExpression ReportItemMetaPaint::checkReportSubstitutionRegExp = QRegularExpression(QRegularExpression::anchoredPattern(R"(@\{check:(\d)\})"));
+//const QString ReportItemMetaPaint::checkReportSubstitution = QLatin1String("@{check:${STATE}}");
+//const QRegularExpression ReportItemMetaPaint::checkReportSubstitutionRegExp = QRegularExpression(QRegularExpression::anchoredPattern(R"(@\{check:(\d)\})"));
 
 ReportItemMetaPaint::ReportItemMetaPaint()
 	: Super(nullptr)

@@ -39,9 +39,9 @@ public:
 public:
 	enum PaintMode {PaintBorder=1, PaintFill=2, PaintAll=3};
 	//! string v reportu, ktery se vymeni za celkovy pocet stranek v reportu.
-	static const QString pageCountReportSubstitution;
-	static const QRegularExpression checkReportSubstitutionRegExp;
-	static const QString checkReportSubstitution;
+	inline static const QString pageCountReportSubstitution = QLatin1String("@{n}");
+	inline static const QRegularExpression checkReportSubstitutionRegExp = QRegularExpression(QRegularExpression::anchoredPattern(R"(@\{check:(\d)\})"));
+	inline static const QString checkReportSubstitution = QLatin1String("@{check:${STATE}}");
 	//static const QString checkOffReportSubstitution;
 	typedef qf::qmlwidgets::graphics::Rect Rect;
 	typedef qf::qmlwidgets::graphics::Size Size;
