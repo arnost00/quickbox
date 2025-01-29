@@ -8,7 +8,6 @@
 #include "reportpainter.h"
 #include "reportprocessor.h"
 #include "style/pen.h"
-#include "style/color.h"
 
 #include <qf/core/log.h>
 #include <qf/core/assert.h>
@@ -23,9 +22,9 @@ using namespace qf::qmlwidgets::reports;
 //                              ReportItemMetaPaint
 //=================================================
 //const QString ReportItemMetaPaint::currentPageReportSubstitution = "@{#}";
-const QString ReportItemMetaPaint::pageCountReportSubstitution = "@{n}";
+const QString ReportItemMetaPaint::pageCountReportSubstitution = QLatin1String("@{n}");
 //const QString ReportItemMetaPaint::checkOnReportSubstitution = "@{check:1}";
-const QString ReportItemMetaPaint::checkReportSubstitution = "@{check:${STATE}}";
+const QString ReportItemMetaPaint::checkReportSubstitution = QLatin1String("@{check:${STATE}}");
 const QRegularExpression ReportItemMetaPaint::checkReportSubstitutionRegExp = QRegularExpression(QRegularExpression::anchoredPattern("@\\{check:(\\d)\\}"));
 
 ReportItemMetaPaint::ReportItemMetaPaint()
