@@ -35,7 +35,7 @@ public:
 	ReportItemMetaPaint();
 	//! parametr \a processor v konstruktoru slouzi jenom kvuli scriptovanym atributum elementu, pouzije se jen v konstruktoru, ukazatel na nej se nikde neuklada.
 	ReportItemMetaPaint(ReportItemMetaPaint *parent, ReportItem *report_item);
-	~ReportItemMetaPaint() Q_DECL_OVERRIDE;
+	~ReportItemMetaPaint() Q_DECL_OVERRIDE = default;
 public:
 	enum PaintMode {PaintBorder=1, PaintFill=2, PaintAll=3};
 	//! string v reportu, ktery se vymeni za celkovy pocet stranek v reportu.
