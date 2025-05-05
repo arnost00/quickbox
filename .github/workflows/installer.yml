@@ -54,8 +54,9 @@ jobs:
       - name: Get libraries
 #         if: steps.cache-libs.outputs.cache-hit != 'true'
         run: |
-          choco install openssl.light --params "/InstallDir:C:\openssl" --version 3.1.4 -y
+          choco install openssl.light --params "/InstallDir:C:\openssl" --version=3.1.4 -y
           choco install postgresql17 -y
+          choco install innosetup -y
         shell: cmd
 
       - name: Setup CMake
