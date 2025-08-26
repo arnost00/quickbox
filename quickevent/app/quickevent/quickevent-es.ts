@@ -6,47 +6,47 @@
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="14"></location>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="37"></location>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtro</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="44"></location>
         <source>Type name, registration or SI</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Escribe el nombre, inscripción o nº de pinza</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="56"></location>
         <source>Double-click on runner to add leg</source>
-        <translation type="unfinished"></translation>
+        <translation>Doble click en corredor para añadir relevista</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="68"></location>
         <source>Registrations</source>
-        <translation type="unfinished"></translation>
+        <translation>Inscripciones</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="85"></location>
         <source>Competitors</source>
-        <translation type="unfinished"></translation>
+        <translation>Corredores</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="97"></location>
         <source>Unregistered runner</source>
-        <translation type="unfinished"></translation>
+        <translation>Corredor no registrado</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="109"></location>
         <source>First name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="132"></location>
         <source>Last name</source>
-        <translation type="unfinished"></translation>
+        <translation>Apellidos</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="178"></location>
@@ -57,7 +57,7 @@
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="33"></location>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="35"></location>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="34"></location>
@@ -78,19 +78,19 @@
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="155"></location>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="38"></location>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="94"></location>
         <source>Competitor has different relay assigned already. Move it to current one?</source>
-        <translation type="unfinished"></translation>
+        <translation>El corredor ya tiene un equipo de relevo diferente asignado. ¿Desea moverlo al equipo actual?</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="120"></location>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="145"></location>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="204"></location>
         <source>Runner %1 was assigned to leg %2</source>
-        <translation type="unfinished"></translation>
+        <translation>El corredor %1 se asigno a la posta %2</translation>
     </message>
 </context>
 <context>
@@ -98,17 +98,17 @@
     <message>
         <location filename="src/appclioptions.cpp" line="6"></location>
         <source>Application locale</source>
-        <translation type="unfinished"></translation>
+        <translation>Idioma</translation>
     </message>
     <message>
         <location filename="src/appclioptions.cpp" line="7"></location>
         <source>Application profile, see: https://github.com/fvacek/quickbox/wiki/Application-profiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Perfil de la aplicación, véase https://github.com/fvacek/quickbox/wiki/Application-profiles</translation>
     </message>
     <message>
         <location filename="src/appclioptions.cpp" line="8"></location>
         <source>Application font scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Tamaño de la fuente del programa</translation>
     </message>
 </context>
 <context>
@@ -116,7 +116,7 @@
     <message>
         <location filename="plugins/CardReader/src/cardcheckerclassiccpp.cpp" line="16"></location>
         <source>Classic race</source>
-        <translation type="unfinished"></translation>
+        <translation>Carrera clásica</translation>
     </message>
 </context>
 <context>
@@ -124,7 +124,7 @@
     <message>
         <location filename="plugins/CardReader/src/cardcheckerfreeordercpp.cpp" line="16"></location>
         <source>Free order race</source>
-        <translation type="unfinished"></translation>
+        <translation>Carrera score</translation>
     </message>
 </context>
 <context>
@@ -132,7 +132,7 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="61"></location>
         <source>Card reader</source>
-        <translation type="unfinished"></translation>
+        <translation>Lector de chip</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="142"></location>
@@ -142,32 +142,32 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="147"></location>
         <source>Multiple reads of SI: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Múltiples lecturas de la pinza %1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="152"></location>
         <source>Multiple reads of SI: %1 with different finish time, manual assign required</source>
-        <translation type="unfinished"></translation>
+        <translation>Múltiples lecturas de la pinza %1 con diferentes horas de meta. Asignación manual requerida</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="158"></location>
         <source>More competitors with SI: %1, run1 id: %2, run2 id: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Más corredores con pinza: %1, run1 id: %2, run2 id: %3</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="164"></location>
         <source>Cannot find competitor with SI: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>No se puede encontrar al corredor con pinza %1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="284"></location>
         <source>Save card ERROR: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al guardar pinza: %1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderplugin.cpp" line="339"></location>
         <source>Save punch record ERROR: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al guardar la picada: %1</translation>
     </message>
 </context>
 <context>
@@ -175,32 +175,32 @@
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="14"></location>
         <source>CuteCom</source>
-        <translation type="unfinished"></translation>
+        <translation>Puerto COM</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="20"></location>
         <source>Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Conexión</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="26"></location>
         <source>De&amp;vice</source>
-        <translation type="unfinished"></translation>
+        <translation>Dispositivo</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="39"></location>
         <source>Baud rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Tasa de baudios</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="53"></location>
         <source>38400</source>
-        <translation type="unfinished"></translation>
+        <translation>38400</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="58"></location>
         <source>4800</source>
-        <translation type="unfinished"></translation>
+        <translation>4800</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="66"></location>
@@ -210,57 +210,57 @@
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="80"></location>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="85"></location>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="90"></location>
         <source>6</source>
-        <translation type="unfinished"></translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="95"></location>
         <source>5</source>
-        <translation type="unfinished"></translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="103"></location>
         <source>Stop bits</source>
-        <translation type="unfinished"></translation>
+        <translation>Bit de parada</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="114"></location>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="119"></location>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="127"></location>
         <source>Parity</source>
-        <translation type="unfinished"></translation>
+        <translation>Paridad</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="138"></location>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>None</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="143"></location>
         <source>Odd</source>
-        <translation type="unfinished"></translation>
+        <translation>Impar</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="148"></location>
         <source>Even</source>
-        <translation type="unfinished"></translation>
+        <translation>Par</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="153"></location>
@@ -270,103 +270,103 @@
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="158"></location>
         <source>Space</source>
-        <translation type="unfinished"></translation>
+        <translation>Espacio</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="179"></location>
         <source>Test connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Comprobar conexión</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="186"></location>
         <source>Debugging</source>
-        <translation type="unfinished"></translation>
+        <translation>Depuración</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="202"></location>
         <source>show raw data</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar datos crudos</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="209"></location>
         <source>disable CRC check</source>
-        <translation type="unfinished"></translation>
+        <translation>Desactivar comprobación de CRC</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="222"></location>
         <source>Reader</source>
-        <translation type="unfinished"></translation>
+        <translation>Lector</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="241"></location>
         <source>Check type</source>
-        <translation type="unfinished"></translation>
+        <translation>Comprobar tipo</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.ui" line="254"></location>
         <source>Reader mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Modo del lector</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="35"></location>
         <source>Card reader</source>
-        <translation type="unfinished"></translation>
+        <translation>Lector de pinzas</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="44"></location>
         <source>Readout</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="46"></location>
         <source>Readout mode - default</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura - por defecto</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="47"></location>
         <source>Edit on punch</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar al picar</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="49"></location>
         <source>Show Edit/Insert competitor dialog when SI Card is inserted into the reader station</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar el diálogo de Editar/Insertar corredor cuando se introduce la pinza en la estación de lectura</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="151"></location>
         <source>Loading SI station info ...</source>
-        <translation type="unfinished"></translation>
+        <translation>Cargando la información de la base ...</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="151"></location>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="166"></location>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation>Información</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="166"></location>
         <source>SI reader config:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración de la base de lectura: %1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="169"></location>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="185"></location>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Alerta</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="169"></location>
         <source>Device %1 is not SI reader</source>
-        <translation type="unfinished"></translation>
+        <translation>La base %1 no es una estación de lectura</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreadersettingspage.cpp" line="185"></location>
         <source>Error open device %1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al abrir el dispositivo %1 - %2</translation>
     </message>
 </context>
 <context>
@@ -374,7 +374,7 @@
     <message>
         <location filename="plugins/CardReader/src/services/mqttpuncheswidget.ui" line="14"></location>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
 </context>
 <context>
@@ -387,32 +387,32 @@
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="20"></location>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="26"></location>
         <source>Listen on TCP port</source>
-        <translation type="unfinished"></translation>
+        <translation>Escuchar en el puerto TCP</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="46"></location>
         <source>Log requests to file</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar las peticiones en un archivo</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="61"></location>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="81"></location>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This service will listen for HTTP requests for integration with web services.&lt;/p&gt;&lt;p&gt;For example, &lt;a href=&quot;https://github.com/sakhnik/qr-o-punch&quot;&gt;qr-o-punch&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported methods and endpoints:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;POST /card&lt;/code&gt; — upload a card readout&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Este servicio escucha las peticiones HTTP para integrarse con servicios web&lt;/p&gt;&lt;p&gt;Por ejemplo, &lt;a href=&quot;https://github.com/sakhnik/qr-o-punch&quot;&gt; QR-O-Punch&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Lista de métodos y endpoints soportados_&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;code&gt;POST /card&lt;/code&gt; — subir la lectura de una pinza&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.cpp" line="74"></location>
         <source>Choose file to log requests</source>
-        <translation type="unfinished"></translation>
+        <translation>Elije un archivo para guardar las peticiones</translation>
     </message>
 </context>
 <context>
@@ -420,7 +420,7 @@
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="14"></location>
         <source>Racom Client</source>
-        <translation type="unfinished"></translation>
+        <translation>Cliente RACOM</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="53"></location>
@@ -430,57 +430,57 @@
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="33"></location>
         <source>Listen on UDP port</source>
-        <translation type="unfinished"></translation>
+        <translation>Escuchar el puerto UDP</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="20"></location>
         <source>Network communication</source>
-        <translation type="unfinished"></translation>
+        <translation>Comunicación de red</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="26"></location>
         <source>Raw SI data</source>
-        <translation type="unfinished"></translation>
+        <translation>Datos crudos SI</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="60"></location>
         <source>Listen on TCP port</source>
-        <translation type="unfinished"></translation>
+        <translation>Escuchar en el puerto TCP</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="83"></location>
         <source>Read Text Splits File (format &quot;rawsplits&quot; from Racom)</source>
-        <translation type="unfinished"></translation>
+        <translation>Leer archivo de texto de parciales (formato &quot;rawsplits&quot; de RACOM)</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="95"></location>
         <source>File Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre del archivo</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="102"></location>
         <source>Finish code (in file)</source>
-        <translation type="unfinished"></translation>
+        <translation>Código de control de la meta (en el archivo)</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="122"></location>
         <source>Import interval</source>
-        <translation type="unfinished"></translation>
+        <translation>Intervalo de importación</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="132"></location>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> s</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.ui" line="153"></location>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/racomclientwidget.cpp" line="88"></location>
         <source>Open txt splits file</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir archivo txt de parciales</translation>
     </message>
 </context>
 <context>
@@ -488,54 +488,54 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.ui" line="14"></location>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.ui" line="89"></location>
         <source>Test</source>
-        <translation type="unfinished"></translation>
+        <translation>Test</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="317"></location>
         <source>Show receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar ticket</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="320"></location>
         <source>Show card data</source>
         <oldsource>Show card</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar datos de la pinza</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="318"></location>
         <source>Print receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Imprimir ticket</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="321"></location>
         <source>Print card data</source>
         <oldsource>Print card</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Imprimir datos de la pinza</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="732"></location>
         <source>Assign card to runner</source>
-        <translation type="unfinished"></translation>
+        <translation>Asignar pinza al corredor</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="323"></location>
         <source>Recalculate times in selected rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Recalcular tiempos en las filas seleccionadas</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="221"></location>
         <source>Open COM to connect SI reader</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir el puerto COM para conectar con la estación de lectura</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="353"></location>
         <source>Recalculating times for %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Recalculando tiempos para %1</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="374"></location>
@@ -545,22 +545,22 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="378"></location>
         <source>Station info</source>
-        <translation type="unfinished"></translation>
+        <translation>Información de la base</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="395"></location>
         <source>Read station memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Leer la memoria de respaldo de la base</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="422"></location>
         <source>&amp;Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Herramientas</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="424"></location>
         <source>Import cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Importar pinzas</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="426"></location>
@@ -570,12 +570,12 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="431"></location>
         <source>SI reader backup memory CSV</source>
-        <translation type="unfinished"></translation>
+        <translation>Memoria de respaldo de la pinza (csv)</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="437"></location>
         <source>Test audio</source>
-        <translation type="unfinished"></translation>
+        <translation>Probar audio</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="224"></location>
