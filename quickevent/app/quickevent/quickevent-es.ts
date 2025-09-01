@@ -722,7 +722,7 @@ Si continúas, se eliminará esta distinción</translation>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="936"/>
         <source>SI: %1 class %2 - Number of punches (%3) and number of codes including finish (%4) should be the same! Remove or comment invalid line by #.</source>
-        <translation type="unfinished"></translation>
+        <translation>SportIdent %1 categoría %2 - ¡Número de picadas %3 y el número de controles incluyendo la meta (%4) tienen que ser el mismo! Elimine o comente la línea invalida con #.</translation>
     </message>
 </context>
 <context>
@@ -994,7 +994,7 @@ Si continúas, se eliminará esta distinción</translation>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="190"/>
         <source>Rel.num</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de relevo</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="190"/>
@@ -1153,7 +1153,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Receipts/qml/reports/receipts/Classic.qml" line="386"/>
         <source>standings: </source>
-        <translation type="unfinished"></translation>
+        <translation>Clasificación: </translation>
     </message>
 </context>
 <context>
@@ -1161,22 +1161,22 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.ui" line="37"/>
         <source>Class</source>
-        <translation type="unfinished"></translation>
+        <translation>Categoría</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.ui" line="47"/>
         <source>Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Control</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="42"/>
         <source>Competitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Competidor</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="43"/>
@@ -1186,28 +1186,28 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="44"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tiempo</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="45"/>
         <source>DISQ</source>
-        <translation type="unfinished"></translation>
+        <translation>DSQ</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="140"/>
         <source>Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Resultados</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="141"/>
         <source>Finish</source>
-        <translation type="unfinished"></translation>
+        <translation>Meta</translation>
     </message>
     <message>
         <location filename="plugins/Speaker/src/codeclassresultswidget.cpp" line="160"/>
         <source>R</source>
         <comment>Radio station</comment>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
 </context>
 <context>
@@ -1215,83 +1215,83 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="38"/>
         <source>&amp;Find in registrations</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Buscar en inscripciones</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="45"/>
         <source>Type to find competitor in registrations ...</source>
-        <translation type="unfinished"></translation>
+        <translation>Escribe para buscar al competidor entre los inscritos...</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="58"/>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="95"/>
         <source>Competitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Competidor</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="152"/>
         <source>&amp;Class</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Categoría</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="162"/>
         <source>IO&amp;F ID</source>
-        <translation type="unfinished"></translation>
+        <translation>IO&amp;F ID</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="226"/>
         <source>&amp;SI</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pinza</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="189"/>
         <source>First na&amp;me</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="71"/>
         <source>&amp;Last name</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Apellidos</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="125"/>
         <source>&amp;Registration</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Inscripción</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="91"/>
         <source>Licenc&amp;e</source>
-        <translation type="unfinished"></translation>
+        <translation>Licencia</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="179"/>
         <source>Clu&amp;b</source>
-        <translation type="unfinished"></translation>
+        <translation>Club</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="81"/>
         <source>Co&amp;untry</source>
-        <translation type="unfinished"></translation>
+        <translation>País</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="135"/>
         <source>&amp;Note</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Nota</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="245"/>
         <source>Switch Names</source>
-        <translation type="unfinished"></translation>
+        <translation>Intercambiar nombres</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="270"/>
         <source>Start times</source>
-        <translation type="unfinished"></translation>
+        <translation>Horas de salida</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.ui" line="283"/>
@@ -1301,17 +1301,17 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="129"/>
         <source>E&amp;%1</source>
-        <translation type="unfinished"></translation>
+        <translation>E&amp;%1</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="348"/>
         <source>Class should be entered.</source>
-        <translation type="unfinished"></translation>
+        <translation>Debe introducir la categoría.</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="355"/>
         <source>SQL error</source>
-        <translation type="unfinished"></translation>
+        <translation>Error de SQL</translation>
     </message>
 </context>
 <context>
@@ -1319,22 +1319,22 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="61"/>
         <source>Edit Competitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar competidor</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="72"/>
         <source>&amp;Competitors</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Competidores</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="76"/>
         <source>Registrations</source>
-        <translation type="unfinished"></translation>
+        <translation>Inscripciones</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="130"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre completo</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="131"/>
@@ -1349,7 +1349,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorsplugin.cpp" line="133"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>Pinza</translation>
     </message>
 </context>
 <context>
@@ -1357,12 +1357,12 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.ui" line="20"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="63"/>
         <source>Class</source>
-        <translation type="unfinished"></translation>
+        <translation>Categoría</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="64"/>
@@ -1373,12 +1373,12 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="64"/>
         <source>Start number</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de salida</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="65"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre completo</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="66"/>
@@ -1388,104 +1388,104 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="68"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>Pinza</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="70"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Nota</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="98"/>
         <source>&amp;Class </source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Categoría </translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="119"/>
         <source>&amp;Print</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Imprimir</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="121"/>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="393"/>
         <source>Competitors statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Estadísticas de corredores</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="69"/>
         <source>Ranking pos</source>
-        <translation type="unfinished"></translation>
+        <translation>Pos. ranking</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="66"/>
         <source>Czech registration number</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de registro Checo</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="67"/>
         <source>IOF ID</source>
-        <translation type="unfinished"></translation>
+        <translation>IOF ID</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="67"/>
         <source>IOF ID number</source>
-        <translation type="unfinished"></translation>
+        <translation>IOF ID número de inscripción</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="69"/>
         <source>Runner&apos;s position in CZ ranking.</source>
-        <translation type="unfinished"></translation>
+        <translation>Posición del corredor en ranking Checo.</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="128"/>
         <source>&amp;Stations</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Bases</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="130"/>
         <source>Backup memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Memoria de respaldo</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="154"/>
         <source>--- all ---</source>
-        <translation type="unfinished"></translation>
+        <translation>--- todos ---</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="211"/>
         <source>Edit Competitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar competidor</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="215"/>
         <source>Save and &amp;next</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar y &amp;continuar</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="261"/>
         <source>Really delete all the selected competitors? This action cannot be reverted.</source>
         <oldsource>Realy delete all the selected competitors? This action cannot be reverted.</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Desea borrar los competidores seleccionados? Esta acción no puede deshacerse.</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="274"/>
         <source>Confirm deletion of %1 competitors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmar el borrado de %1 corredores.</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="304"/>
         <source>Set class in selected rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Configurar categoría en las filas seleccionadas</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="316"/>
         <source>Dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Menu</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorswidget.cpp" line="317"/>
         <source>Select class</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar categoría</translation>
     </message>
 </context>
 <context>
@@ -1493,84 +1493,84 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="14"/>
         <source>Select database</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar base de datos</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="32"/>
         <source>Event</source>
-        <translation type="unfinished"></translation>
+        <translation>Evento</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="53"/>
         <source>Ev&amp;ent ID</source>
         <oldsource>E&amp;vent ID</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Id &amp;de evento</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="63"/>
         <source>Open the event right away if it is found in the database, ignore this field otherwise.</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir el evento directamente si se encuentra en la base de datos, en cualquier otro caso se ignora este campo.</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="76"/>
         <source>Data storage</source>
-        <translation type="unfinished"></translation>
+        <translation>Almacenamiento</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="98"/>
         <source>S&amp;ql server</source>
         <oldsource>Sql server</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Servidor S&amp;QL</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="125"/>
         <source>&amp;Host</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Servidor</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="142"/>
         <source>&amp;Port</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Puerto</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="168"/>
         <source>&amp;User</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Usuario</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="185"/>
         <source>Pa&amp;ssword</source>
-        <translation type="unfinished"></translation>
+        <translation>Con&amp;traseña</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="206"/>
         <source>Single &amp;file</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;fichero único</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="227"/>
         <source>Choose a wor&amp;king directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione una carpeta de trabajo</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="239"/>
         <source>Directory where to store event files (*.qbe)</source>
-        <translation type="unfinished"></translation>
+        <translation>Carpeta donde guardar los archivos del evento (*.qbe)</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.ui" line="249"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.cpp" line="13"/>
         <source>Data storage setup</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración del almacenamiento</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/connectdbdialogwidget.cpp" line="89"/>
         <source>Event files directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Carpeta de archivos del evento</translation>
     </message>
 </context>
 <context>
@@ -1578,7 +1578,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/widgets/appstatusbar.cpp" line="51"/>
         <source>E%1</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1</translation>
     </message>
 </context>
 <context>
@@ -1586,132 +1586,132 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="58"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>%Archivo</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="60"/>
         <source>&amp;Import</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Importar</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="63"/>
         <source>&amp;Export</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Exportar</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="68"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Configuración</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="76"/>
         <source>&amp;Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Salir</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="83"/>
         <source>&amp;Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Herramientas</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="85"/>
         <source>&amp;SQL tool</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Herramientas SQL</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="91"/>
         <source>&amp;Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Idioma</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="93"/>
         <source>&amp;Language</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Idioma</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="95"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Sistema</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="96"/>
         <source>Czech</source>
-        <translation type="unfinished"></translation>
+        <translation>Checo</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="97"/>
         <source>English</source>
-        <translation type="unfinished"></translation>
+        <translation>Inglés</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="98"/>
         <source>Flemish</source>
-        <translation type="unfinished"></translation>
+        <translation>Flamenco</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="99"/>
         <source>French</source>
-        <translation type="unfinished"></translation>
+        <translation>Francés</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="100"/>
         <source>Norwegian</source>
-        <translation type="unfinished"></translation>
+        <translation>Noruego</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="101"/>
         <source>Polish</source>
-        <translation type="unfinished"></translation>
+        <translation>Polaco</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="102"/>
         <source>Russian</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruso</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="103"/>
         <source>Ukrainian</source>
-        <translation type="unfinished"></translation>
+        <translation>Ucraniano</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="121"/>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation>Información</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="122"/>
         <source>Language change to &apos;%1&apos; will be applied after application restart.</source>
-        <translation type="unfinished"></translation>
+        <translation>El cambio al idioma &quot;%1&quot; sucederá después del reinicio del programa.</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="130"/>
         <source>&amp;View</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Vista</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="134"/>
         <source>&amp;Toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Barra de herramientas</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="138"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Ayuda</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="140"/>
         <source>&amp;About Quick event</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Acerca de QuickEvent</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="145"/>
         <source>About &amp;Qt</source>
-        <translation type="unfinished"></translation>
+        <translation>Acerca de &amp;Qt</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="188"/>
         <source>About Quick Event</source>
-        <translation type="unfinished"></translation>
+        <translation>Acerca de QuickEvent</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="189"/>
