@@ -14,27 +14,27 @@
     <message>
         <location filename="src/mainwindow.ui" line="14"/>
         <source>MainWindow</source>
-        <translation type="unfinished"></translation>
+        <translation>Ventana principal</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="26"/>
         <source>Toggle full screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Pantalla completa</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="39"/>
         <source>Increase font size</source>
-        <translation type="unfinished"></translation>
+        <translation>Aumentar el tamaño de letra</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="52"/>
         <source>Decrease font size</source>
-        <translation type="unfinished"></translation>
+        <translation>Disminuir el tamaño de letra</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="79"/>
         <source>E%1</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1</translation>
     </message>
 </context>
 <context>
@@ -42,7 +42,7 @@
     <message>
         <location filename="src/cellrenderer.cpp" line="219"/>
         <source>DISQ</source>
-        <translation type="unfinished"></translation>
+        <translation>DSQ</translation>
     </message>
 </context>
 </TS>
