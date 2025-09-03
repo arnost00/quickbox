@@ -13,19 +13,19 @@
         <location filename="src/runstatus.cpp" line="139"/>
         <source>MP</source>
         <comment>Missing Punch</comment>
-        <translation type="unfinished"></translation>
+        <translation>MP</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="141"/>
         <source>DNS</source>
         <comment>Did Not Start</comment>
-        <translation type="unfinished"></translation>
+        <translation>DNS</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="143"/>
         <source>DNF</source>
         <comment>Did Not Finish</comment>
-        <translation type="unfinished"></translation>
+        <translation>DNF</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="145"/>
@@ -37,12 +37,12 @@
         <location filename="src/runstatus.cpp" line="150"/>
         <source>NC</source>
         <comment>Not Competing</comment>
-        <translation type="unfinished"></translation>
+        <translation>NC</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="152"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -51,30 +51,30 @@
         <location filename="js/ogtime.js" line="48"/>
         <location filename="js/ogtime.js" line="66"/>
         <source>DISQ</source>
-        <translation type="unfinished"></translation>
+        <translation>DSQ</translation>
     </message>
     <message>
         <location filename="js/ogtime.js" line="50"/>
         <location filename="js/ogtime.js" line="68"/>
         <source>MP</source>
-        <translation type="unfinished"></translation>
+        <translation>MP</translation>
     </message>
     <message>
         <location filename="js/ogtime.js" line="52"/>
         <source>NC</source>
-        <translation type="unfinished"></translation>
+        <translation>NC</translation>
     </message>
     <message>
         <location filename="js/ogtime.js" line="54"/>
         <location filename="js/ogtime.js" line="72"/>
         <source>DNF</source>
-        <translation type="unfinished"></translation>
+        <translation>DNF</translation>
     </message>
     <message>
         <location filename="js/ogtime.js" line="56"/>
         <location filename="js/ogtime.js" line="70"/>
         <source>DNS</source>
-        <translation type="unfinished"></translation>
+        <translation>DNS</translation>
     </message>
     <message>
         <location filename="js/ogtime.js" line="58"/>
@@ -88,7 +88,7 @@
     <message>
         <location filename="src/exporters/htmlfileexporter.cpp" line="60"/>
         <source>E%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2</translation>
     </message>
 </context>
 <context>
@@ -96,32 +96,32 @@
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="20"/>
         <source>Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Resultados</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="42"/>
         <source>E%1 %2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2 %3</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source> length: </source>
-        <translation type="unfinished"></translation>
+        <translation> distancia: </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source>climb: </source>
-        <translation type="unfinished"></translation>
+        <translation>desnivel: </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="64"/>
         <source>Pos</source>
-        <translation type="unfinished"></translation>
+        <translation>Pos</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="65"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre completo</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="66"/>
