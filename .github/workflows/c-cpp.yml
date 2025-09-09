@@ -2,7 +2,7 @@
 name: Build
 on:
   push:
-    branches: [ "master", "qe2_wf_test2" ]
+    branches: [ "master", "qe2-wf-test2" ]
   pull_request:
     branches: [ "master" ]
 
