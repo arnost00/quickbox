@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 env:
-  QT_VERSION: '5.15.12'
+  QT_VERSION: '5.15.*'
 
 jobs:
   build_linux:
