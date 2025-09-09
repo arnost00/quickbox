@@ -96,7 +96,9 @@ jobs:
 
     - name: Build
       run: |
-        where libstdc++-6.dll
+        C:\mingw64\bin\gcc --version
+        echo PATH
+#        where libstdc++-6.dll
         qmake.exe quickbox.pro -spec win32-g++ "CONFIG+=release" "GITHUB_ACTIONS=TRUE"
         mingw32-make.exe qmake_all
         mingw32-make.exe -j4
