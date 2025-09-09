@@ -33,7 +33,7 @@ jobs:
   
     - name: Get AppImageTool
       run: |
-        curl --silent --url "https://api.github.com/repos/AppImage/AppImageKit/releases/latest" | jq -r '.assets[] | select(.name == "appimagetool-x86_64.AppImage").browser_download_url' | sudo xargs curl -L -o /opt/appimagetool-x86_64.AppImage --create-dirs
+        curl --silent "https://api.github.com/repos/AppImage/AppImageKit/releases/latest" | jq -r '.assets[] | select(.name == "obsolete-appimagetool-x86_64.AppImage").browser_download_url' | sudo xargs curl -L -o /opt/appimagetool-x86_64.AppImage --create-dirs --url
         sudo chmod +x /opt/appimagetool-x86_64.AppImage
 
     - name: Build AppImage
@@ -83,7 +83,6 @@ jobs:
       if: steps.cache-libs.outputs.cache-hit != 'true'
       run: |
         choco install openssl.light --params "/InstallDir:C:\openssl" --version 1.1.1 -y
-        where libstdc++-6.dll
 #        choco install postgresql14 --version 14.5.1 -y
       shell: cmd
 
@@ -97,6 +96,7 @@ jobs:
 
     - name: Build
       run: |
+        where libstdc++-6.dll
         qmake.exe quickbox.pro -spec win32-g++ "CONFIG+=release" "GITHUB_ACTIONS=TRUE"
         mingw32-make.exe qmake_all
         mingw32-make.exe -j4
