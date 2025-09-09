@@ -2,12 +2,12 @@
 name: Build
 on:
   push:
-    branches: [ master ]
+    branches: [ "master", "qe2_wf_test2" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 env:
-  QT_VERSION: '5.15.2'
+  QT_VERSION: '5.15'
 
 jobs:
   build_linux:
@@ -55,7 +55,7 @@ jobs:
 
 
   build_windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     defaults:
       run:
         shell: bash
