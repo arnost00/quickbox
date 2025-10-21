@@ -99,10 +99,18 @@ jobs:
         qmake.exe quickbox.pro -spec win32-g++ "CONFIG+=release" "GITHUB_ACTIONS=TRUE"
         mingw32-make.exe qmake_all
         mingw32-make.exe -j4
-      shell: cmd |
-        where libstdc++-6.dll
-        C:/mingw64/bin/gcc --version
+#      shell: cmd 
+#        where libstdc++-6.dll
+#        C:/mingw64/bin/gcc --version
 #        echo %PATH%
+
+    - name: Where
+      shell: cmd 
+        where libstdc++-6.dll
+
+    - name: GCC Ver
+      shell: cmd 
+        C:/mingw64/bin/gcc --version
 
     - name: Get app version
       run: echo "VERSION=`grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\\" -f2`" >> $GITHUB_ENV
