@@ -101,6 +101,7 @@ jobs:
         mingw32-make.exe -j4
       shell: cmd
         where libstdc++-6.dll
+      shell: cmd
         C:/mingw64/bin/gcc --version
 #        echo %PATH%
 
