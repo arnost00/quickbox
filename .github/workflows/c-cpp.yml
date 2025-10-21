@@ -101,6 +101,12 @@ jobs:
         where libwinpthread-1.dll /T
         echo %PATH%
         C:/mingw64/bin/gcc --version
+        gcc.exe --version
+        c++ --version
+        mingw32-make.exe --version
+        where gcc.exe /T
+        where mingw32-make.exe /T
+        where c++.exe /T
       shell: cmd 
 
     - name: Build
