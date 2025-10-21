@@ -96,11 +96,12 @@ jobs:
 
     - name: Build
       run: |
+        where libstdc++-6.dll /T
+        where libgcc_s_seh-1.dll /T
+        where libwinpthread-1.dll /T
         qmake.exe quickbox.pro -spec win32-g++ "CONFIG+=release" "GITHUB_ACTIONS=TRUE"
         mingw32-make.exe qmake_all
         mingw32-make.exe -j4
-        where libstdc++-6.dll
-        C:/mingw64/bin/gcc --version
       shell: cmd 
 #        where libstdc++-6.dll
 #        C:/mingw64/bin/gcc --version
