@@ -94,18 +94,21 @@ jobs:
         host: 'windows'
         arch: 'win64_mingw81'
 
-    - name: Build
+    - name: WHERE and PATHS and GCC ver
       run: |
         where libstdc++-6.dll /T
         where libgcc_s_seh-1.dll /T
         where libwinpthread-1.dll /T
+        echo %PATH%
+        C:/mingw64/bin/gcc --version
+      shell: cmd 
+
+    - name: Build
+      run: |
         qmake.exe quickbox.pro -spec win32-g++ "CONFIG+=release" "GITHUB_ACTIONS=TRUE"
         mingw32-make.exe qmake_all
         mingw32-make.exe -j4
       shell: cmd 
-#        where libstdc++-6.dll
-#        C:/mingw64/bin/gcc --version
-#        echo %PATH%
 
     - name: Get app version
       run: echo "VERSION=`grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\\" -f2`" >> $GITHUB_ENV
