@@ -116,6 +116,13 @@ jobs:
         "C:\Program Files (x86)\Inno Setup 6\iscc.exe" "/DVERSION=%VERSION%" "/DQT_DIR=%QT_ROOT_DIR%" "/DPSQL_DIR=C:/Program Files/PostgreSQL/14" "/DSSL_DIR=C:\openssl\bin" quickevent/quickevent.iss
       shell: cmd
 
+    - name: Review WHERE
+      run: |
+        where libstdc++-6.dll /T
+        where libgcc_s_seh-1.dll /T
+        where libwinpthread-1.dll /T
+      shell: cmd 
+
     - name: Save setup
       uses: actions/upload-artifact@v4
       with:
