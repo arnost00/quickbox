@@ -110,6 +110,7 @@ jobs:
         where libgcc_s_seh-1.dll /T
         where libwinpthread-1.dll /T
         C:/mingw64/bin/gcc --version
+        D:\a\quickbox\Qt\Tools\mingw810_64\bin\gcc --version
         gcc.exe --version
         c++ --version
         mingw32-make.exe --version
@@ -118,6 +119,8 @@ jobs:
         where c++.exe /T
         echo PATH - %PATH%
         echo GITHUB_PATH - $env:GITHUB_PATH
+        dir D:\a\quickbox\Qt
+        dir D:\a\quickbox\Qt\Tools
       shell: cmd 
 
     - name: Build
