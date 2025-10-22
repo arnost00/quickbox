@@ -118,9 +118,9 @@ jobs:
         where mingw32-make.exe /T
         where c++.exe /T
         echo PATH - %PATH%
-        echo GITHUB_PATH - $env:GITHUB_PATH
         dir D:\a\quickbox\Qt
-        dir D:\a\quickbox\Qt\Tools
+        dir D:\a\quickbox\Qt\5.15.2
+        dir D:\a\quickbox\Qt\5.15.2\mingw81_64\bin
       shell: cmd 
 
     - name: Build
