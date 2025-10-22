@@ -94,12 +94,17 @@ jobs:
         host: 'windows'
         arch: 'win64_mingw81'
 
+    - name: Env echo
+      run: set
+
+    - name: Set path for MinGw81
+      run: echo "D:\a\quickbox\Qt\Tools\mingw810_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
     - name: WHERE and PATHS and GCC ver
       run: |
         where libstdc++-6.dll /T
         where libgcc_s_seh-1.dll /T
         where libwinpthread-1.dll /T
-        echo %PATH%
         C:/mingw64/bin/gcc --version
         gcc.exe --version
         c++ --version
@@ -107,6 +112,8 @@ jobs:
         where gcc.exe /T
         where mingw32-make.exe /T
         where c++.exe /T
+        echo PATH - %PATH%
+        echo GITHUB_PATH - $env:GITHUB_PATH
       shell: cmd 
 
     - name: Build
