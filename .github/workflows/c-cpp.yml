@@ -11,7 +11,7 @@ env:
 
 jobs:
   build_linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
       with:
@@ -33,7 +33,7 @@ jobs:
   
     - name: Get AppImageTool
       run: |
-        curl --silent "https://api.github.com/repos/AppImage/AppImageKit/releases/latest" | jq -r '.assets[] | select(.name == "appimagetool-x86_64.AppImage").browser_download_url' | sudo xargs curl -L -o /opt/appimagetool-x86_64.AppImage --create-dirs --url
+        curl --silent "https://api.github.com/repos/AppImage/AppImageKit/releases/latest" | jq -r '.assets[] | select(.name == "obsolete-appimagetool-x86_64.AppImage").browser_download_url' | sudo xargs curl -L -o /opt/appimagetool-x86_64.AppImage --create-dirs --url
         sudo chmod +x /opt/appimagetool-x86_64.AppImage
 
     - name: Build AppImage
@@ -55,7 +55,7 @@ jobs:
 
 
   build_windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     defaults:
       run:
         shell: bash
@@ -72,11 +72,11 @@ jobs:
         path: |
           C:/openssl/bin/libssl-1_1-x64.dll
           C:/openssl/bin/libcrypto-1_1-x64.dll
-          C:/Program Files/PostgreSQL/14/bin/libiconv-2.dll
-          C:/Program Files/PostgreSQL/14/bin/libintl-9.dll
-          C:/Program Files/PostgreSQL/14/bin/liblz4.dll
-          C:/Program Files/PostgreSQL/14/bin/zlib1.dll
-          C:/Program Files/PostgreSQL/14/bin/libpq.dll
+          %PGBIN%/libiconv-2.dll
+          %PGBIN%/libintl-9.dll
+          %PGBIN%/liblz4.dll
+          %PGBIN%/zlib1.dll
+          %PGBIN%/libpq.dll
         key: ${{ runner.os }}-Libraries
 
     - name: Get OpenSSL and PostgreSQL libraries
@@ -93,6 +93,12 @@ jobs:
         version: ${{ env.QT_VERSION }}
         host: 'windows'
         arch: 'win64_mingw81'
+
+    - name: Set up MinGW
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x64
+        version: 8.1
 
     - name: Build
       run: |
