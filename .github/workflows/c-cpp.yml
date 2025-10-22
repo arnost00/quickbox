@@ -99,9 +99,10 @@ jobs:
       shell: cmd 
 
     - name: Set path for MinGw81
-      run: set path=D:\a\quickbox\Qt\Tools\mingw810_64\bin;%path%
-      shell: cmd 
-#      run: echo "D:\a\quickbox\Qt\Tools\mingw810_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#      run: set path=D:\a\quickbox\Qt\Tools\mingw810_64\bin;%path%
+#      shell: cmd 
+      run: echo "D:\a\quickbox\Qt\Tools\mingw810_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      shell: pwsh
 
     - name: WHERE and PATHS and GCC ver
       run: |
