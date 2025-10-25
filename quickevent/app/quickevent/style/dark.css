@@ -32,6 +32,10 @@ qf--gui--dialogs--internal--CaptionFrame QLabel {
 	color:black;
 }
 
+QLabel.filterLabel {
+	background-color: #525252;
+}
+
 QToolButton		{background-color: #656565; border-radius: 4px;}
 QToolButton:hover	{background-color: #b5b5b5; }
 QToolButton:checked	{background-color: #ffa500;}

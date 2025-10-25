@@ -54,6 +54,7 @@ void TableViewToolBar::setTableView(TableView *table_view)
 		auto *style = Style::instance();
 		QPixmap px = style->pixmap("find");
 		lbl->setPixmap(px);
+		lbl->setProperty("class", "filterLabel");
 		addWidget(lbl);
 		addWidget(m_filterCombo);
 
