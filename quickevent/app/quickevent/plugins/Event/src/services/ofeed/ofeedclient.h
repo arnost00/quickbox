@@ -54,6 +54,7 @@ private:
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
 	void sendCompetitorChange(QString json_body, int competitor_id);
 	void sendNewCompetitor(QString json_body);
+	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);
 	void onCompetitorReadOut(int competitor_id);
 };
