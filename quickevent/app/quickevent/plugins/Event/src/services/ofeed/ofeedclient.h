@@ -44,6 +44,15 @@ public:
 	void setEventId(QString eventId);
 	QString eventPassword() const;
 	void setEventPassword(QString eventPassword);
+	QDateTime lastChangelogCall();
+	void setLastChangelogCall(QDateTime lastChangelogCall);
+	int getCompetitorExternalId(int ofeed_competitor_id);
+	void getChangesFromStart();
+	void processNewChangesFromStart(QJsonObject data_object);
+	void processCardChange(int runs_id, const QString &previous_value, const QString &new_value);
+	void processStatusChange(int runs_id, const QString &previous_value, const QString &new_value);
+	void processNoteChange(int runs_id, const QString &new_value);
+	void storeChange(const QJsonObject &change);
 private:
 	QTimer *m_exportTimer = nullptr;
 	QNetworkAccessManager *m_networkManager = nullptr;
@@ -56,7 +65,7 @@ private:
 	void sendNewCompetitor(QString json_body);
 	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);
-	void onCompetitorReadOut(int competitor_id);
+	void onCompetitorReadOut(int competitor_id);	
 };
 
 }}

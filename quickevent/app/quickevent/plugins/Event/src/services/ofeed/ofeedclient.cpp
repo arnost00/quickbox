@@ -30,12 +30,15 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QTimeZone>
-
-#include <iostream>
-#include <sstream>
+#include <QUrl>
+#include <QUrlQuery>
+#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSet>
+
+#include <iostream>
+#include <sstream>
 
 using Event::EventPlugin;
 using qf::gui::framework::getPlugin;
@@ -112,7 +115,7 @@ void OFeedClient::init()
 void OFeedClient::onExportTimerTimeOut()
 {
 	// exportStartListIofXml3();
-	// getChangesFromStart();
+	getChangesFromStart();
 	exportResultsIofXml3();
 }
 
@@ -196,23 +199,8 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 		std::cout << "DEBUG: Competitor ADDED, competitor id: " << competitor_id << std::endl;
 		onCompetitorAdded(competitor_id);
 	}
-	//TODO: handle deleted competitor
+	// TODO: handle deleted competitor
 }
-
-// void OFeedClient::getChangesFromStart(){
-// TODO
-// Get changes
-// Update the database with changed values
-// qf::core::sql::Query q(sqlModel()->connectionName());
-// 		q.prepare("UPDATE runs SET siId=:siId WHERE competitorId=:competitorId", qf::core::Exception::Throw);
-// 		q.bindValue(":competitorId", competitor_id);
-// 		q.bindValue(":siId", siid());
-// 		q.exec(qf::core::Exception::Throw);
-// https://github.com/Quick-Box/quickevent/blob/master/quickevent/app/quickevent/plugins/Event/src/eventplugin.cpp#L434
-// https://github.com/Quick-Box/quickevent/blob/master/quickevent/app/quickevent/plugins/Competitors/src/competitorwidget.cpp#L191
-// Save them in the config table
-// Display the processed records in the table
-// }
 
 QString OFeedClient::hostUrl() const
 {
@@ -230,6 +218,39 @@ QString OFeedClient::eventPassword() const
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	return getPlugin<EventPlugin>()->eventConfig()->value("ofeed.eventPassword.E" + QString::number(current_stage)).toString();
+}
+
+QDateTime OFeedClient::lastChangelogCall() {
+    int current_stage = getPlugin<EventPlugin>()->currentStageId();
+    QString key = "ofeed.lastChangelogCall.E" + QString::number(current_stage);
+
+    // Retrieve the stored value from the configuration
+    QVariant value = getPlugin<EventPlugin>()->eventConfig()->value(key);
+
+    // Check if the value exists
+    if (!value.isValid() || value.toString().isEmpty()) {
+        // No valid value exists, set the initial value
+        QDateTime initialValue = QDateTime::fromSecsSinceEpoch(0); // Default to Unix epoch (1970-01-01T00:00:00Z)
+        getPlugin<EventPlugin>()->eventConfig()->setValue(key, initialValue.toString(Qt::ISODate));
+        getPlugin<EventPlugin>()->eventConfig()->save("ofeed");
+        qDebug() << "No lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
+        return initialValue;
+    }
+
+    // Convert the stored string to QDateTime
+    QDateTime lastChangelog = QDateTime::fromString(value.toString(), Qt::ISODate);
+
+    // Check if the conversion was successful
+    if (!lastChangelog.isValid()) {
+        // If invalid, set the default value
+        QDateTime initialValue = QDateTime::fromSecsSinceEpoch(0); // Default to Unix epoch
+        getPlugin<EventPlugin>()->eventConfig()->setValue(key, initialValue.toString(Qt::ISODate));
+        getPlugin<EventPlugin>()->eventConfig()->save("ofeed");
+        qDebug() << "Invalid lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
+        return initialValue;
+    }
+
+    return lastChangelog;
 }
 
 void OFeedClient::setHostUrl(QString hostUrl)
@@ -250,6 +271,13 @@ void OFeedClient::setEventPassword(QString eventPassword)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue("ofeed.eventPassword.E" + QString::number(current_stage), eventPassword);
+	getPlugin<EventPlugin>()->eventConfig()->save("ofeed");
+}
+
+void OFeedClient::setLastChangelogCall(QDateTime lastChangelogCall)
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	getPlugin<EventPlugin>()->eventConfig()->setValue("ofeed.lastChangelogCall.E" + QString::number(current_stage), lastChangelogCall);
 	getPlugin<EventPlugin>()->eventConfig()->save("ofeed");
 }
 
@@ -344,6 +372,198 @@ else {
 	}
 }
 reply->deleteLater(); });
+}
+
+int OFeedClient::getCompetitorExternalId(int ofeed_competitor_id){
+	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
+	QNetworkRequest request(url);
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	QNetworkReply *reply = m_networkManager->get(request);
+
+	connect(reply, &QNetworkReply::finished, this, [=]()
+	{
+		if(reply->error()) {
+			qfError() << "OFeed [competitor detail]:" << reply->errorString();
+		}
+		else {
+			QByteArray response = reply->readAll();
+			QJsonDocument json_response = QJsonDocument::fromJson(response);
+			QJsonObject json_object = json_response.object();
+
+			
+			if (json_object.contains("error") && !json_object["error"].toBool()) {
+				QJsonObject results_object = json_object["results"].toObject();
+				QJsonObject data_object = results_object["data"].toObject();
+
+				if (data_object.contains("externalId")){
+					return data_object["externalId"].toInt();
+				}
+				
+			} else {
+				qfError() << "OFeed [competitor detail] Unexpected response:" << response;
+			}
+		}
+		reply->deleteLater();
+	});
+}
+
+void OFeedClient::getChangesFromStart(){
+	// Get changes
+	// Prepare the Authorization header base64 username:password
+	QString combined = eventId() + ":" + eventPassword();
+	QByteArray base_64_auth = combined.toUtf8().toBase64();
+	QString auth_value = "Basic " + QString(base_64_auth);
+	QByteArray auth_header = auth_value.toUtf8();
+
+	QDateTime lastChangelogCallValue = lastChangelogCall();
+	QDateTime initialValue = QDateTime::fromSecsSinceEpoch(0); // Unix epoch
+	// Create the URL for the POST request
+	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/changelog?origin=START");
+
+	// Create a QUrlQuery object to manage query parameters
+    QUrlQuery query;
+
+    // Check if lastChangelogCall is valid
+    if (lastChangelogCallValue != initialValue) {
+        // Add the 'since' parameter with the ISO 8601 UTC datetime
+        query.addQueryItem("since", lastChangelogCallValue.toString(Qt::ISODate));
+    }
+
+    // Apply the query to the URL
+    url.setQuery(query);
+	qDebug() << "Changelog request URL:" << url.toString();
+
+	// Create the network request
+	QNetworkRequest request(url);
+	request.setRawHeader("Authorization", auth_header);
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	// Send request
+	QDateTime requestExecutonTime = QDateTime::currentDateTime();
+	QNetworkReply *reply = m_networkManager->get(request);
+
+	connect(reply, &QNetworkReply::finished, this, [=]()
+	{
+		if(reply->error()) {
+			qfError() << "OFeed [changelog]:" << reply->errorString();
+		}
+		else {
+			QByteArray response = reply->readAll();
+			QJsonDocument json_response = QJsonDocument::fromJson(response);
+			QJsonObject json_object = json_response.object();
+
+			
+			if (json_object.contains("error") && !json_object["error"].toBool()) {
+				QJsonObject results_object = json_object["results"].toObject();
+				QJsonObject data_object = results_object["data"].toObject();
+				processNewChangesFromStart(data_object);				
+				
+			} else {
+				qfError() << "OFeed [changelog] Unexpected response:" << response;
+			}
+		}
+		reply->deleteLater();
+	});
+
+	// Update last changelog call
+	setLastChangelogCall(requestExecutonTime);
+}
+
+void OFeedClient::processNewChangesFromStart(QJsonObject data_object){
+	if (data_object.isEmpty()) {
+        qWarning() << "No changes to process: 'data_object' is empty.";
+        return;
+    }
+
+    for (auto key : data_object.keys()) {
+        QJsonValue value = data_object.value(key);
+
+        if (!value.isObject()) {
+            qWarning() << "Invalid change item: not a JSON object.";
+            continue;
+        }
+
+        QJsonObject change = value.toObject();
+
+        // Extract relevant fields
+        int ofeed_competitor_id = change["competitorId"].toInt();
+		int runs_id = getCompetitorExternalId(ofeed_competitor_id);
+        QString type = change["type"].toString();
+        QString previous_value = change["previousValue"].toString();
+        QString new_value = change["newValue"].toString();
+
+        qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type;
+
+        // Handle each type of change
+        if (type == "si_card_change") {
+            processCardChange(runs_id, previous_value, new_value);
+        } else if (type == "status_change" && new_value != "Active") {
+            processStatusChange(runs_id, previous_value, new_value);
+        } else if (type == "note_change") {
+            processNoteChange(runs_id, new_value);
+        } else {
+            qWarning() << "Unknown change type:" << type;
+        }
+
+		// Store the processed change
+    	storeChange(change);
+    }
+}
+
+void OFeedClient::processCardChange(int runs_id, const QString &previous_value, const QString &new_value) {
+    qDebug() << "Processing SI card change for runsId:" << runs_id << "from" << previous_value << "to" << new_value;
+
+    qf::core::sql::Query q;
+    q.prepare("UPDATE runs SET siId=:siId WHERE id=:runsId", qf::core::Exception::Throw);
+    q.bindValue(":runsId", runs_id);
+    q.bindValue(":siId", new_value.toInt());
+    q.exec(qf::core::Exception::Throw);
+}
+
+void OFeedClient::processStatusChange(int runs_id, const QString &previous_value, const QString &new_value) {
+    qDebug() << "Processing status change for runsId:" << runs_id << "from" << previous_value << "to" << new_value;
+	bool notStart = new_value == "DidNotStart" ? true : false;
+
+    qf::core::sql::Query q;
+    q.prepare("UPDATE runs SET notStart=:notStart WHERE id=:runsId", qf::core::Exception::Throw);
+    q.bindValue(":runsId", runs_id);
+    q.bindValue(":notStart", notStart);
+    q.exec(qf::core::Exception::Throw);
+}
+
+void OFeedClient::processNoteChange(int runs_id, const QString &new_value) {
+    qDebug() << "Processing note change for runsId:" << runs_id << "with new note:" << new_value;
+	int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
+
+    qf::core::sql::Query q;
+    q.prepare("UPDATE competitors SET note = CASE WHEN note IS NULL OR note = '' THEN :newNote ELSE note || ', ' || :newNote END WHERE id = :competitorId", qf::core::Exception::Throw);
+    q.bindValue(":competitorId", competitor_id);
+    q.bindValue(":newNote", new_value);
+    q.exec(qf::core::Exception::Throw);
+}
+
+void OFeedClient::storeChange(const QJsonObject &change) {
+    qDebug() << "Storing processed change to the database table:" << change;
+
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	int ofeed_competitor_id = change["competitorId"].toInt();
+	int runs_id = getCompetitorExternalId(ofeed_competitor_id);
+	int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
+
+	QString previous_value = change["previousValue"].isString() ? change["previousValue"].toString() : QString();
+	QString new_value = change["newValue"].isString() ? change["newValue"].toString() : QString();
+	qf::core::sql::Query q;
+	q.prepare("INSERT INTO qxchanges (data_type, data, source, user_id, stage_id, change_id, created)"
+			" VALUES (:data_type, :data, :source, :user_id, :stage_id, :change_id, :created)");
+	q.bindValue(":data_type", change["type"]);
+	q.bindValue(":data", "previousValue: " + previous_value + ", newValue: " + new_value);
+	q.bindValue(":source", "OFeed");
+	q.bindValue(":user_id", competitor_id);
+	q.bindValue(":stage_id", current_stage);
+	q.bindValue(":change_id", change["id"]);
+	q.bindValue(":created", change["createdAt"]);
+	q.exec(qf::core::Exception::Throw);
 }
 
 static QString getIofResultStatus(
