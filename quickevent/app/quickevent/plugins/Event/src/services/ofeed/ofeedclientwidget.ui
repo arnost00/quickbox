@@ -28,7 +28,7 @@
         <x>0</x>
         <y>20</y>
         <width>281</width>
-        <height>111</height>
+        <height>117</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout">
@@ -77,7 +77,10 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="edHostUrl">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;https://api.orienteeringfeed.com&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OFeed instance url&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>https://api.orienteerfeed.com</string>
          </property>
         </widget>
        </item>
@@ -91,7 +94,7 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="edEventId">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;cm2kwm3dz0008s43pa1i7rngb&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Event id provided in the Settings section on the web site. Can be copied from OFeed url as well.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -105,7 +108,7 @@
        <item row="3" column="1">
         <widget class="QLineEdit" name="edEventPassword">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;gps-stone-map99%&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Password that was generated in the Settings section.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -128,11 +131,12 @@
       <item>
        <widget class="QLabel" name="upload_description">
         <property name="text">
-         <string>Start lists and results are automatically exported at specified intervals, with changes such as edited competitor data or new competitors being synced in real-time. Both the results and start lists can also be exported manually using the buttons below. Additionally, when the service is active, individual competitor data is sent after readout and upon saving the competitor dialog.
-
-If you encounter any unexpected errors, please contact us at support@orienteerfeed.com or create an issue on our GitHub page.</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start lists and results are automatically exported at specified intervals, with changes such as edited competitor data or new competitors being synced in real-time. Both the results and start lists can also be exported manually using the buttons below. Additionally, when the service is active, individual competitor data is sent after readout and upon saving the competitor dialog. Check the &lt;a href=&quot;https://docs.orienteerfeed.com/&quot; target=&quot;_blank&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;docs&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;If you encounter any unexpected errors, please &lt;a href=&quot;mailto:support@orienteerfeed.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;contact us&lt;/span&gt;&lt;/a&gt; or create an issue on our GitHub &lt;a href=&quot;https://github.com/orienteerfeed/ofeed/issues&quot; target=&quot;_blank&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;page&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="openExternalLinks">
          <bool>true</bool>
         </property>
        </widget>
@@ -174,7 +178,7 @@ If you encounter any unexpected errors, please contact us at support@orienteerfe
    <item>
     <widget class="QGroupBox" name="groupGetData">
      <property name="title">
-      <string>Get changes from the start</string>
+      <string>Processing changes</string>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -189,20 +193,10 @@ If you encounter any unexpected errors, please contact us at support@orienteerfe
        </rect>
       </property>
       <property name="text">
-       <string>Sync changes from the start to the Quickevent (start status, new card numbers and notes).</string>
+       <string>Changes are processed in the separated module called Online changes.</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QTableWidget" name="tableChanges">
-      <property name="geometry">
-       <rect>
-        <x>-5</x>
-        <y>81</y>
-        <width>291</width>
-        <height>181</height>
-       </rect>
       </property>
      </widget>
     </widget>
