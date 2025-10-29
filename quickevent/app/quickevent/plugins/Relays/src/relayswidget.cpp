@@ -364,7 +364,7 @@ QVariant RelaysWidget::startListByClubsTableData(bool with_vacants)
 				.orderBy("club")
 				.as("relay_clubs");
 		if (!with_vacants)
-			qb1.where("relays.isRelRunning");
+			qb1.where("relays.isRunning");
 		qf::core::sql::QueryBuilder qb;
 		qb.select2("relay_clubs", "club")
 				.select2("clubs", "name")
