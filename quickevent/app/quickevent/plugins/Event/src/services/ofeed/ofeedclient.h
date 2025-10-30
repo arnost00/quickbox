@@ -46,9 +46,11 @@ public:
 	void setEventPassword(QString eventPassword);
 	QDateTime lastChangelogCall();
 	void setLastChangelogCall(QDateTime lastChangelogCall);
-	int getCompetitorExternalId(int ofeed_competitor_id);
+	QString fetchCompetitionTimezoneSync();
+	void getCompetitorExternalId(int ofeed_competitor_id, std::function<void(int)> callback);
+	QDateTime getRequestExecutionTime();
 	void getChangesFromStart();
-	void processNewChangesFromStart(QJsonObject data_object);
+	void processNewChangesFromStart(QJsonArray data_array);
 	void processCardChange(int runs_id, const QString &previous_value, const QString &new_value);
 	void processStatusChange(int runs_id, const QString &previous_value, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
