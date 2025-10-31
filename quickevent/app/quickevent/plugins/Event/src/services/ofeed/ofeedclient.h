@@ -50,8 +50,7 @@ public:
 	QDateTime lastChangelogCall();
 	void setLastChangelogCall(QDateTime lastChangelogCall);
 
-	void getCompetitorExternalId(int ofeed_competitor_id, std::function<void(int)> callback);
-	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback){
+	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback);
 	void getChangesFromStart();
 	void processNewChangesFromStart(QJsonArray data_array);
 	void processCardChange(int runs_id, const QString &new_value);
@@ -67,7 +66,7 @@ private:
 	void onExportTimerTimeOut();
 	void init();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
-	void sendCompetitorChange(QString json_body, int competitor_id);
+	void sendCompetitorChange(QString json_body, int competitor_id, bool usingExternalId);
 	void sendNewCompetitor(QString json_body);
 	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);

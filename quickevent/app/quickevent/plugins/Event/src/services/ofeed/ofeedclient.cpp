@@ -206,7 +206,8 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 QString OFeedClient::hostUrl() const
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	return getPlugin<EventPlugin>()->eventConfig()->value(serviceName().toLower() + ".hostUrl.E" + QString::number(current_stage)).toString();
+	QString key = serviceName().toLower() + ".hostUrl.E" + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->eventConfig()->value(key, "https://api.orienteerfeed.com").toString();
 }
 
 QString OFeedClient::eventId() const
@@ -224,7 +225,8 @@ QString OFeedClient::eventPassword() const
 QString OFeedClient::changelogOrigin() const
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	return getPlugin<EventPlugin>()->eventConfig()->value(serviceName().toLower() + ".changelogOrigin.E" + QString::number(current_stage)).toString();
+	QString key = serviceName().toLower() + ".changelogOrigin.E" + QString::number(current_stage);
+    return getPlugin<EventPlugin>()->eventConfig()->value(key, "START").toString();
 }
 
 QDateTime OFeedClient::lastChangelogCall() {
@@ -295,9 +297,13 @@ void OFeedClient::setLastChangelogCall(QDateTime lastChangelogCall)
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 
-void OFeedClient::sendCompetitorChange(QString json_body, int runs_id)
+/// @brief Update competitors data by OFeed id or external id
+/// @param json_body body with the competitors data
+/// @param competitor_or_external_id ofeed competitor id or external id (for QE runs.id)
+/// @param usingExternalId indicator which id is used
+void OFeedClient::sendCompetitorChange(QString json_body, int competitor_or_external_id, bool usingExternalId = true)
 {
-	std::cout << serviceName().toStdString() + " - request to change competitor with run id: " << runs_id << std::endl;
+	std::cout << serviceName().toStdString() + " - request to change competitor with run id: " << competitor_or_external_id << std::endl;
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
 	QByteArray base_64_auth = combined.toUtf8().toBase64();
@@ -305,7 +311,14 @@ void OFeedClient::sendCompetitorChange(QString json_body, int runs_id)
 	QByteArray auth_header = auth_value.toUtf8();
 
 	// Create the URL for the PUT request
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(runs_id) + "/external-id");
+	// QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(competitor_or_external_id) + "/external-id");
+	QUrl url = hostUrl();
+	if(usingExternalId){
+		url.setPath(QStringLiteral("/rest/v1/events/%1/competitors/%2/external-id").arg(eventId(), QString::number(competitor_or_external_id)));
+	}
+	else{
+		url.setPath(QStringLiteral("/rest/v1/events/%1/competitors/%2").arg(eventId(), QString::number(competitor_or_external_id)));
+	}
 
 	// Create the network request
 	QNetworkRequest request(url);
@@ -388,47 +401,6 @@ else {
 reply->deleteLater(); });
 }
 
-void OFeedClient::getCompetitorExternalId(int ofeed_competitor_id, std::function<void(int)> callback){
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
-	QNetworkRequest request(url);
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-	QNetworkReply *reply = m_networkManager->get(request);
-
-	connect(reply, &QNetworkReply::finished, this, [=]()
-	{
-		// Default value
-		int external_id = -1;
-
-		if(reply->error()) {
-			qfError() << serviceName().toStdString() + " [competitor detail]:" << reply->errorString();
-		}
-		else {
-			QByteArray response = reply->readAll();
-			QJsonDocument json_response = QJsonDocument::fromJson(response);
-			QJsonObject json_object = json_response.object();
-
-			
-			if (json_object.contains("error") && !json_object["error"].toBool()) {
-				QJsonObject results_object = json_object["results"].toObject();
-				QJsonObject data_object = results_object["data"].toObject();
-
-				if (data_object.contains("externalId")){
-					QString external_id_str = data_object["externalId"].toString();
-					external_id = external_id_str.toInt();
-				}
-				
-			} else {
-				qfError() << serviceName().toStdString() + " [competitor detail] Unexpected response:" << response;
-			}
-		}
-		reply->deleteLater();
-
-		callback(external_id);
-
-	});
-}
-
 void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback){
 	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
 	QNetworkRequest request(url);
@@ -461,7 +433,7 @@ void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<voi
 		}
 		reply->deleteLater();
 
-		callback(external_id);
+		callback(data_object);
 
 	});
 }
@@ -567,8 +539,10 @@ void OFeedClient::processNewChangesFromStart(QJsonArray data_array){
         QString previous_value = change["previousValue"].toString();
         QString new_value = change["newValue"].toString();
 		
-		getCompetitorExternalId(ofeed_competitor_id, [=, this](int runs_id) {
-            // Continue processing after getting the externalId
+		getCompetitorDetail(ofeed_competitor_id, [=, this](QJsonObject competitor_detail) {
+            // Extract externalId = runs.id from teh competitors detail
+			QString external_id_str = competitor_detail["externalId"].toString();
+			int runs_id = external_id_str.toInt();
             qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
 
 			// Handle each type of change
@@ -671,13 +645,22 @@ void OFeedClient::processNoteChange(int runs_id, const QString &new_value) {
 }
 
 void OFeedClient::proccessNewRunner(int ofeed_competitor_id) {
-    qDebug() << "TODO: Storing a new runner:" << change;
+    qDebug() << "TODO: Storing a new runner (OFeed id):" << ofeed_competitor_id;
+	// getCompetitorDetail(ofeed_competitor_id, [=, this](QJsonObject competitor_detail) {
+		// Create the competitor in QE
+		// CompetitorDocument::saveData();
+		// Get runs.id for active specified stage
+		// Update externalId at OFeed
+		// sendCompetitorChange(json_body, ofeed_competitor_id, false)
+	// });
 }
 
 void OFeedClient::storeChange(const QJsonObject &change) {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	int ofeed_competitor_id = change["competitorId"].toInt();
-	getCompetitorExternalId(ofeed_competitor_id, [=](int runs_id) {
+	getCompetitorDetail(ofeed_competitor_id, [=](QJsonObject competitor_detail) {
+		QString external_id_str = competitor_detail["externalId"].toString();
+		int runs_id = external_id_str.toInt();
 		int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
 		QString no_data = "(undefined)";
 	
@@ -690,23 +673,23 @@ void OFeedClient::storeChange(const QJsonObject &change) {
 		QJsonDocument change_json_doc(change);
     	QString change_json = QString::fromUtf8(change_json_doc.toJson(QJsonDocument::Compact));
 
-		QString origin = change["origin"].isString() ? change["origin"].toString() : no_data;
 		int change_id = change["id"].toInt();
 		auto created = QDateTime::fromString(change["createdAt"].toString(), Qt::ISODate);
 
 		qf::core::sql::Query q;
 		try
 		{
-			q.prepare("INSERT INTO qxchanges (data_type, data, orig_data, source, user_id, stage_id, change_id, created)"
-					  " VALUES (:dataType, :data, :origData, :source, :userId, :stageId, :changeId, :created)");
+			q.prepare("INSERT INTO qxchanges (data_type, data, orig_data, source, user_id, stage_id, change_id, created, status_message)"
+					  " VALUES (:dataType, :data, :origData, :source, :userId, :stageId, :changeId, :created, :statusMessage)");
 			q.bindValue(":dataType", change["type"].toString());
-			q.bindValue(":data", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
-			q.bindValue(":origData", change_json);
-			q.bindValue(":source", "Origin: " + origin);
+			q.bindValue(":data", new_value);
+			q.bindValue(":origData", previous_value);
+			q.bindValue(":source", change_json);
 			q.bindValue(":userId", competitor_id);
 			q.bindValue(":stageId", current_stage);
 			q.bindValue(":changeId", change_id);
 			q.bindValue(":created", created);
+			q.bindValue(":statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
 			if (!q.exec(qf::core::Exception::Throw))
 			{
 				qWarning() << "Database query failed:" << q.lastError().text();

@@ -28,7 +28,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->edHostUrl->setText(svc->hostUrl());
 		ui->edEventId->setText(svc->eventId());
 		ui->edEventPassword->setText(svc->eventPassword());
-		ui->edOrigin->setText(svc->changelogOrigin());
+		ui->edChangelogOrigin->setText(svc->changelogOrigin());
 	}
 
 	connect(ui->btExportResultsXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportResultsXml30Clicked);
@@ -66,7 +66,7 @@ bool OFeedClientWidget::saveSettings()
 		svc->setHostUrl(ui->edHostUrl->text().trimmed());
 		svc->setEventId(ui->edEventId->text().trimmed());
 		svc->setEventPassword(ui->edEventPassword->text().trimmed());
-		svc->setChangelogOrigin(ui->edOrigin->text().trimmed());
+		svc->setChangelogOrigin(ui->edChangelogOrigin->text().trimmed());
 		svc->setSettings(ss);
 	}
 	return true;

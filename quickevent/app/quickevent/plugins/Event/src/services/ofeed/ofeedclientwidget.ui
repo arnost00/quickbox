@@ -82,6 +82,9 @@
          <property name="text">
           <string>https://api.orienteerfeed.com</string>
          </property>
+         <property name="placeholderText">
+          <string>https://api.orienteerfeed.com</string>
+         </property>
         </widget>
        </item>
        <item row="2" column="0">
@@ -96,6 +99,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Event id provided in the Settings section on the web site. Can be copied from OFeed url as well.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="placeholderText">
+          <string>From OFeed settings page</string>
+         </property>
         </widget>
        </item>
        <item row="3" column="0">
@@ -109,6 +115,9 @@
         <widget class="QLineEdit" name="edEventPassword">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Password that was generated in the Settings section.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="placeholderText">
+          <string>From OFeed settings page</string>
          </property>
         </widget>
        </item>
@@ -212,7 +221,7 @@
        <string>Origin</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="edOrigin">
+     <widget class="QLineEdit" name="edChangelogOrigin">
       <property name="geometry">
        <rect>
         <x>80</x>
@@ -226,6 +235,9 @@
       </property>
       <property name="readOnly">
        <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>START</string>
       </property>
      </widget>
     </widget>
