@@ -38,22 +38,26 @@ public:
 	void exportStartListIofXml3(std::function<void()> on_success = nullptr);
 	void loadSettings() override;
 	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
+
 	QString hostUrl() const;
 	void setHostUrl(QString eventId);
 	QString eventId() const;
 	void setEventId(QString eventId);
 	QString eventPassword() const;
 	void setEventPassword(QString eventPassword);
+	QString changelogOrigin() const;
+	void setChangelogOrigin(QString changelogOrigin);
 	QDateTime lastChangelogCall();
 	void setLastChangelogCall(QDateTime lastChangelogCall);
-	QString fetchCompetitionTimezoneSync();
+
 	void getCompetitorExternalId(int ofeed_competitor_id, std::function<void(int)> callback);
-	QDateTime getRequestExecutionTime();
+	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback){
 	void getChangesFromStart();
 	void processNewChangesFromStart(QJsonArray data_array);
-	void processCardChange(int runs_id, const QString &previous_value, const QString &new_value);
-	void processStatusChange(int runs_id, const QString &previous_value, const QString &new_value);
+	void processCardChange(int runs_id, const QString &new_value);
+	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
+	void proccessNewRunner(int ofeed_competitor_id);
 	void storeChange(const QJsonObject &change);
 private:
 	QTimer *m_exportTimer = nullptr;

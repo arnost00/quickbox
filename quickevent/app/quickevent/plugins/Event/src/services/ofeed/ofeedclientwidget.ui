@@ -187,15 +187,44 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>20</y>
-        <width>241</width>
+        <y>50</y>
+        <width>261</width>
         <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>Changes are processed in the separated module called Online changes.</string>
+       <string>Changes from the origin specified (permanent value at this moment) are processed automatically and visualized in &lt;b&gt;qxchange&lt;/b&gt; modul.</string>
       </property>
       <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="origin">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>20</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Origin</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="edOrigin">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>23</y>
+        <width>113</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>START</string>
+      </property>
+      <property name="readOnly">
        <bool>true</bool>
       </property>
      </widget>
