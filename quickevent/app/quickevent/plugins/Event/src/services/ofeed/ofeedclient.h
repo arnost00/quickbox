@@ -51,6 +51,7 @@ public:
 	void setLastChangelogCall(QDateTime lastChangelogCall);
 
 	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback);
+	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesFromStart();
 	void processNewChangesFromStart(QJsonArray data_array);
 	void processCardChange(int runs_id, const QString &new_value);
