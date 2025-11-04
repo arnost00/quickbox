@@ -197,16 +197,25 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	}
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_ADDED))
 	{
-		int competitor_id = data.toInt();
-		qDebug() << "DB event competitor ADDED, competitor id: " << competitor_id;
-		onCompetitorAdded(competitor_id);
+		if (isInsertFromOFeed)
+		{
+			qDebug() << "Competitor added from OFeed, no need to send it back as a new competitor from QE as the competitor already exists in OFeed";
+			// Set back default value
+			isInsertFromOFeed = false;
+		}
+		else
+		{
+			int competitor_id = data.toInt();
+			qDebug() << "DB event competitor ADDED, competitor id: " << competitor_id;
+			onCompetitorAdded(competitor_id);
+		}
 	}
 	// TODO: handle deleted competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED))
 	{
 		int competitor_id = data.toInt();
 		qDebug() << "DB event competitor DELETED, competitor id: " << competitor_id;
-		// onCompetitorDeleted(competitor_id);
+		onCompetitorDeleted(competitor_id);
 	}	
 }
 
@@ -235,6 +244,8 @@ QString OFeedClient::changelogOrigin() const
 	QString key = serviceName().toLower() + ".changelogOrigin.E" + QString::number(current_stage);
     return getPlugin<EventPlugin>()->eventConfig()->value(key, "START").toString();
 }
+
+bool OFeedClient::isInsertFromOFeed = false;
 
 QDateTime OFeedClient::lastChangelogCall() {
     int current_stage = getPlugin<EventPlugin>()->currentStageId();
@@ -411,6 +422,52 @@ void OFeedClient::sendCompetitorAdded(QString json_body)
 				reply->deleteLater(); });
 }
 
+void OFeedClient::sendCompetitorDeleted(int ofeed_competitor_id)
+{
+	// Prepare the Authorization header base64 username:password
+	QString combined = eventId() + ":" + eventPassword();
+	QByteArray base_64_auth = combined.toUtf8().toBase64();
+	QString auth_value = "Basic " + QString(base_64_auth);
+	QByteArray auth_header = auth_value.toUtf8();
+
+	// Create the URL for the POST request
+	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
+
+	// Create the network request
+	QNetworkRequest request(url);
+	request.setRawHeader("Authorization", auth_header);
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	// Send request
+	QNetworkReply *reply = m_networkManager->deleteResource(request);
+
+	connect(reply, &QNetworkReply::finished, this, [=]()
+			{
+				if(reply->error()) {
+					qfError() << serviceName().toStdString() + " [deleted competitor]:" << reply->errorString();
+				}
+				else {
+					QByteArray response = reply->readAll();
+					QJsonDocument json_response = QJsonDocument::fromJson(response);
+					QJsonObject json_object = json_response.object();
+
+					if (json_object.contains("error") && !json_object["error"].toBool()) {
+						QJsonObject results_object = json_object["results"].toObject();
+						QJsonObject data_object = results_object["data"].toObject();
+
+						if (data_object.contains("message")) {
+							QString data_message = data_object["message"].toString();
+							qfInfo() << serviceName().toStdString() + " [deleted competitor]:" << data_message;
+						} else {
+							qfInfo() << serviceName().toStdString() + " [deleted competitor]: ok, but no data message found.";
+						}
+					} else {
+						qfError() << serviceName().toStdString() + " [deleted competitor] Unexpected response:" << response;
+					}
+				}
+				reply->deleteLater(); });
+}
+
 void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback)
 {
 	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
@@ -497,11 +554,11 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
             QJsonObject json_object = json_response.object();
 
             if (json_object.contains("errors")) {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Errors in response:" << response;
+                qfError() << serviceName().toStdString() + " [GraphQL request] Errors in response:" << json_object;
             } else if (json_object.contains("data")) {
                 data_object = json_object["data"].toObject();
             } else {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Unexpected response:" << response;
+                qfError() << serviceName().toStdString() + " [GraphQL request] Unexpected response:" << json_object;
             }
         }
         reply->deleteLater();
@@ -614,37 +671,59 @@ void OFeedClient::processNewChangesFromStart(QJsonArray data_array)
 		QString previous_value = change["previousValue"].toString();
 		QString new_value = change["newValue"].toString();
 
-		getCompetitorDetail(ofeed_competitor_id, [=, this](QJsonObject competitor_detail)
-							{
-            // Extract externalId = runs.id from teh competitors detail
-			QString external_id_str = competitor_detail["externalId"].toString();
-			int runs_id = external_id_str.toInt();
-            qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
+		QString graphQLquery = R"(
+		query CompetitorById($competitorByIdId: Int!) {
+			competitorById(id: $competitorByIdId) {
+				externalId
+			}
+		}
+		)";
 
-			// Handle each type of change
-			if (type == "si_card_change")
+		QJsonObject variables;
+		variables["competitorByIdId"] = ofeed_competitor_id;
+
+		sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+		{
+			if (!data.isEmpty())
 			{
-				processCardChange(runs_id, new_value);
-			}
-			else if (type == "status_change")
-			{
-				processStatusChange(runs_id, new_value);
-			}
-			else if (type == "note_change")
-			{
-				processNoteChange(runs_id, new_value);
-			}
-			else if (type == "competitor_create")
-			{
-				proccessNewRunner(ofeed_competitor_id);
+				// Extract externalId (= runs.id) from the competitors detail
+				QJsonObject competitor_by_id = data.value("competitorById").toObject();
+
+				// Retrieve the externalId as a string
+				QString external_id_str = competitor_by_id.value("externalId").toString();
+				int runs_id = external_id_str.toInt();
+				qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
+	
+				// Handle each type of change
+				if (type == "si_card_change")
+				{
+					processCardChange(runs_id, new_value);
+				}
+				else if (type == "status_change")
+				{
+					processStatusChange(runs_id, new_value);
+				}
+				else if (type == "note_change")
+				{
+					processNoteChange(runs_id, new_value);
+				}
+				else if (type == "competitor_create")
+				{
+					proccessNewRunner(ofeed_competitor_id);
+				}
+				else
+				{
+					qWarning() << "Unknown change type:" << type;
+				}
+	
+				// Store the processed change
+				storeChange(change); 
 			}
 			else
 			{
-				qWarning() << "Unknown change type:" << type;
+				qDebug() << "No data received or an error occurred.";
 			}
-
-			// Store the processed change
-            storeChange(change); });
+		}, false);
 	}
 }
 
@@ -724,40 +803,72 @@ void OFeedClient::processNoteChange(int runs_id, const QString &new_value)
 void OFeedClient::proccessNewRunner(int ofeed_competitor_id)
 {
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
-	getCompetitorDetail(ofeed_competitor_id, [=, this](QJsonObject competitor_detail)
-						{
-		auto competitor_detail_class = competitor_detail["class"].toObject();
-		// Create the competitor in QE
-		Competitors::CompetitorDocument doc;
-		doc.loadForInsert();
-		doc.setValue("firstName", competitor_detail["firstname"].toString());
-		doc.setValue("lastName", competitor_detail["lastname"].toString());
-		doc.setValue("registration", competitor_detail["registration"].toString());
-		doc.setValue("classid", competitor_detail_class["externalId"].toString());
-		doc.setSiid(competitor_detail["card"].toInt());
-		doc.setValue("note", competitor_detail_class["note"].toString());
-		doc.save();
-		auto competitor_id = doc.value("competitors.id");
+	QString graphQLquery = R"(
+		query CompetitorById($competitorByIdId: Int!) {
+			competitorById(id: $competitorByIdId) {    
+				firstname
+				lastname
+				registration
+				card
+				note
+				class {
+					externalId
+				}
+			}
+		}
+		)";
 		
-		// Get runs.id for active/selected stage
-		int current_stage = getPlugin<EventPlugin>()->currentStageId();
-		int run_id = doc.runsIds().value(current_stage - 1);
-		qDebug() << "DEBUG Runs id: " << run_id;
-		// QF_ASSERT(run_id > 0, "Bad insert", return);
 
-		// Update externalId at OFeed
-		std::stringstream json_payload;
-		json_payload << "{"
-		<< R"("origin":"IT",)"
-		<< R"("externalId":")" << run_id << R"(")"
-		<< "}";
+	QJsonObject variables;
+	variables["competitorByIdId"] = ofeed_competitor_id;
+	sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+	{
+		if (!data.isEmpty())
+		{
+			QJsonObject competitor_by_id = data.value("competitorById").toObject();
+			auto competitor_detail_class = competitor_by_id.value("class").toObject();
+			// Create the competitor in QE
+			Competitors::CompetitorDocument doc;
+			doc.loadForInsert();
+			doc.setValue("firstName", competitor_by_id.value("firstname").toString());
+			doc.setValue("lastName", competitor_by_id.value("lastname").toString());
+			doc.setValue("registration", competitor_by_id.value("registration").toString());
+			doc.setValue("classid", competitor_detail_class.value("externalId").toString());
+			doc.setSiid(competitor_by_id.value("card").toInt());
+			doc.setValue("note", competitor_by_id.value("note").toString());
+			
+			// Change the flag to handle emited db event
+			isInsertFromOFeed = true;
+			
+			// Save emits db event
+			doc.save();		
 
-		std::string json_str = json_payload.str();
-		qDebug() << serviceName().toStdString() + " - new competitor externalId update - json: " << json_str;
-
-		// Convert std::string to QString
-		QString json_body = QString::fromStdString(json_str);
-		sendCompetitorUpdate(json_body, ofeed_competitor_id, false); });
+			auto competitor_id = doc.value("competitors.id");
+			
+			// Get runs.id for current stage
+			int current_stage = getPlugin<EventPlugin>()->currentStageId();
+			int run_id = doc.runsIds().value(current_stage - 1);
+	
+			// Update externalId at OFeed
+			std::stringstream json_payload;
+			json_payload << "{"
+			<< R"("origin":"IT",)"
+			<< R"("externalId":")" << run_id << R"(")"
+			<< "}";
+	
+			std::string json_str = json_payload.str();
+			qDebug() << serviceName().toStdString() + " - new competitor externalId update";
+			// qDebug() <<"Update competitor - body (json) " << json_str;
+	
+			// Convert std::string to QString
+			QString json_body = QString::fromStdString(json_str);
+			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);			
+		}
+		else
+		{
+			qDebug() << "No data received or an error occurred.";
+		}
+	}, false);
 }
 
 void OFeedClient::storeChange(const QJsonObject &change)
@@ -900,8 +1011,6 @@ void OFeedClient::onCompetitorAdded(int competitor_id)
 	if (q.next())
 	{
 		int run_id = q.value("runId").toInt();
-		// TODO: Check if the competitor with externalId=run_id does not already exist - used in case a new competitor is downloaded from OFeed and only externalId is updated
-
 		QString registration = q.value(QStringLiteral("registration")).toString();
 		QString first_name = q.value(QStringLiteral("firstName")).toString();
 		QString last_name = q.value(QStringLiteral("lastName")).toString();
@@ -1200,6 +1309,26 @@ void OFeedClient::onCompetitorEdited(int competitor_id)
 	}
 }
 
+void OFeedClient::onCompetitorDeleted(int competitor_id)
+{
+	int stage_id = getPlugin<EventPlugin>()->currentStageId();
+	qf::core::sql::Query q;
+	q.exec("SELECT runs.id AS runId, "
+		   "FROM runs "
+		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
+		   "WHERE competitors.id=" QF_IARG(competitor_id) " AND runs.stageId=" QF_IARG(stage_id),
+		   qf::core::Exception::Throw);
+	if (q.next())
+	{
+		// Get runs id/OFeed externalId
+		int run_id = q.value("runId").toInt();
+		// TODO: Get OFeed comeptitor id - nejde aktualne jednoduse zjisit, protoze neni endpoint na ziskani detailu zavodnika dle externalId
+		// int ofeed_competitor_id = 0;
+
+		// sendCompetitorDelete(ofeed_competitor_id);
+	}
+}
+
 void OFeedClient::onCompetitorReadOut(int competitor_id)
 {
 	if (competitor_id == 0)
@@ -1266,4 +1395,5 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 		sendCompetitorUpdate(json_qstr, run_id);
 	}
 }
+
 }

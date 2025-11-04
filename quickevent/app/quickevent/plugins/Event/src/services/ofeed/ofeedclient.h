@@ -33,6 +33,7 @@ public:
 	OFeedClientSettings settings() const {return OFeedClientSettings(m_settings);}
 
 	static QString serviceName();
+	static bool isInsertFromOFeed;
 
 	void exportResultsIofXml3();
 	void exportStartListIofXml3(std::function<void()> on_success = nullptr);
@@ -50,6 +51,21 @@ public:
 	QDateTime lastChangelogCall();
 	void setLastChangelogCall(QDateTime lastChangelogCall);
 
+	private:
+	QTimer *m_exportTimer = nullptr;
+	QNetworkAccessManager *m_networkManager = nullptr;
+	private:
+	qf::gui::framework::DialogWidget *createDetailWidget() override;
+	void onExportTimerTimeOut();
+	void init();
+	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
+	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
+	void sendCompetitorAdded(QString json_body);
+	void sendCompetitorDeleted(int ofeed_competitor_id);
+	void onCompetitorAdded(int competitor_id);
+	void onCompetitorEdited(int competitor_id);
+	void onCompetitorDeleted(int competitor_id);
+	void onCompetitorReadOut(int competitor_id);	
 	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesFromStart();
@@ -59,19 +75,6 @@ public:
 	void processNoteChange(int runs_id, const QString &new_value);
 	void proccessNewRunner(int ofeed_competitor_id);
 	void storeChange(const QJsonObject &change);
-private:
-	QTimer *m_exportTimer = nullptr;
-	QNetworkAccessManager *m_networkManager = nullptr;
-private:
-	qf::gui::framework::DialogWidget *createDetailWidget() override;
-	void onExportTimerTimeOut();
-	void init();
-	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
-	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
-	void sendCompetitorAdded(QString json_body);
-	void onCompetitorAdded(int competitor_id);
-	void onCompetitorEdited(int competitor_id);
-	void onCompetitorReadOut(int competitor_id);	
 };
 
 }}
