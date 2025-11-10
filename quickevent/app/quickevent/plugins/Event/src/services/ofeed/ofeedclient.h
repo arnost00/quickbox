@@ -61,19 +61,18 @@ public:
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
 	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
 	void sendCompetitorAdded(QString json_body);
-	void sendCompetitorDeleted(int ofeed_competitor_id);
+	void sendCompetitorDeleted(int competitor_id);
 	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);
-	void onCompetitorDeleted(int competitor_id);
 	void onCompetitorReadOut(int competitor_id);	
 	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
-	void getChangesFromStart();
-	void processNewChangesFromStart(QJsonArray data_array);
+	void getChangesByOrigin();
+	void processCompetitorsChanges(QJsonArray data_array);
 	void processCardChange(int runs_id, const QString &new_value);
 	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
-	void proccessNewRunner(int ofeed_competitor_id);
+	void processNewRunner(int ofeed_competitor_id);
 	void storeChange(const QJsonObject &change);
 };
 

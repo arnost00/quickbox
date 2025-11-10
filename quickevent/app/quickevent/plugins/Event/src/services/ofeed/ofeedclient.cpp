@@ -87,7 +87,7 @@ void OFeedClient::exportResultsIofXml3()
 					  ? getPlugin<RelaysPlugin>()->resultsIofXml30()
 					  : getPlugin<RunsPlugin>()->resultsIofXml30Stage(current_stage);
 
-	sendFile("results upload", "/rest/v1/upload/iof", str);
+	sendFile(tr("results upload"), "/rest/v1/upload/iof", str);
 }
 
 void OFeedClient::exportStartListIofXml3(std::function<void()> on_success)
@@ -99,7 +99,7 @@ void OFeedClient::exportStartListIofXml3(std::function<void()> on_success)
 					  ? getPlugin<RelaysPlugin>()->startListIofXml30()
 					  : getPlugin<RunsPlugin>()->startListStageIofXml30(current_stage);
 
-	sendFile("start list upload", "/rest/v1/upload/iof", str, on_success);
+	sendFile(tr("start list upload"), "/rest/v1/upload/iof", str, on_success);
 }
 
 qf::gui::framework::DialogWidget *OFeedClient::createDetailWidget()
@@ -117,7 +117,7 @@ void OFeedClient::init()
 void OFeedClient::onExportTimerTimeOut()
 {
 	// exportStartListIofXml3();
-	getChangesFromStart();
+	getChangesByOrigin();
 	exportResultsIofXml3();
 }
 
@@ -215,7 +215,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	{
 		int competitor_id = data.toInt();
 		qDebug() << "DB event competitor DELETED, competitor id: " << competitor_id;
-		onCompetitorDeleted(competitor_id);
+		sendCompetitorDeleted(competitor_id);
 	}	
 }
 
@@ -260,7 +260,7 @@ QDateTime OFeedClient::lastChangelogCall() {
         QDateTime initialValue = QDateTime::fromSecsSinceEpoch(0); // Default to Unix epoch (1970-01-01T00:00:00Z)
         getPlugin<EventPlugin>()->eventConfig()->setValue(key, initialValue.toString(Qt::ISODate));
         getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
-        qDebug() << "No lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
+        // qDebug() << "No lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
         return initialValue;
     }
 
@@ -273,7 +273,7 @@ QDateTime OFeedClient::lastChangelogCall() {
         QDateTime initialValue = QDateTime::fromSecsSinceEpoch(0); // Default to Unix epoch
         getPlugin<EventPlugin>()->eventConfig()->setValue(key, initialValue.toString(Qt::ISODate));
         getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
-        qDebug() << "Invalid lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
+        // qDebug() << "Invalid lastChangelogCall found. Setting initial value to:" << initialValue.toString(Qt::ISODate);
         return initialValue;
     }
 
@@ -328,16 +328,15 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	QByteArray auth_header = auth_value.toUtf8();
 
 	// Create the URL for the PUT request
-	// QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(competitor_or_external_id) + "/external-id");
 	QUrl url = hostUrl();
 	if (usingExternalId)
 	{
-		qDebug() << serviceName().toStdString() + " - request to change competitor with QE id (run id): " << competitor_or_external_id;
+		// qDebug() << serviceName().toStdString() + " - request to change competitor with QE id (run id): " << competitor_or_external_id;
 		url.setPath(QStringLiteral("/rest/v1/events/%1/competitors/%2/external-id").arg(eventId(), QString::number(competitor_or_external_id)));
 	}
 	else
 	{
-		qDebug() << serviceName().toStdString() + " - request to change competitor with OFeed id: " << competitor_or_external_id;
+		// qDebug() << serviceName().toStdString() + " - request to change competitor with OFeed id: " << competitor_or_external_id;
 		url.setPath(QStringLiteral("/rest/v1/events/%1/competitors/%2").arg(eventId(), QString::number(competitor_or_external_id)));
 	}
 
@@ -352,7 +351,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	connect(reply, &QNetworkReply::finished, this, [=]()
 			{
 				if(reply->error()) {
-					qfError() << serviceName().toStdString() + " [competitor update]:" << reply->errorString();
+					qfError() << serviceName().toStdString() + " [competitor update]: " << reply->errorString();
 				}
 				else {
 					QByteArray response = reply->readAll();
@@ -365,12 +364,12 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 
 						if (data_object.contains("message")) {
 							QString data_message = data_object["message"].toString();
-							qfInfo() << serviceName().toStdString() + " [competitor details update]:" << data_message;
+							qfInfo() << serviceName().toStdString() + " [competitor details update]: " << data_message;
 						} else {
 							qfInfo() << serviceName().toStdString() + " [competitor details update]: ok, but no data message found.";
 						}
 					} else {
-						qfError() << serviceName().toStdString() + " [competitor details update] Unexpected response:" << response;
+						qfError() << serviceName().toStdString() + " [competitor details update] Unexpected response: " << response;
 					}
 				}
 				reply->deleteLater(); });
@@ -398,7 +397,7 @@ void OFeedClient::sendCompetitorAdded(QString json_body)
 	connect(reply, &QNetworkReply::finished, this, [=]()
 			{
 				if(reply->error()) {
-					qfError() << serviceName().toStdString() + " [new competitor]:" << reply->errorString();
+					qfError() << serviceName().toStdString() + " [new competitor]: " << reply->errorString();
 				}
 				else {
 					QByteArray response = reply->readAll();
@@ -411,18 +410,18 @@ void OFeedClient::sendCompetitorAdded(QString json_body)
 
 						if (data_object.contains("message")) {
 							QString data_message = data_object["message"].toString();
-							qfInfo() << serviceName().toStdString() + " [new competitor]:" << data_message;
+							qfInfo() << serviceName().toStdString() + " [new competitor]: " << data_message;
 						} else {
 							qfInfo() << serviceName().toStdString() + " [new competitor]: ok, but no data message found.";
 						}
 					} else {
-						qfError() << serviceName().toStdString() + " [new competitor] Unexpected response:" << response;
+						qfError() << serviceName().toStdString() + " [new competitor] Unexpected response: " << response;
 					}
 				}
 				reply->deleteLater(); });
 }
 
-void OFeedClient::sendCompetitorDeleted(int ofeed_competitor_id)
+void OFeedClient::sendCompetitorDeleted(int competitor_id)
 {
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
@@ -431,7 +430,7 @@ void OFeedClient::sendCompetitorDeleted(int ofeed_competitor_id)
 	QByteArray auth_header = auth_value.toUtf8();
 
 	// Create the URL for the POST request
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
+	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(competitor_id) + "/external-id");
 
 	// Create the network request
 	QNetworkRequest request(url);
@@ -444,7 +443,7 @@ void OFeedClient::sendCompetitorDeleted(int ofeed_competitor_id)
 	connect(reply, &QNetworkReply::finished, this, [=]()
 			{
 				if(reply->error()) {
-					qfError() << serviceName().toStdString() + " [deleted competitor]:" << reply->errorString();
+					qfError() << serviceName().toStdString() + " [deleted competitor]: " << reply->errorString();
 				}
 				else {
 					QByteArray response = reply->readAll();
@@ -457,12 +456,12 @@ void OFeedClient::sendCompetitorDeleted(int ofeed_competitor_id)
 
 						if (data_object.contains("message")) {
 							QString data_message = data_object["message"].toString();
-							qfInfo() << serviceName().toStdString() + " [deleted competitor]:" << data_message;
+							qfInfo() << serviceName().toStdString() + " [deleted competitor (external id)]: " << data_message;
 						} else {
-							qfInfo() << serviceName().toStdString() + " [deleted competitor]: ok, but no data message found.";
+							qfInfo() << serviceName().toStdString() + " [deleted competitor (external id)]: ok, but no data message found.";
 						}
 					} else {
-						qfError() << serviceName().toStdString() + " [deleted competitor] Unexpected response:" << response;
+						qfError() << serviceName().toStdString() + " [deleted competitor (external id)] Unexpected response: " << response;
 					}
 				}
 				reply->deleteLater(); });
@@ -483,7 +482,7 @@ void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<voi
 
 				if (reply->error())
 				{
-					qfError() << serviceName().toStdString() + " [competitor detail]:" << reply->errorString();
+					qfError() << serviceName().toStdString() + " [competitor detail]: " << reply->errorString();
 				}
 				else
 				{
@@ -501,7 +500,7 @@ void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<voi
 					}
 					else
 					{
-						qfError() << serviceName().toStdString() + " [competitor detail] Unexpected response:" << response;
+						qfError() << serviceName().toStdString() + " [competitor detail] Unexpected response: " << response;
 					}
 				}
 				reply->deleteLater();
@@ -547,18 +546,18 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
         QJsonObject data_object;
 
         if (reply->error()) {
-            qfError() << serviceName().toStdString() + " [GraphQL request]:" << reply->errorString();
+            qfError() << serviceName().toStdString() + " [GraphQL request]: " << reply->errorString();
         } else {
             QByteArray response = reply->readAll();
             QJsonDocument json_response = QJsonDocument::fromJson(response);
             QJsonObject json_object = json_response.object();
 
             if (json_object.contains("errors")) {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Errors in response:" << json_object;
+                qfError() << serviceName().toStdString() + " [GraphQL request] Errors in response: " << json_object;
             } else if (json_object.contains("data")) {
                 data_object = json_object["data"].toObject();
             } else {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Unexpected response:" << json_object;
+                qfError() << serviceName().toStdString() + " [GraphQL request] Unexpected response: " << json_object;
             }
         }
         reply->deleteLater();
@@ -567,7 +566,7 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
         callback(data_object); });
 }
 
-void OFeedClient::getChangesFromStart()
+void OFeedClient::getChangesByOrigin()
 {
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
@@ -605,7 +604,7 @@ void OFeedClient::getChangesFromStart()
 	connect(reply, &QNetworkReply::finished, this, [this, reply]()
 			{
     if (reply->error()) {
-        qWarning() << serviceName().toStdString() + " [changelog]:" << reply->errorString();
+        qfError() << serviceName().toStdString() + " [changelog]: " << reply->errorString();
     } else {
         QByteArray response = reply->readAll();
         QJsonDocument json_response = QJsonDocument::fromJson(response);
@@ -623,20 +622,13 @@ void OFeedClient::getChangesFromStart()
                     QJsonArray json_array = results_object["data"].toArray();
 
                     if (json_array.isEmpty()) {
-                        qWarning() << "No changes from start to process";
                         return;
                     }
 
                     // Process the data
-                    processNewChangesFromStart(json_array);
-                } else {
-                    qWarning() << "The 'data' key is missing or is not an array.";
+                    processCompetitorsChanges(json_array);
                 }
-            } else {
-                qWarning() << "The 'results' key is missing or is not an object.";
             }
-        } else {
-            qWarning() << "Expected a JSON object but got a different type.";
         }
     }
     reply->deleteLater(); });
@@ -646,11 +638,10 @@ void OFeedClient::getChangesFromStart()
 	setLastChangelogCall(request_execution_time);
 }
 
-void OFeedClient::processNewChangesFromStart(QJsonArray data_array)
+void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 {
 	if (data_array.isEmpty())
 	{
-		qWarning() << "No changes to process: 'data_object' is empty.";
 		return;
 	}
 
@@ -659,7 +650,6 @@ void OFeedClient::processNewChangesFromStart(QJsonArray data_array)
 
 		if (!value.isObject())
 		{
-			qWarning() << "Invalid change item: not a JSON object.";
 			continue;
 		}
 
@@ -693,7 +683,7 @@ void OFeedClient::processNewChangesFromStart(QJsonArray data_array)
 				QString external_id_str = competitor_by_id.value("externalId").toString();
 				int runs_id = external_id_str.toInt();
 				qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
-	
+
 				// Handle each type of change
 				if (type == "si_card_change")
 				{
@@ -709,19 +699,15 @@ void OFeedClient::processNewChangesFromStart(QJsonArray data_array)
 				}
 				else if (type == "competitor_create")
 				{
-					proccessNewRunner(ofeed_competitor_id);
+					processNewRunner(ofeed_competitor_id);
 				}
 				else
 				{
-					qWarning() << "Unknown change type:" << type;
+					qfError() << "Unsupported change type: " << type.toStdString();
 				}
-	
+
 				// Store the processed change
 				storeChange(change); 
-			}
-			else
-			{
-				qDebug() << "No data received or an error occurred.";
 			}
 		}, false);
 	}
@@ -737,16 +723,16 @@ void OFeedClient::processCardChange(int runs_id, const QString &new_value)
 		q.bindValue(":siId", new_value.toInt());
 		if (!q.exec(qf::core::Exception::Throw))
 		{
-			qWarning() << "Database query failed:" << q.lastError().text();
+			qfError() << tr("Database query failed: ") << q.lastError().text();
 		}
 	}
 	catch (const std::exception &e)
 	{
-		qCritical() << "Exception occurred while executing query:" << e.what();
+		qCritical() << tr("Exception occurred while executing query: ") << e.what();
 	}
 	catch (...)
 	{
-		qCritical() << "Unknown exception occurred while executing query.";
+		qCritical() << tr("Unknown exception occurred while executing query.");
 	}
 }
 
@@ -762,16 +748,16 @@ void OFeedClient::processStatusChange(int runs_id, const QString &new_value)
 		q.bindValue(":notStart", notStart);
 		if (!q.exec(qf::core::Exception::Throw))
 		{
-			qWarning() << "Database query failed:" << q.lastError().text();
+			qfError() << tr("Database query failed: ") << q.lastError().text();
 		}
 	}
 	catch (const std::exception &e)
 	{
-		qCritical() << "Exception occurred while executing query:" << e.what();
+		qCritical() << tr("Exception occurred while executing query: ") << e.what();
 	}
 	catch (...)
 	{
-		qCritical() << "Unknown exception occurred while executing query.";
+		qCritical() << tr("Unknown exception occurred while executing query.");
 	}
 }
 
@@ -787,20 +773,20 @@ void OFeedClient::processNoteChange(int runs_id, const QString &new_value)
 		q.bindValue(":newNote", new_value);
 		if (!q.exec(qf::core::Exception::Throw))
 		{
-			qWarning() << "Database query failed:" << q.lastError().text();
+			qfError() << tr("Database query failed: ") << q.lastError().text();
 		}
 	}
 	catch (const std::exception &e)
 	{
-		qCritical() << "Exception occurred while executing query:" << e.what();
+		qCritical() << tr("Exception occurred while executing query: ") << e.what();
 	}
 	catch (...)
 	{
-		qCritical() << "Unknown exception occurred while executing query.";
+		qCritical() << tr("Unknown exception occurred while executing query.");
 	}
 }
 
-void OFeedClient::proccessNewRunner(int ofeed_competitor_id)
+void OFeedClient::processNewRunner(int ofeed_competitor_id)
 {
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 	QString graphQLquery = R"(
@@ -816,8 +802,7 @@ void OFeedClient::proccessNewRunner(int ofeed_competitor_id)
 				}
 			}
 		}
-		)";
-		
+		)";		
 
 	QJsonObject variables;
 	variables["competitorByIdId"] = ofeed_competitor_id;
@@ -857,7 +842,7 @@ void OFeedClient::proccessNewRunner(int ofeed_competitor_id)
 			<< "}";
 	
 			std::string json_str = json_payload.str();
-			qDebug() << serviceName().toStdString() + " - new competitor externalId update";
+			qfError() << serviceName().toStdString() + " - new competitor externalId update";
 			// qDebug() <<"Update competitor - body (json) " << json_str;
 	
 			// Convert std::string to QString
@@ -866,7 +851,7 @@ void OFeedClient::proccessNewRunner(int ofeed_competitor_id)
 		}
 		else
 		{
-			qDebug() << "No data received or an error occurred.";
+			qfError() << tr("No data received or an error occurred.");
 		}
 	}, false);
 }
@@ -910,7 +895,7 @@ void OFeedClient::storeChange(const QJsonObject &change)
 			q.bindValue(":statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
 			if (!q.exec(qf::core::Exception::Throw))
 			{
-				qWarning() << "Database query failed:" << q.lastError().text();
+				qfError() << "Database query failed:" << q.lastError().text();
 			}
 		}
 		catch (const std::exception &e)
@@ -986,6 +971,7 @@ void OFeedClient::onCompetitorAdded(int competitor_id)
 		   "competitors.startNumber, "
 		   "competitors.firstName, "
 		   "competitors.lastName, "
+		   "competitors.note, "
 		   "clubs.name AS organisationName, "
 		   "clubs.abbr AS organisationAbbr, "
 		   "classes.id AS classId, "
@@ -1020,9 +1006,8 @@ void OFeedClient::onCompetitorAdded(int competitor_id)
 		QString organisation = !organisation_abbr.isEmpty() ? organisation_name : registration.left(3);
 		int class_id = q.value(QStringLiteral("classId")).toInt();
 		QString nationality = "";
-		// int run_id = q.value("runId").toInt();
 		QString origin = "IT";
-		QString note = "Added from Quickevent";
+		QString note = q.value(QStringLiteral("note")).toString();;
 
 		// Start bib
 		int start_bib = INT_INITIAL_VALUE;
@@ -1130,7 +1115,7 @@ void OFeedClient::onCompetitorAdded(int competitor_id)
 		json_str += "}";
 
 		// Output the JSON for debugging
-		qDebug() << serviceName().toStdString() + " - competitor added - json: " << json_str;
+		// qDebug() << serviceName().toStdString() + " - competitor added - json: " << json_str;
 
 		// Convert std::string to QString
 		QString json_qstr = QString::fromStdString(json_str);
@@ -1156,6 +1141,7 @@ void OFeedClient::onCompetitorEdited(int competitor_id)
 		   "competitors.startNumber, "
 		   "competitors.firstName, "
 		   "competitors.lastName, "
+		   "competitors.note, "
 		   "clubs.name AS organisationName, "
 		   "clubs.abbr AS organisationAbbr, "
 		   "classes.id AS classId, "
@@ -1191,7 +1177,7 @@ void OFeedClient::onCompetitorEdited(int competitor_id)
 		int class_id = q.value(QStringLiteral("classId")).toInt();
 		QString nationality = "";
 		QString origin = "IT";
-		QString note = "Edited from Quickevent";
+		QString note = q.value(QStringLiteral("note")).toString();
 
 		// Start bib
 		int start_bib = INT_INITIAL_VALUE;
@@ -1299,33 +1285,13 @@ void OFeedClient::onCompetitorEdited(int competitor_id)
 		json_str += "}";
 
 		// Output the JSON for debugging
-		qDebug() << serviceName().toStdString() + " - competitor edited - json: " << json_str;
+		// qDebug() << serviceName().toStdString() + " - competitor edited - json: " << json_str;
 
 		// Convert std::string to QString
 		QString json_qstr = QString::fromStdString(json_str);
 
 		// Send
 		sendCompetitorUpdate(json_qstr, run_id);
-	}
-}
-
-void OFeedClient::onCompetitorDeleted(int competitor_id)
-{
-	int stage_id = getPlugin<EventPlugin>()->currentStageId();
-	qf::core::sql::Query q;
-	q.exec("SELECT runs.id AS runId, "
-		   "FROM runs "
-		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
-		   "WHERE competitors.id=" QF_IARG(competitor_id) " AND runs.stageId=" QF_IARG(stage_id),
-		   qf::core::Exception::Throw);
-	if (q.next())
-	{
-		// Get runs id/OFeed externalId
-		int run_id = q.value("runId").toInt();
-		// TODO: Get OFeed comeptitor id - nejde aktualne jednoduse zjisit, protoze neni endpoint na ziskani detailu zavodnika dle externalId
-		// int ofeed_competitor_id = 0;
-
-		// sendCompetitorDelete(ofeed_competitor_id);
 	}
 }
 
@@ -1347,7 +1313,8 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 		   "runs.notCompeting, "
 		   "runs.startTimeMs, "
 		   "runs.finishTimeMs, "
-		   "runs.timeMs "
+		   "runs.timeMs, "
+		   "competitors.note "
 		   "FROM runs "
 		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
 		   "LEFT JOIN relays ON relays.id = runs.relayId  "
@@ -1369,7 +1336,7 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 		int running_time = q.value(QStringLiteral("timeMs")).toInt();
 		QString status = getIofResultStatus(running_time, is_disq, is_disq_by_organizer, is_miss_punch, is_bad_check, is_did_not_start, is_did_not_finish, is_not_competing);
 		QString origin = "IT";
-		QString note = "Quickevent read-out";
+		QString note = "QE read-out, " + q.value(QStringLiteral("note")).toString();
 
 		// Use std::stringstream to build the JSON string
 		std::stringstream json_payload;
@@ -1385,9 +1352,6 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 
 		// Get the final JSON string
 		std::string json_str = json_payload.str();
-
-		// Output the JSON for debugging
-		qDebug() << serviceName().toStdString() + " - competitor read-out - json: " << json_str;
 
 		// Convert std::string to QString
 		QString json_qstr = QString::fromStdString(json_str);

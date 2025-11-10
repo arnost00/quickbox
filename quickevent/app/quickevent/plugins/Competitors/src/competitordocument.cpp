@@ -130,10 +130,6 @@ bool CompetitorDocument::saveData()
 			{				
 				getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED, competitor_id);
 			}
-			else if (old_mode == DataDocument::ModeDelete)
-			{				
-				getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, competitor_id);
-			}
 		}
 	}
 	return ret;
