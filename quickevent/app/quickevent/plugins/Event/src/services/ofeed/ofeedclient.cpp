@@ -146,8 +146,9 @@ void OFeedClient::sendFile(QString name, QString request_path, QString file, std
 
 	// Add xml content with fake filename that must be present
 	QHttpPart file_part;
+	file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/zlib"));
 	file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="file"; filename="uploaded_file.xml")"));
-	file_part.setBody(file.toUtf8());
+	file_part.setBody(zlibCompress(file.toUtf8()));
 	multi_part->append(file_part);
 
 	// Create network request with authorization header
@@ -1358,6 +1359,14 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 
 		sendCompetitorUpdate(json_qstr, run_id);
 	}
+}
+
+QByteArray OFeedClient::zlibCompress(QByteArray data)
+{
+	QByteArray compressedData = qCompress(data);
+	// remove 4-byte length header - leave only the raw zlib stream
+	compressedData.remove(0, 4);
+	return compressedData;
 }
 
 }

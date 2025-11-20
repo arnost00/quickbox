@@ -74,6 +74,7 @@ public:
 	void processNoteChange(int runs_id, const QString &new_value);
 	void processNewRunner(int ofeed_competitor_id);
 	void storeChange(const QJsonObject &change);
+	QByteArray zlibCompress(QByteArray data);
 };
 
 }}
