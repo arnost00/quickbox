@@ -77,7 +77,7 @@ void OFeedClientWidget::onBtExportResultsXml30Clicked()
 	OFeedClient *svc = service();
 	if(svc) {
 		saveSettings();
-		qfInfo() << "OFeed [results - manual upload]";
+		qfInfo() << OFeedClient::serviceName() + " [results - manual upload]";
 		svc->exportResultsIofXml3();
 	}
 }
@@ -87,10 +87,8 @@ void OFeedClientWidget::onBtExportStartListXml30Clicked()
 	OFeedClient *svc = service();
 	if(svc) {
 		saveSettings();
-		qfInfo() << "OFeed [startlist - manual upload]";
+		qfInfo() << OFeedClient::serviceName() + " [startlist - manual upload]";
 		svc->exportStartListIofXml3();
 	}
 }
-
 }
-
