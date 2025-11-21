@@ -127,67 +127,6 @@ void OFeedClient::loadSettings()
 	init();
 }
 
-void OFeedClient::sendFile(QString name, QString request_path, QString file, std::function<void()> on_success)
-{
-	// Create a multi-part request (like FormData in JS)
-	auto *multi_part = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-
-	// Prepare the Authorization header with Bearer token
-	QString combined = eventId() + ":" + eventPassword();
-	QByteArray base_64_auth = combined.toUtf8().toBase64();
-	QString auth_value = "Basic " + QString(base_64_auth);
-	QByteArray auth_header = auth_value.toUtf8();
-
-	// Add eventId field
-	QHttpPart event_id_part;
-	event_id_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="eventId")"));
-	event_id_part.setBody(eventId().toUtf8());
-	multi_part->append(event_id_part);
-
-	// Disable xml validation
-	bool xmlValidation = runXmlValidation();
-	if(!xmlValidation){
-		QHttpPart validate_xml_part;
-		validate_xml_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="validateXml")"));
-		validate_xml_part.setBody(QByteArray(xmlValidation ? "true" : "false"));
-		multi_part->append(validate_xml_part);
-		qDebug() << "Upload without IOF XML validation, validateXml: " + QString(xmlValidation ? "true" : "false");
-	}
-
-	// Add xml content with fake filename that must be present
-	QHttpPart file_part;
-	file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/zlib"));
-	file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="file"; filename="uploaded_file.xml")"));
-	file_part.setBody(zlibCompress(file.toUtf8()));
-	multi_part->append(file_part);
-
-	// Create network request with authorization header
-	QUrl request_url(hostUrl() + request_path);
-	QNetworkRequest request(request_url);
-	request.setRawHeader("Authorization", auth_header);
-
-	// Send request
-	QNetworkReply *reply = m_networkManager->post(request, multi_part);
-	multi_part->setParent(reply);
-
-	// Cleanup
-	connect(reply, &QNetworkReply::finished, this, [reply, name, request_url, on_success]() {
-		if(reply->error()) {
-			auto err_msg = serviceName().toStdString() + " [" + name.toStdString() + "] " + request_url.toString().toStdString() + " : ";
-			auto response_body = reply->readAll();
-			if (!response_body.isEmpty())
-				err_msg += response_body + " | ";
-			qfError() << err_msg + reply->errorString().toStdString();
-		}
-		else {
-			qfInfo() << serviceName().toStdString() + " [" + name.toStdString() + "]: ok";
-			if (on_success)
-				on_success();
-		}
-		reply->deleteLater();
-	});
-}
-
 void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, const QVariant &data)
 {
 	if (status() != Status::Running)
@@ -338,6 +277,67 @@ void OFeedClient::setRunXmlValidation(bool runXmlValidation)
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".runXmlValidation.E" + QString::number(current_stage), runXmlValidation);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+void OFeedClient::sendFile(QString name, QString request_path, QString file, std::function<void()> on_success)
+{
+	// Create a multi-part request (like FormData in JS)
+	auto *multi_part = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+
+	// Prepare the Authorization header with Bearer token
+	QString combined = eventId() + ":" + eventPassword();
+	QByteArray base_64_auth = combined.toUtf8().toBase64();
+	QString auth_value = "Basic " + QString(base_64_auth);
+	QByteArray auth_header = auth_value.toUtf8();
+
+	// Add eventId field
+	QHttpPart event_id_part;
+	event_id_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="eventId")"));
+	event_id_part.setBody(eventId().toUtf8());
+	multi_part->append(event_id_part);
+
+	// Disable xml validation
+	bool xmlValidation = runXmlValidation();
+	if(!xmlValidation){
+		QHttpPart validate_xml_part;
+		validate_xml_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="validateXml")"));
+		validate_xml_part.setBody(QByteArray(xmlValidation ? "true" : "false"));
+		multi_part->append(validate_xml_part);
+		qDebug() << "Upload without IOF XML validation, validateXml: " + QString(xmlValidation ? "true" : "false");
+	}
+
+	// Add xml content with fake filename that must be present
+	QHttpPart file_part;
+	file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/zlib"));
+	file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="file"; filename="uploaded_file.xml")"));
+	file_part.setBody(zlibCompress(file.toUtf8()));
+	multi_part->append(file_part);
+
+	// Create network request with authorization header
+	QUrl request_url(hostUrl() + request_path);
+	QNetworkRequest request(request_url);
+	request.setRawHeader("Authorization", auth_header);
+
+	// Send request
+	QNetworkReply *reply = m_networkManager->post(request, multi_part);
+	multi_part->setParent(reply);
+
+	// Cleanup
+	connect(reply, &QNetworkReply::finished, this, [reply, name, request_url, on_success]() {
+		if(reply->error()) {
+			auto err_msg = serviceName().toStdString() + " [" + name.toStdString() + "] " + request_url.toString().toStdString() + " : ";
+			auto response_body = reply->readAll();
+			if (!response_body.isEmpty())
+				err_msg += response_body + " | ";
+			qfError() << err_msg + reply->errorString().toStdString();
+		}
+		else {
+			qfInfo() << serviceName().toStdString() + " [" + name.toStdString() + "]: ok";
+			if (on_success)
+				on_success();
+		}
+		reply->deleteLater();
+	});
 }
 
 /// @brief Update competitors data by OFeed id or external id (QE id -> runs.id)
