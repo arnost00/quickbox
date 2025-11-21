@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="groupCredentials">
      <property name="title">
-      <string>Service credentials</string>
+      <string>Service Credentials</string>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -28,7 +28,7 @@
         <x>0</x>
         <y>20</y>
         <width>281</width>
-        <height>117</height>
+        <height>101</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout">
@@ -128,7 +128,7 @@
    <item>
     <widget class="QGroupBox" name="groupUploadData">
      <property name="title">
-      <string>Upload data</string>
+      <string>Upload Data</string>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -140,7 +140,7 @@
       <item>
        <widget class="QLabel" name="upload_description">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start lists and results are automatically exported at specified intervals, with changes such as edited competitor data or new competitors being synced in real-time. Both the results and start lists can also be exported manually using the buttons below. Additionally, when the service is active, individual competitor data is sent after readout and upon saving the competitor dialog. Check the &lt;a href=&quot;https://docs.orienteerfeed.com/&quot; target=&quot;_blank&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;docs&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;If you encounter any unexpected errors, please &lt;a href=&quot;mailto:support@orienteerfeed.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;contact us&lt;/span&gt;&lt;/a&gt; or create an issue on our GitHub &lt;a href=&quot;https://github.com/orienteerfeed/ofeed/issues&quot; target=&quot;_blank&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;page&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start lists and results are automatically exported at specified intervals, with changes such as edited competitor data or new competitors being synced in real time. Both results and start lists can also be exported manually using the buttons below. Additionally, when the service is active, individual competitor data is sent after readout and upon saving the competitor dialog. Refer to the &lt;a href=&quot;https://docs.orienteerfeed.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;documentation&lt;/span&gt;&lt;/a&gt; for more details.&lt;/p&gt;&lt;p&gt;If you encounter any unexpected errors, please &lt;a href=&quot;mailto:support@orienteerfeed.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;contact us&lt;/span&gt;&lt;/a&gt; or create an issue on our GitHub &lt;a href=&quot;https://github.com/orienteerfeed/ofeed/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;page&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -187,7 +187,7 @@
    <item>
     <widget class="QGroupBox" name="groupGetData">
      <property name="title">
-      <string>Processing changes</string>
+      <string>Processing Changes</string>
      </property>
      <property name="flat">
       <bool>true</bool>
