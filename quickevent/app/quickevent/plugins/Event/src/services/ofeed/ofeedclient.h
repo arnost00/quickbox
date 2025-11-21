@@ -50,6 +50,8 @@ public:
 	void setChangelogOrigin(QString changelogOrigin);
 	QDateTime lastChangelogCall();
 	void setLastChangelogCall(QDateTime lastChangelogCall);
+	bool runXmlValidation();
+	void setRunXmlValidation(bool runXmlValidation);
 
 	private:
 	QTimer *m_exportTimer = nullptr;

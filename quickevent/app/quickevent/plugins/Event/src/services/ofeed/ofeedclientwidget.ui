@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>298</width>
-    <height>555</height>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,9 +15,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupCredentials">
+    <widget class="QGroupBox" name="groupServiceSetup">
      <property name="title">
-      <string>Service Credentials</string>
+      <string>Service Setup</string>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -26,9 +26,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>20</y>
+        <y>40</y>
         <width>281</width>
-        <height>101</height>
+        <height>121</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout">
@@ -39,7 +39,7 @@
         <number>6</number>
        </property>
        <item row="0" column="0">
-        <widget class="QLabel" name="export_interval_label">
+        <widget class="QLabel" name="exportIntervalLabel">
          <property name="text">
           <string>Export interval</string>
          </property>
@@ -68,7 +68,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="url_label">
+        <widget class="QLabel" name="urlLabel">
          <property name="text">
           <string>Url</string>
          </property>
@@ -88,7 +88,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="event_id_label">
+        <widget class="QLabel" name="eventIdLabel">
          <property name="text">
           <string>Event id</string>
          </property>
@@ -105,7 +105,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="password_label">
+        <widget class="QLabel" name="passwordLabel">
          <property name="text">
           <string>Password</string>
          </property>
@@ -122,6 +122,59 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QLabel" name="Credentials">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>20</y>
+        <width>62</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Credentials</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="additionalSettings">
+      <property name="font">
+       <font>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Additional settings</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="runXmlValidationCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>7</x>
+        <y>180</y>
+        <width>151</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string extracomment="Should OFeed perform iof xml validation?"/>
+      </property>
+      <property name="text">
+       <string>Run IOF XML validation</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+      <property name="tristate">
+       <bool>false</bool>
+      </property>
      </widget>
     </widget>
    </item>
@@ -192,7 +245,7 @@
      <property name="flat">
       <bool>true</bool>
      </property>
-     <widget class="QLabel" name="get_description">
+     <widget class="QLabel" name="ProcessingChangesDescription">
       <property name="geometry">
        <rect>
         <x>10</x>

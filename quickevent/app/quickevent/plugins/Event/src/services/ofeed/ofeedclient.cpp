@@ -144,6 +144,16 @@ void OFeedClient::sendFile(QString name, QString request_path, QString file, std
 	event_id_part.setBody(eventId().toUtf8());
 	multi_part->append(event_id_part);
 
+	// Disable xml validation
+	bool xmlValidation = runXmlValidation();
+	if(!xmlValidation){
+		QHttpPart validate_xml_part;
+		validate_xml_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="validateXml")"));
+		validate_xml_part.setBody(QByteArray(xmlValidation ? "true" : "false"));
+		multi_part->append(validate_xml_part);
+		qDebug() << "Upload without IOF XML validation, validateXml: " + QString(xmlValidation ? "true" : "false");
+	}
+
 	// Add xml content with fake filename that must be present
 	QHttpPart file_part;
 	file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/zlib"));
@@ -281,6 +291,13 @@ QDateTime OFeedClient::lastChangelogCall() {
     return lastChangelog;
 }
 
+bool OFeedClient::runXmlValidation()
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	QString key = serviceName().toLower() + ".runXmlValidation.E" + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->eventConfig()->value(key, "true").toBool();
+}
+
 void OFeedClient::setHostUrl(QString hostUrl)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
@@ -316,11 +333,18 @@ void OFeedClient::setLastChangelogCall(QDateTime lastChangelogCall)
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 
+void OFeedClient::setRunXmlValidation(bool runXmlValidation)
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".runXmlValidation.E" + QString::number(current_stage), runXmlValidation);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
 /// @brief Update competitors data by OFeed id or external id (QE id -> runs.id)
 /// @param json_body body with the competitors data
 /// @param competitor_or_external_id ofeed competitor id or external id (for QE runs.id)
-/// @param usingExternalId indicator which id is used - competitor (internal OFeed) or external (QE id from runs table)
-void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_external_id, bool usingExternalId = true)
+/// @param using_external_id indicator which id is used - competitor (internal OFeed) or external (QE id from runs table)
+void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_external_id, bool using_external_id = true)
 {
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
@@ -330,7 +354,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 
 	// Create the URL for the PUT request
 	QUrl url = hostUrl();
-	if (usingExternalId)
+	if (using_external_id)
 	{
 		// qDebug() << serviceName().toStdString() + " - request to change competitor with QE id (run id): " << competitor_or_external_id;
 		url.setPath(QStringLiteral("/rest/v1/events/%1/competitors/%2/external-id").arg(eventId(), QString::number(competitor_or_external_id)));
