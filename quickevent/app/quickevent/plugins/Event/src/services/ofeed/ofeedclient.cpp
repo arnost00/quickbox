@@ -593,74 +593,84 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
 
 void OFeedClient::getChangesByOrigin()
 {
-	// Prepare the Authorization header base64 username:password
-	QString combined = eventId() + ":" + eventPassword();
-	QByteArray base_64_auth = combined.toUtf8().toBase64();
-	QString auth_value = "Basic " + QString(base_64_auth);
-	QByteArray auth_header = auth_value.toUtf8();
-
-	QDateTime last_changelog_call_value = lastChangelogCall();
-	QDateTime initial_value = QDateTime::fromSecsSinceEpoch(0); // Unix epoch
-
-	// Create the URL for the POST request
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/changelog");
-
-	QUrlQuery query;
-	query.addQueryItem("origin", changelogOrigin());
-
-	// Check if last_changelog_call_value is valid/not default
-	if (last_changelog_call_value != initial_value)
+	try
 	{
-		query.addQueryItem("since", last_changelog_call_value.toString(Qt::ISODate));
-	}
+		QDateTime last_changelog_call_value = lastChangelogCall();
+		QDateTime initial_value = QDateTime::fromSecsSinceEpoch(0); // Unix epoch
 
-	// Apply the query to the URL
-	url.setQuery(query);
-	qDebug() << "Changelog request URL:" << url.toString();
+		QString graphQLquery = R"(
+		query ChangelogByEvent($eventId: String!, $origin: String) {
+			changelogByEvent(eventId: $eventId, origin: $origin) {
+				id
+				type
+				previousValue
+				newValue
+				origin    
+				competitor {
+					id
+					externalId
+					firstname
+					lastname
+				}
+				createdAt
+			}
+		}
+		)";
 
-	// Create the network request
-	QNetworkRequest request(url);
-	request.setRawHeader("Authorization", auth_header);
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+		QJsonObject variables;
+		variables["eventId"] = eventId();
+		variables["origin"] = changelogOrigin();
 
-	// Send request
-	QNetworkReply *reply = m_networkManager->get(request);
+		// Check if last_changelog_call_value is valid/not default
+		if (last_changelog_call_value != initial_value)
+		{
+			graphQLquery = R"(
+			query ChangelogByEvent($eventId: String!, $origin: String, $since: String) {
+				changelogByEvent(eventId: $eventId, origin: $origin, since: $since) {
+					id
+					type
+					previousValue
+					newValue
+					origin    
+					competitor {
+						id
+						externalId
+						firstname
+						lastname
+					}
+					createdAt
+				}
+			}
+			)";
 
-	connect(reply, &QNetworkReply::finished, this, [this, reply]()
+			variables["since"] = last_changelog_call_value.toString(Qt::ISODate);
+		}
+
+		sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+						   {
+			if (!data.isEmpty())
 			{
-    if (reply->error()) {
-        qfError() << serviceName().toStdString() + " [changelog]: " << reply->errorString();
-    } else {
-        QByteArray response = reply->readAll();
-        QJsonDocument json_response = QJsonDocument::fromJson(response);
+					// Check if the "data" key exists and is an array
+					if (data.contains("changelogByEvent") && data["changelogByEvent"].isArray()) {
+						QJsonArray changelog_array = data["changelogByEvent"].toArray();
 
-        // Check if the root of the JSON document is an object
-        if (json_response.isObject()) {
-            QJsonObject json_object = json_response.object();
+						if (changelog_array.isEmpty()) {
+							return;
+						}
 
-            // Check if the "results" key exists and is an object
-            if (json_object.contains("results") && json_object["results"].isObject()) {
-                QJsonObject results_object = json_object["results"].toObject();
-
-                // Check if the "data" key exists and is an array
-                if (results_object.contains("data") && results_object["data"].isArray()) {
-                    QJsonArray json_array = results_object["data"].toArray();
-
-                    if (json_array.isEmpty()) {
-                        return;
-                    }
-
-                    // Process the data
-                    processCompetitorsChanges(json_array);
-                }
-            }
-        }
-    }
-    reply->deleteLater(); });
-
-	// Update last changelog call with the adjusted execution time
-	QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
-	setLastChangelogCall(request_execution_time);
+						// Process the data
+						processCompetitorsChanges(changelog_array);
+					}
+ 
+				// Update last changelog call with the adjusted execution time
+				QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
+				setLastChangelogCall(request_execution_time);
+			} }, true);
+	}
+	catch (const std::exception &e)
+	{
+		qCritical() << tr("Exception occurred while getting changes by origin: ") << e.what();
+	}	
 }
 
 void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
@@ -680,61 +690,42 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 
 		QJsonObject change = value.toObject();
 
-		// Extract relevant fields
-		int ofeed_competitor_id = change["competitorId"].toInt();
+		// Extract values
 		QString type = change["type"].toString();
-		QString previous_value = change["previousValue"].toString();
+		QString previous_value = change["previousValue"].toString();		
 		QString new_value = change["newValue"].toString();
 
-		QString graphQLquery = R"(
-		query CompetitorById($competitorByIdId: Int!) {
-			competitorById(id: $competitorByIdId) {
-				externalId
-			}
-		}
-		)";
+		// Retrieve competitor and details
+		auto competitor = change.value("competitor").toObject();
+		int ofeed_competitor_id = competitor["id"].toInt();
+		QString external_id_str = competitor["externalId"].toString();
+		int runs_id = external_id_str.toInt();
+		qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
 
-		QJsonObject variables;
-		variables["competitorByIdId"] = ofeed_competitor_id;
-
-		sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+		// Handle each type of change
+		if (type == "si_card_change")
 		{
-			if (!data.isEmpty())
-			{
-				// Extract externalId (= runs.id) from the competitors detail
-				QJsonObject competitor_by_id = data.value("competitorById").toObject();
+			processCardChange(runs_id, new_value);
+		}
+		else if (type == "status_change")
+		{
+			processStatusChange(runs_id, new_value);
+		}
+		else if (type == "note_change")
+		{
+			processNoteChange(runs_id, new_value);
+		}
+		else if (type == "competitor_create")
+		{
+			processNewRunner(ofeed_competitor_id);
+		}
+		else
+		{
+			qfError() << "Unsupported change type: " << type.toStdString();
+		}
 
-				// Retrieve the externalId as a string
-				QString external_id_str = competitor_by_id.value("externalId").toString();
-				int runs_id = external_id_str.toInt();
-				qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
-
-				// Handle each type of change
-				if (type == "si_card_change")
-				{
-					processCardChange(runs_id, new_value);
-				}
-				else if (type == "status_change")
-				{
-					processStatusChange(runs_id, new_value);
-				}
-				else if (type == "note_change")
-				{
-					processNoteChange(runs_id, new_value);
-				}
-				else if (type == "competitor_create")
-				{
-					processNewRunner(ofeed_competitor_id);
-				}
-				else
-				{
-					qfError() << "Unsupported change type: " << type.toStdString();
-				}
-
-				// Store the processed change
-				storeChange(change); 
-			}
-		}, false);
+		// Store the processed change
+		storeChange(change);
 	}
 }
 
@@ -884,53 +875,51 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 void OFeedClient::storeChange(const QJsonObject &change)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	int ofeed_competitor_id = change["competitorId"].toInt();
-	getCompetitorDetail(ofeed_competitor_id, [=](QJsonObject competitor_detail)
-						{
-		QString external_id_str = competitor_detail["externalId"].toString();
-		int runs_id = external_id_str.toInt();
-		int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
-		QString no_data = "(undefined)";
-	
-		QString previous_value = change["previousValue"].isString() ? change["previousValue"].toString() : no_data;
-		QString new_value = change["newValue"].isString() ? change["newValue"].toString() : QString();
-		QJsonObject competitor = change["competitor"].toObject();
-		QString firstname = competitor["firstname"].isString() ? competitor["firstname"].toString() : no_data;
-		QString lastname = competitor["lastname"].isString() ? competitor["lastname"].toString() : no_data;
+	auto competitor = change.value("competitor").toObject();
 
-		QJsonDocument change_json_doc(change);
-    	QString change_json = QString::fromUtf8(change_json_doc.toJson(QJsonDocument::Compact));
+	QString external_id_str = competitor["externalId"].toString();
+	int runs_id = external_id_str.toInt();
+	int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
+	QString no_data = "(undefined)";
 
-		int change_id = change["id"].toInt();
-		auto created = QDateTime::fromString(change["createdAt"].toString(), Qt::ISODate);
+	QString previous_value = change["previousValue"].isString() ? change["previousValue"].toString() : no_data;
+	QString new_value = change["newValue"].isString() ? change["newValue"].toString() : QString();
+	QString firstname = competitor["firstname"].isString() ? competitor["firstname"].toString() : no_data;
+	QString lastname = competitor["lastname"].isString() ? competitor["lastname"].toString() : no_data;
 
-		qf::core::sql::Query q;
-		try
+	QJsonDocument change_json_doc(change);
+	QString change_json = QString::fromUtf8(change_json_doc.toJson(QJsonDocument::Compact));
+
+	int change_id = change["id"].toInt();
+	auto created = QDateTime::fromString(change["createdAt"].toString(), Qt::ISODate);
+
+	qf::core::sql::Query q;
+	try
+	{
+		q.prepare("INSERT INTO qxchanges (data_type, data, orig_data, source, user_id, stage_id, change_id, created, status_message)"
+				  " VALUES (:dataType, :data, :origData, :source, :userId, :stageId, :changeId, :created, :statusMessage)");
+		q.bindValue(":dataType", change["type"].toString());
+		q.bindValue(":data", new_value);
+		q.bindValue(":origData", previous_value);
+		q.bindValue(":source", change_json);
+		q.bindValue(":userId", competitor_id);
+		q.bindValue(":stageId", current_stage);
+		q.bindValue(":changeId", change_id);
+		q.bindValue(":created", created);
+		q.bindValue(":statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
+		if (!q.exec(qf::core::Exception::Throw))
 		{
-			q.prepare("INSERT INTO qxchanges (data_type, data, orig_data, source, user_id, stage_id, change_id, created, status_message)"
-					  " VALUES (:dataType, :data, :origData, :source, :userId, :stageId, :changeId, :created, :statusMessage)");
-			q.bindValue(":dataType", change["type"].toString());
-			q.bindValue(":data", new_value);
-			q.bindValue(":origData", previous_value);
-			q.bindValue(":source", change_json);
-			q.bindValue(":userId", competitor_id);
-			q.bindValue(":stageId", current_stage);
-			q.bindValue(":changeId", change_id);
-			q.bindValue(":created", created);
-			q.bindValue(":statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
-			if (!q.exec(qf::core::Exception::Throw))
-			{
-				qfError() << "Database query failed:" << q.lastError().text();
-			}
+			qfError() << "Database query failed:" << q.lastError().text();
 		}
-		catch (const std::exception &e)
-		{
-			qCritical() << "Exception occurred while executing query:" << e.what();
-		}
-		catch (...)
-		{
-			qCritical() << "Unknown exception occurred while executing query.";
-		} });
+	}
+	catch (const std::exception &e)
+	{
+		qCritical() << "Exception occurred while executing query:" << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception occurred while executing query.";
+	}
 }
 
 static QString getIofResultStatus(
