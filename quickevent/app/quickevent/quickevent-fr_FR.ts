@@ -2675,115 +2675,110 @@ Use: File --&gt; Import --&gt; Event (*.qbe) to convert event to current version
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="20"/>
-        <source>Service Setup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="44"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="49"/>
         <source>Export interval</source>
         <translation type="unfinished">Exporter l&apos;intervale</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="54"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="59"/>
         <source> sec</source>
         <translation type="unfinished"> sec</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="73"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="78"/>
         <source>Url</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="80"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="85"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OFeed instance url&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="83"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="86"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="88"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="91"/>
         <source>https://api.orienteerfeed.com</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="93"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="98"/>
         <source>Event id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="100"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="105"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Event id provided in the Settings section on the web site. Can be copied from OFeed url as well.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="103"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="120"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="108"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="128"/>
         <source>From OFeed settings page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="110"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="115"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="117"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="125"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Password that was generated in the Settings section.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="141"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="28"/>
         <source>Credentials</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="151"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="143"/>
+        <source>Upload data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="200"/>
         <source>Additional settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="167"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="216"/>
         <source>Run IOF XML validation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="184"/>
-        <source>Upload Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="196"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="150"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start lists and results are automatically exported at specified intervals, with changes such as edited competitor data or new competitors being synced in real time. Both results and start lists can also be exported manually using the buttons below. Additionally, when the service is active, individual competitor data is sent after readout and upon saving the competitor dialog. Refer to the &lt;a href=&quot;https://docs.orienteerfeed.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;documentation&lt;/span&gt;&lt;/a&gt; for more details.&lt;/p&gt;&lt;p&gt;If you encounter any unexpected errors, please &lt;a href=&quot;mailto:support@orienteerfeed.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;contact us&lt;/span&gt;&lt;/a&gt; or create an issue on our GitHub &lt;a href=&quot;https://github.com/orienteerfeed/ofeed/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;page&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="224"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="178"/>
         <source>Export start list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="231"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="185"/>
         <source>Export results</source>
         <translation type="unfinished">Exporter les résultats</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="243"/>
-        <source>Processing Changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="258"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="269"/>
         <source>Changes from the origin specified (permanent value at this moment) are processed automatically and visualized in &lt;b&gt;qxchange&lt;/b&gt; modul.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="274"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="247"/>
         <source>Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="287"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="293"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="238"/>
+        <source>Process changes setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="254"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="260"/>
         <source>START</source>
         <translation type="unfinished"></translation>
     </message>

@@ -29,7 +29,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->edEventId->setText(svc->eventId());
 		ui->edEventPassword->setText(svc->eventPassword());
 		ui->edChangelogOrigin->setText(svc->changelogOrigin());
-		ui->runXmlValidationCheckBox->setChecked(svc->runXmlValidation());
+		ui->additionalSettingsRunXmlValidation->setChecked(svc->runXmlValidation());
 	}
 
 	connect(ui->btExportResultsXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportResultsXml30Clicked);
@@ -68,7 +68,7 @@ bool OFeedClientWidget::saveSettings()
 		svc->setEventId(ui->edEventId->text().trimmed());
 		svc->setEventPassword(ui->edEventPassword->text().trimmed());
 		svc->setChangelogOrigin(ui->edChangelogOrigin->text().trimmed());
-		svc->setRunXmlValidation(ui->runXmlValidationCheckBox->isChecked());
+		svc->setRunXmlValidation(ui->additionalSettingsRunXmlValidation->isChecked());
 		svc->setSettings(ss);
 	}
 	return true;
