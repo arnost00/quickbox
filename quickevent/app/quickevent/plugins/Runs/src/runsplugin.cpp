@@ -414,7 +414,7 @@ int RunsPlugin::competitorForRun(int run_id)
 				competitor_id = q.value(0).toInt();
 			}
 			else {
-				qfWarning() << "Cannot find card record for run id:" << run_id;
+				qfWarning() << "Cannot find commpetitor record for run id:" << run_id;
 			}
 		}
 	}
