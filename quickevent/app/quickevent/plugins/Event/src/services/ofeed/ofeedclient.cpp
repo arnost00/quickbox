@@ -389,9 +389,9 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 
 						if (data_object.contains("message")) {
 							QString data_message = data_object["message"].toString();
-							qfWarning() << serviceName().toStdString() + " [competitor details update]: " << data_message;
+							qfInfo() << serviceName().toStdString() + " [competitor details update]: " << data_message;
 						} else {
-							qfWarning() << serviceName().toStdString() + " [competitor details update]: ok, but no data message found.";
+							qfInfo() << serviceName().toStdString() + " [competitor details update]: ok, but no data message found.";
 						}
 					} else {
 						qfError() << serviceName().toStdString() + " [competitor details update] Unexpected response: " << response;
@@ -490,48 +490,6 @@ void OFeedClient::sendCompetitorDeleted(int competitor_id)
 					}
 				}
 				reply->deleteLater(); });
-}
-
-void OFeedClient::getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback)
-{
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(ofeed_competitor_id));
-	QNetworkRequest request(url);
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-	QNetworkReply *reply = m_networkManager->get(request);
-
-	connect(reply, &QNetworkReply::finished, this, [=]()
-			{
-				// Default value
-				QJsonObject data_object;
-
-				if (reply->error())
-				{
-					qfError() << serviceName().toStdString() + " [competitor detail]: " << reply->errorString();
-				}
-				else
-				{
-					QByteArray response = reply->readAll();
-					QJsonDocument json_response = QJsonDocument::fromJson(response);
-					QJsonObject json_object = json_response.object();
-
-					if (json_object.contains("error") && !json_object["error"].toBool())
-					{
-						QJsonObject results_object = json_object["results"].toObject();
-						if (results_object.contains("data"))
-						{
-							data_object = results_object["data"].toObject();
-						}
-					}
-					else
-					{
-						qfError() << serviceName().toStdString() + " [competitor detail] Unexpected response: " << response;
-					}
-				}
-				reply->deleteLater();
-
-				callback(data_object);
-			});
 }
 
 void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization = false)
@@ -652,7 +610,7 @@ void OFeedClient::getChangesByOrigin()
 					QJsonArray changelog_array = data["changelogByEvent"].toArray();
 
 					if (changelog_array.isEmpty()) {
-						qfWarning() << "No changes from origin: " << changelogOrigin();
+						qfInfo() << "No changes from origin: " << changelogOrigin();
 						return;
 					}
 
@@ -720,7 +678,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		}
 		else
 		{
-			qfError() << "Unsupported change type: " << type.toStdString();
+			qfWarning() << "Unsupported change type: " << type.toStdString();
 			continue;
 		}
 

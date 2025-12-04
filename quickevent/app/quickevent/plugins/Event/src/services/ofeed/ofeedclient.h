@@ -66,8 +66,7 @@ public:
 	void sendCompetitorDeleted(int competitor_id);
 	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);
-	void onCompetitorReadOut(int competitor_id);	
-	void getCompetitorDetail(int ofeed_competitor_id, std::function<void(QJsonObject)> callback);
+	void onCompetitorReadOut(int competitor_id);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesByOrigin();
 	void processCompetitorsChanges(QJsonArray data_array);
