@@ -149,7 +149,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	{
 		if (isInsertFromOFeed)
 		{
-			qDebug() << "Competitor added from OFeed, no need to send it back as a new competitor from QE as the competitor already exists in OFeed";
+			qfWarning() << serviceName().toStdString() + " [new competitor]: added from OFeed, no need to send back as a new competitor from QE (already exists in OFeed)";
 			// Set back default value
 			isInsertFromOFeed = false;
 		}
@@ -389,9 +389,9 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 
 						if (data_object.contains("message")) {
 							QString data_message = data_object["message"].toString();
-							qfInfo() << serviceName().toStdString() + " [competitor details update]: " << data_message;
+							qfWarning() << serviceName().toStdString() + " [competitor details update]: " << data_message;
 						} else {
-							qfInfo() << serviceName().toStdString() + " [competitor details update]: ok, but no data message found.";
+							qfWarning() << serviceName().toStdString() + " [competitor details update]: ok, but no data message found.";
 						}
 					} else {
 						qfError() << serviceName().toStdString() + " [competitor details update] Unexpected response: " << response;
@@ -544,10 +544,8 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
 	if (withAuthorization)
 	{
 		QString combined = eventId() + ":" + eventPassword();
-		QByteArray base_64_auth = combined.toUtf8().toBase64();
-		QString auth_value = "Basic " + QString(base_64_auth);
-		QByteArray auth_header = auth_value.toUtf8();
-		request.setRawHeader("Authorization", auth_header);
+		QByteArray auth = "Basic " + combined.toUtf8().toBase64();
+        request.setRawHeader("Authorization", auth);
 	}
 
 	// Construct the JSON payload for the GraphQL request
@@ -558,9 +556,8 @@ void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &va
 		payload["variables"] = variables;
 	}
 
-	// Convert the payload to a QByteArray
-	QJsonDocument json_payload(payload);
-	QByteArray request_body = json_payload.toJson();
+	// Compact JSON
+	QByteArray request_body = QJsonDocument(payload).toJson(QJsonDocument::Compact);
 
 	// Send the POST request
 	QNetworkReply *reply = m_networkManager->post(request, request_body);
@@ -625,7 +622,7 @@ void OFeedClient::getChangesByOrigin()
 		if (last_changelog_call_value != initial_value)
 		{
 			graphQLquery = R"(
-			query ChangelogByEvent($eventId: String!, $origin: String, $since: String) {
+			query ChangelogByEvent($eventId: String!, $origin: String, $since: DateTime) {
 				changelogByEvent(eventId: $eventId, origin: $origin, since: $since) {
 					id
 					type
@@ -650,21 +647,23 @@ void OFeedClient::getChangesByOrigin()
 						   {
 			if (!data.isEmpty())
 			{
-					// Check if the "data" key exists and is an array
-					if (data.contains("changelogByEvent") && data["changelogByEvent"].isArray()) {
-						QJsonArray changelog_array = data["changelogByEvent"].toArray();
+				// Check if the "data" key exists and is an array
+				if (data.contains("changelogByEvent") && data["changelogByEvent"].isArray()) {
+					QJsonArray changelog_array = data["changelogByEvent"].toArray();
 
-						if (changelog_array.isEmpty()) {
-							return;
-						}
-
-						// Process the data
-						processCompetitorsChanges(changelog_array);
+					if (changelog_array.isEmpty()) {
+						qfWarning() << "No changes from origin: " << changelogOrigin();
+						return;
 					}
+
+					// Process the data
+					processCompetitorsChanges(changelog_array);
+
+					// Update last changelog call with the adjusted execution time
+					QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
+					setLastChangelogCall(request_execution_time);
+				}
  
-				// Update last changelog call with the adjusted execution time
-				QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
-				setLastChangelogCall(request_execution_time);
 			} }, true);
 	}
 	catch (const std::exception &e)
@@ -722,6 +721,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		else
 		{
 			qfError() << "Unsupported change type: " << type.toStdString();
+			continue;
 		}
 
 		// Store the processed change
@@ -806,7 +806,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 {
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 	QString graphQLquery = R"(
-		query CompetitorById($competitorByIdId: Int!) {
+	query CompetitorById($competitorByIdId: Int!) {
 			competitorById(id: $competitorByIdId) {    
 				firstname
 				lastname
@@ -858,8 +858,6 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			<< "}";
 	
 			std::string json_str = json_payload.str();
-			qfError() << serviceName().toStdString() + " - new competitor externalId update";
-			// qDebug() <<"Update competitor - body (json) " << json_str;
 	
 			// Convert std::string to QString
 			QString json_body = QString::fromStdString(json_str);
