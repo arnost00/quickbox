@@ -1048,19 +1048,26 @@ void RunsWidget::editCompetitors(int mode)
 			return;
 		if(qfd::MessageBox::askYesNo(this, tr("Really delete all the selected competitors? This action cannot be reverted."), false)) {
 			qfs::Transaction transaction;
-			int n = 0;
+			QList<int> deleted_ids;
 			for(int ix : sel_rows) {
 				int id = tv->tableRow(ix).value("competitors.id").toInt();
 				if(id > 0) {
 					Competitors::CompetitorDocument doc;
 					doc.load(id, qfm::DataDocument::ModeDelete);
 					doc.drop();
-					n++;
+					deleted_ids.append(id);
 				}
 			}
-			if(n > 0) {
-				if(qfd::MessageBox::askYesNo(this, tr("Confirm deletion of %1 competitors.").arg(n), false)) {
+			if(!deleted_ids.isEmpty()) {
+				if(qfd::MessageBox::askYesNo(this, tr("Confirm deletion of %1 competitors.").arg(deleted_ids.count()), false)) {
 					transaction.commit();
+					
+					auto *plugin = getPlugin<EventPlugin>();
+					for (int id : deleted_ids) {
+						// Invoke db delete event
+						plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, id);
+                    }
+
 					tv->reload();
 				}
 				else {
