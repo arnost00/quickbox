@@ -1062,10 +1062,17 @@ void RunsWidget::editCompetitors(int mode)
 				if(qfd::MessageBox::askYesNo(this, tr("Confirm deletion of %1 competitors.").arg(deleted_ids.count()), false)) {
 					transaction.commit();
 					
+					// Invoke db delete event for selected rows
 					auto *plugin = getPlugin<EventPlugin>();
-					for (int id : deleted_ids) {
-						// Invoke db delete event
-						plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, id);
+					for (int competitor_id : deleted_ids) {
+
+						// Get runs_id instead of competitor_id
+						int current_stage = getPlugin<EventPlugin>()->currentStageId();
+						int run_id = getPlugin<RunsPlugin>()->runForCompetitorStage(competitor_id, current_stage);
+						if (run_id > 0)
+						{
+							plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, run_id);
+						}
                     }
 
 					tv->reload();
@@ -1187,8 +1194,13 @@ void RunsWidget::editCompetitor_helper(const QVariant &id, int mode, int siid)
 				w->loadFromRegistrations(siid);
 			}
 		}
-		connect(doc, &Competitors::CompetitorDocument::saved, this, [this, doc]() {
+		connect(doc, &Competitors::CompetitorDocument::saved, this, [this, doc, mode]() {
 			if (auto run_id = doc->runsIds().value(selectedStageId() - 1); run_id > 0) {
+				
+				// Invoke delete db event for single delete
+				if(mode == qfm::DataDocument::ModeDelete){
+					getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, run_id);
+				}
 				ui->wRunsTableWidget->tableView()->rowExternallySaved(run_id);
 			}
 		});
