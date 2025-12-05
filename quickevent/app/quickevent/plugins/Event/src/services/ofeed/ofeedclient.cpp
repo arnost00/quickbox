@@ -169,9 +169,9 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	// Handle delete competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED))
 	{
-		int competitor_id = data.toInt();
-		qDebug() << "DB event competitor DELETED, competitor id: " << competitor_id;
-		sendCompetitorDeleted(competitor_id);
+		int run_id = data.toInt();
+		qDebug() << "DB event competitor DELETED, run id: " << run_id;
+		sendCompetitorDeleted(run_id);
 	}	
 }
 
@@ -1335,26 +1335,6 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 	}
 }
 
-void OFeedClient::onCompetitorDeleted(int competitor_id)
-{
-	if (competitor_id == 0)
-		return;
-
-	int stage_id = getPlugin<EventPlugin>()->currentStageId();
-	qf::core::sql::Query q;
-	q.exec("SELECT runs.id AS runId, "
-		   "FROM runs "
-		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
-		   "WHERE competitors.id=" QF_IARG(competitor_id) " AND runs.stageId=" QF_IARG(stage_id),
-		   qf::core::Exception::Throw);
-	if (q.next())
-	{
-		int run_id = q.value("runId").toInt();
-		qDebug() << "Call competitor delete, runs id: " << run_id;
-		sendCompetitorDeleted(run_id);
-	}
-
-}
 QByteArray OFeedClient::zlibCompress(QByteArray data)
 {
 	QByteArray compressedData = qCompress(data);
