@@ -132,6 +132,8 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	if (status() != Status::Running)
 		return;
 	Q_UNUSED(connection_id)
+
+	// Handle read-out
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_CARD_PROCESSED_AND_ASSIGNED))
 	{
 		auto checked_card = quickevent::core::si::CheckedCard(data.toMap());
@@ -139,12 +141,16 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 		qDebug() << "DB event competitor READ-OUT, competitor id: " << competitor_id << ", runs.id: " << checked_card.runId();
 		onCompetitorReadOut(competitor_id);
 	}
+
+	// Handle edit competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED))
 	{
 		int competitor_id = data.toInt();		
 		qDebug() << "DB event competitor EDITED, competitor id: " << competitor_id;
 		onCompetitorEdited(competitor_id);
 	}
+
+	// Handle add competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_ADDED))
 	{
 		if (isInsertFromOFeed)
@@ -160,7 +166,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 			onCompetitorAdded(competitor_id);
 		}
 	}
-	// TODO: handle deleted competitor
+	// Handle delete competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED))
 	{
 		int competitor_id = data.toInt();
@@ -446,7 +452,7 @@ void OFeedClient::sendCompetitorAdded(QString json_body)
 				reply->deleteLater(); });
 }
 
-void OFeedClient::sendCompetitorDeleted(int competitor_id)
+void OFeedClient::sendCompetitorDeleted(int run_id)
 {
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
@@ -455,7 +461,7 @@ void OFeedClient::sendCompetitorDeleted(int competitor_id)
 	QByteArray auth_header = auth_value.toUtf8();
 
 	// Create the URL for the POST request
-	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(competitor_id) + "/external-id");
+	QUrl url(hostUrl() + "/rest/v1/events/" + eventId() + "/competitors/" + QString::number(run_id) + "/external-id");
 
 	// Create the network request
 	QNetworkRequest request(url);
@@ -477,11 +483,10 @@ void OFeedClient::sendCompetitorDeleted(int competitor_id)
 
 					if (json_object.contains("error") && !json_object["error"].toBool()) {
 						QJsonObject results_object = json_object["results"].toObject();
-						QJsonObject data_object = results_object["data"].toObject();
 
-						if (data_object.contains("message")) {
-							QString data_message = data_object["message"].toString();
-							qfInfo() << serviceName().toStdString() + " [deleted competitor (external id)]: " << data_message;
+						if (results_object.contains("data")) {
+							QString data = results_object["data"].toString();
+							qfInfo() << serviceName().toStdString() + " [deleted competitor (external id)]: " << data;
 						} else {
 							qfInfo() << serviceName().toStdString() + " [deleted competitor (external id)]: ok, but no data message found.";
 						}
@@ -1330,6 +1335,26 @@ void OFeedClient::onCompetitorReadOut(int competitor_id)
 	}
 }
 
+void OFeedClient::onCompetitorDeleted(int competitor_id)
+{
+	if (competitor_id == 0)
+		return;
+
+	int stage_id = getPlugin<EventPlugin>()->currentStageId();
+	qf::core::sql::Query q;
+	q.exec("SELECT runs.id AS runId, "
+		   "FROM runs "
+		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
+		   "WHERE competitors.id=" QF_IARG(competitor_id) " AND runs.stageId=" QF_IARG(stage_id),
+		   qf::core::Exception::Throw);
+	if (q.next())
+	{
+		int run_id = q.value("runId").toInt();
+		qDebug() << "Call competitor delete, runs id: " << run_id;
+		sendCompetitorDeleted(run_id);
+	}
+
+}
 QByteArray OFeedClient::zlibCompress(QByteArray data)
 {
 	QByteArray compressedData = qCompress(data);

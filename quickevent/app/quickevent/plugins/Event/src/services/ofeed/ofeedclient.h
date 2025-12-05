@@ -63,10 +63,11 @@ public:
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
 	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
 	void sendCompetitorAdded(QString json_body);
-	void sendCompetitorDeleted(int competitor_id);
+	void sendCompetitorDeleted(int run_id);
 	void onCompetitorAdded(int competitor_id);
 	void onCompetitorEdited(int competitor_id);
 	void onCompetitorReadOut(int competitor_id);
+	void onCompetitorDeleted(int competitor_id);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesByOrigin();
 	void processCompetitorsChanges(QJsonArray data_array);
