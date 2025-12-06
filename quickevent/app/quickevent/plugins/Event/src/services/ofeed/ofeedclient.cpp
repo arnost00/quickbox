@@ -138,7 +138,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	{
 		auto checked_card = quickevent::core::si::CheckedCard(data.toMap());
 		int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(checked_card.runId());
-		qDebug() << "DB event competitor READ-OUT, competitor id: " << competitor_id << ", runs.id: " << checked_card.runId();
+		qfInfo() << serviceName().toStdString() + "DB event competitor READ-OUT, competitor id: " << competitor_id << ", runs.id: " << checked_card.runId();
 		onCompetitorReadOut(competitor_id);
 	}
 
@@ -146,7 +146,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED))
 	{
 		int competitor_id = data.toInt();		
-		qDebug() << "DB event competitor EDITED, competitor id: " << competitor_id;
+		qfInfo() << serviceName().toStdString() + "DB event competitor EDITED, competitor id: " << competitor_id;
 		onCompetitorEdited(competitor_id);
 	}
 
@@ -162,15 +162,16 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 		else
 		{
 			int competitor_id = data.toInt();
-			qDebug() << "DB event competitor ADDED, competitor id: " << competitor_id;
+			qfInfo() << serviceName().toStdString() + "DB event competitor ADDED, competitor id: " << competitor_id;
 			onCompetitorAdded(competitor_id);
 		}
 	}
+
 	// Handle delete competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED))
 	{
 		int run_id = data.toInt();
-		qDebug() << "DB event competitor DELETED, run id: " << run_id;
+		qfInfo() << serviceName().toStdString() + "DB event competitor DELETED, run id: " << run_id;
 		sendCompetitorDeleted(run_id);
 	}	
 }
