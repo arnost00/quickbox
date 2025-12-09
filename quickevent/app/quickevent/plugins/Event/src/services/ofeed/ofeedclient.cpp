@@ -117,7 +117,9 @@ void OFeedClient::init()
 void OFeedClient::onExportTimerTimeOut()
 {
 	// exportStartListIofXml3();
-	getChangesByOrigin();
+	if(runChangesProcessing()){
+		getChangesByOrigin();
+	}
 	exportResultsIofXml3();
 }
 
@@ -244,6 +246,13 @@ bool OFeedClient::runXmlValidation()
 	return getPlugin<EventPlugin>()->eventConfig()->value(key, "true").toBool();
 }
 
+bool OFeedClient::runChangesProcessing ()
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	QString key = serviceName().toLower() + ".runChangesProcessing.E" + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->eventConfig()->value(key, "false").toBool();
+};
+
 void OFeedClient::setHostUrl(QString hostUrl)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
@@ -283,6 +292,13 @@ void OFeedClient::setRunXmlValidation(bool runXmlValidation)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".runXmlValidation.E" + QString::number(current_stage), runXmlValidation);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+void OFeedClient::setRunChangesProcessing(bool runChangesProcessing)
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".runChangesProcessing.E" + QString::number(current_stage), runChangesProcessing);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 

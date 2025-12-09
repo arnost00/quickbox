@@ -2730,33 +2730,33 @@ Použij: Soubor --&gt; Importovat --&gt; Závod (*.qbe) pro konverzi dat do aktu
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="672"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="649"/>
         <source>Exception occurred while getting changes by origin: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="742"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="767"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="792"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="720"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="745"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="770"/>
         <source>Database query failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="747"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="772"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="797"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="725"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="750"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="775"/>
         <source>Exception occurred while executing query: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="751"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="776"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="801"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="729"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="754"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="779"/>
         <source>Unknown exception occurred while executing query.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="870"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="846"/>
         <source>No data received or an error occurred.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2835,12 +2835,27 @@ Použij: Soubor --&gt; Importovat --&gt; Závod (*.qbe) pro konverzi dat do aktu
         <translation type="unfinished">Nahrání dat</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="200"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="224"/>
+        <source>Turn on/off changes processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="233"/>
+        <source>ON / OFF</source>
+        <translation type="unfinished">ON / OFF</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="243"/>
+        <source>Zpracování zapnuto/vypnuto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="292"/>
         <source>Additional settings</source>
         <translation type="unfinished">Rozšířené nastavení</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="216"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="308"/>
         <source>Run IOF XML validation</source>
         <translation type="unfinished">Provést IOF XML validaci</translation>
     </message>
@@ -2868,25 +2883,49 @@ Použij: Soubor --&gt; Importovat --&gt; Závod (*.qbe) pro konverzi dat do aktu
         <translation type="obsolete">Zpracování změn</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="269"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="276"/>
         <source>Changes from the origin specified (permanent value at this moment) are processed automatically and visualized in &lt;b&gt;qxchange&lt;/b&gt; modul.</source>
         <translation type="unfinished">Změny z uvedeného místa (aktuálně pevně daná hodnota START) jsou zpracovávány automaticky a k zobrazení v &lt;b&gt;qxchange&lt;/b&gt; modulu.</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="247"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="254"/>
         <source>Origin</source>
         <translation type="unfinished">Místo</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="238"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="200"/>
         <source>Process changes setup</source>
         <translation type="unfinished">Nastavení zpracování změn</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="254"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="260"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="261"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="267"/>
         <source>START</source>
         <translation type="unfinished">START</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="33"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="126"/>
+        <source>ON</source>
+        <translation type="unfinished">ON</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="33"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="126"/>
+        <source>OFF</source>
+        <translation type="unfinished">OFF</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="50"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="128"/>
+        <source>Changes are automatically processed</source>
+        <translation type="unfinished">Probíhá automatické zpracování změn</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="50"/>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="128"/>
+        <source>Processing changes is deactivated</source>
+        <translation type="unfinished">Zpracování změn je vypnuté</translation>
     </message>
 </context>
 <context>
@@ -5110,29 +5149,29 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <translation>Pozdní registrace</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1123"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1146"/>
         <source>E%1 IOF XML stage results</source>
         <translation>E%1 IOF XML etapové výsledky</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1751"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2117"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1774"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2140"/>
         <source>Start list by classes</source>
         <translation>Startovní listina po kategoriích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1779"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2216"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1802"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2239"/>
         <source>Start list by clubs</source>
         <translation>Startovní listina po klubech</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1804"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1827"/>
         <source>Start list for starters</source>
         <translation>Startovní listina pro startéry</translation>
     </message>
     <message numerus="yes">
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1837"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1860"/>
         <source>Start list by classes for %n stage(s)</source>
         <translation>
             <numerusform>Startovní listina po kategoriích na %n etapu</numerusform>
@@ -5141,7 +5180,7 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1869"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1892"/>
         <source>Start list by clubs for %n stage(s)</source>
         <translation>
             <numerusform>Startovní listina po klubech na %n etapu</numerusform>
@@ -5150,19 +5189,19 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         </translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1893"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1919"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1916"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1942"/>
         <source>Results by classes</source>
         <translation>Výsledky po kategoriích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1942"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1965"/>
         <source>Stage awards</source>
         <translation>Etapové diplomy</translation>
     </message>
     <message numerus="yes">
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1969"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="1996"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="1992"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2019"/>
         <source>Results after %n stage(s)</source>
         <oldsource>Results after %1 stages</oldsource>
         <translation>
@@ -5172,169 +5211,169 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         </translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2018"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2041"/>
         <source>Awards after %1 stages</source>
         <translation>Diplomy po %1 etapách</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2068"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2274"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2091"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2297"/>
         <source>length:</source>
         <translation>délka:</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2070"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2276"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2093"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2299"/>
         <source>climb:</source>
         <translation>převýšení:</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2073"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2171"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2280"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2404"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2096"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2194"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2303"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2427"/>
         <source>Top</source>
         <translation>Nahoru</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2086"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2184"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2109"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2207"/>
         <source>St. Num</source>
         <translation>St. čís.</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2087"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2186"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2288"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2412"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2513"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2110"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2209"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2311"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2435"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2536"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2088"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2187"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2289"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2413"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2527"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2111"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2210"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2312"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2436"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2550"/>
         <source>Registration</source>
         <translation>Registrace</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2089"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2188"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2112"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2211"/>
         <source>SI</source>
         <translation>SI</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2090"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2189"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2113"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2212"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2185"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2208"/>
         <source>Class</source>
         <translation>Kategorie</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2231"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2254"/>
         <source>Preparing data</source>
         <translation>Připravuji data</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2260"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2390"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2283"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2413"/>
         <source>Procesing class %1</source>
         <translation>Zpracovávám kategorii %1</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2279"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2302"/>
         <source>Laps</source>
         <translation>Mezičasy</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2287"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2411"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2512"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2310"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2434"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2535"/>
         <source>Place</source>
         <translation>Pořadí</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2290"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2414"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2313"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2437"/>
         <source>Club</source>
         <translation>Klub</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2291"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2422"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2514"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2314"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2445"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2537"/>
         <source>Time</source>
         <translation>Čas</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2292"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2423"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2515"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2315"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2446"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2538"/>
         <source>Loss</source>
         <translation>Ztráta</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2462"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2485"/>
         <source>NC</source>
         <comment>Not Competing</comment>
         <translation>MS</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2465"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2488"/>
         <source>DISQ</source>
         <translation>DISK</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2763"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2786"/>
         <source>E%1 IOF XML stage startlist</source>
         <translation>E%1 IOF XML startovka etapy</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2328"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2479"/>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2606"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2351"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2502"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2629"/>
         <source>Stage results</source>
         <translation>Výsledky etapy</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2347"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2370"/>
         <source>Warning</source>
         <translation>Varování</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2347"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2370"/>
         <source>Export error</source>
         <translation>Chyba při exportu</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2349"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2372"/>
         <source>Information</source>
         <translation>Informace</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2349"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2372"/>
         <source>Results exported to %1</source>
         <translation>Výsledky exportovány do %1</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2369"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2392"/>
         <source>Overall results after stage %1</source>
         <translation>Celkové výsledky po %1. etapě</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2419"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2442"/>
         <source>Stage %1</source>
         <translation>Etapa %1</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runsplugin.cpp" line="2520"/>
+        <location filename="plugins/Runs/src/runsplugin.cpp" line="2543"/>
         <source>FIN</source>
         <translation>CÍL</translation>
     </message>
@@ -5806,65 +5845,65 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <translation>interval</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="222"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="224"/>
         <source>Show receipt</source>
         <oldsource>Show card</oldsource>
         <translation>Ukázat mezičasy</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="223"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="225"/>
         <source>Load times from card in selected rows</source>
         <translation>Načíst časy z čipu ve vybraných řádcích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="224"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="226"/>
         <source>Print receipt</source>
         <oldsource>Print card</oldsource>
         <translation>Vytisknout mezičasy</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="226"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="228"/>
         <source>Shift start times in selected rows</source>
         <translation>Posunout startovní čas ve vybraných řádcích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="227"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="229"/>
         <source>Clear start times in selected rows</source>
         <oldsource>Clear times in selected rows</oldsource>
         <translation>Vymazat startovní časy ve vybraných řádcích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="228"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="230"/>
         <source>Set class in selected rows</source>
         <translation>Nastavit kategorii ve vybraných řádcích</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="244"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="246"/>
         <source>Reloading times for %1</source>
         <translation>Znovu načítám časy pro %1</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="283"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="285"/>
         <source>Get number</source>
         <translation>Zadejte číslo</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="283"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="285"/>
         <source>Start times offset [min]:</source>
         <translation>Offset startovního času [min]:</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="335"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="337"/>
         <source>Dialog</source>
         <translation>Dialog</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="336"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="338"/>
         <source>Select class</source>
         <translation>Vyberte kategorii</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runstablewidget.cpp" line="365"/>
+        <location filename="plugins/Runs/src/runstablewidget.cpp" line="367"/>
         <source>Duplicate SI inserted.</source>
         <translation>Vloženo duplicitní SI.</translation>
     </message>
@@ -6038,7 +6077,7 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="229"/>
-        <location filename="plugins/Runs/src/runswidget.cpp" line="1141"/>
+        <location filename="plugins/Runs/src/runswidget.cpp" line="1155"/>
         <source>Competitors statistics</source>
         <translation>Statistiky závodníků</translation>
     </message>
@@ -6137,7 +6176,7 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <translation>Potvrďte odstranění %1 závodníků.</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runswidget.cpp" line="1155"/>
+        <location filename="plugins/Runs/src/runswidget.cpp" line="1169"/>
         <source>Edit Competitor</source>
         <translation>Upravit závodníka</translation>
     </message>
@@ -6146,7 +6185,7 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <translation type="vanished">Uložit</translation>
     </message>
     <message>
-        <location filename="plugins/Runs/src/runswidget.cpp" line="1159"/>
+        <location filename="plugins/Runs/src/runswidget.cpp" line="1173"/>
         <source>Ok and &amp;next</source>
         <translation>Ok a &amp;další</translation>
     </message>

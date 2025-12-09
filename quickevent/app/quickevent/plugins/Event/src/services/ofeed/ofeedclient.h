@@ -52,6 +52,8 @@ public:
 	void setLastChangelogCall(QDateTime lastChangelogCall);
 	bool runXmlValidation();
 	void setRunXmlValidation(bool runXmlValidation);
+	bool runChangesProcessing();
+	void setRunChangesProcessing(bool runChangesProcessing);
 
 	private:
 	QTimer *m_exportTimer = nullptr;
