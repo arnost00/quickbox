@@ -25,11 +25,10 @@ namespace qf::gui::framework {
 LogWidgetTableView::LogWidgetTableView(QWidget *parent)
 	: Super(parent)
 {
-	auto *style = qf::gui::Style::instance();
 	{
 		m_copySelectionToClipboardAction = new QAction(tr("Copy"));
 		m_copySelectionToClipboardAction->setObjectName("LogWidgetTableView copy action");
-		m_copySelectionToClipboardAction->setIcon(style->icon("copy"));
+		m_copySelectionToClipboardAction->setIcon(qf::gui::Style::icon("copy"));
 		m_copySelectionToClipboardAction->setShortcut(QKeySequence(tr("Ctrl+C", "Copy selection")));
 		m_copySelectionToClipboardAction->setShortcutContext(Qt::WidgetShortcut);
 		connect(m_copySelectionToClipboardAction, &QAction::triggered, this, &LogWidgetTableView::copy);
@@ -106,6 +105,10 @@ LogWidget::LogWidget(QWidget *parent)
 	, ui(new Ui::LogWidget)
 {
 	ui->setupUi(this);
+	ui->btClearLog->setIcon(qf::gui::Style::icon("clear"));
+	ui->btCopyToClipboard->setIcon(qf::gui::Style::icon("copy"));
+	ui->btResizeColumns->setIcon(qf::gui::Style::icon("zoom-fitwidth"));
+	ui->btTableMenu->setIcon(qf::gui::Style::icon("menu"));
 	//setPersistentSettingsId();
 	ui->btCopyToClipboard->setDefaultAction(ui->tableView->copySelectionToClipboardAction());
 
@@ -241,7 +244,7 @@ bool LogWidget::isAutoScroll()
 		}
 					//fprintf(stderr, "TOP scrollbar min: %d max: %d value: %d\n", sb->minimum(), sb->maximum(), sb->value());
 			return (sb->value() == sb->minimum());
-	
+
 	}
 	return false;
 }

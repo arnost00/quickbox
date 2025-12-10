@@ -10,21 +10,15 @@
 #include <QFileInfo>
 #include <QApplication>
 #include <QPalette>
+#include <QStyleHints>
 
 namespace qf::gui {
 
 bool isDarkTheme()
 {
 	// MUST be called after QApplication instance is created
-	QColor window_color = QApplication::palette().color(QPalette::Window);
-	QColor text_color = QApplication::palette().color(QPalette::WindowText);
-	// qDebug() << "window:" << window_color << window_color.value() << colorDarknes(window_color);
-	// qDebug() << "text:" << text_color << text_color.value() << colorDarknes(text_color);
-	// Simple heuristic: if background is darker than text, assume dark theme
-	return window_color.value() < text_color.value();
+	return qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
 }
-
-static const char *PROPERTY_STYLE_INSTANCE = "qf::qmlwidget::Style::instance";
 
 Style::Style(QObject *parent)
 	: QObject(parent)
@@ -50,6 +44,9 @@ QPixmap Style::pixmapFromSvg(const QString &file_name, const QSize &pixmap_size)
 	if(f.open(QFile::ReadOnly)) {
 		qfDebug() << "OK";
 		QByteArray ba = f.readAll();
+		if (isDarkTheme()) {
+			ba.replace("\"currentColor\"", "\"lightgray\"");
+		}
 		QSvgRenderer rnd(ba);
 		ret = QPixmap(px_sz);
 		ret.fill(Qt::transparent);
@@ -102,32 +99,23 @@ QIcon Style::icon(const QString &name, const QSize &pixmap_size)
 	return ret;
 }
 
+QIcon Style::icon(const QString &name)
+{
+	return instance()->icon(name, QSize());
+}
+
 Style *Style::instance()
 {
 	QCoreApplication *app = QCoreApplication::instance();
 	if(app) {
-		QVariant v = app->property(PROPERTY_STYLE_INSTANCE);
-		auto *o = v.value<QObject*>();
-		auto *style = qobject_cast<Style*>(o);
+		auto *style = app->findChild<Style*>({}, Qt::FindDirectChildrenOnly);
 		if(!style) {
 			style = new Style(app);
-			QVariant v = QVariant::fromValue(style);
-			app->setProperty(PROPERTY_STYLE_INSTANCE, v);
 		}
 		return style;
 	}
 	qfError() << "qf::qmlwidget::Style::instance is available only when QCoreApplication instance exists.";
 	return nullptr;
-}
-
-void Style::setInstance(Style *style)
-{
-	QCoreApplication *app = QCoreApplication::instance();
-	if(app) {
-		QVariant v = QVariant::fromValue(style);
-		app->setProperty(PROPERTY_STYLE_INSTANCE, v);
-	}
-	qfError() << "qf::qmlwidget::Style::instance is available only when QCoreApplication instance exists.";
 }
 
 QFileInfo Style::findFile(const QString &path, const QString &default_extension) const
@@ -146,9 +134,9 @@ QFileInfo Style::findFile(const QString &path, const QString &default_extension)
 		for(const auto &prefix : m_iconSearchPaths) {
 			auto fn2 = prefix + '/' + fn;
 			QFileInfo fi2(fn2);
-			// qfInfo() << "checking:" << fn2;
+//			qfInfo() << "checking:" << fn2;
 			if(fi2.isReadable()) {
-				// qfInfo() << "\t\tHHIITT" << fn2;
+//				qfInfo() << "\t\tHHIITT" << fn2;
 				return fi2;
 			}
 		}

@@ -108,7 +108,7 @@ add_library(libqfgui SHARED
 
     images/qf_gui_images.qrc
 	images/flat/qf_gui_images_flat.qrc
-	images/dark/qf_gui_images_dark.qrc
+	images/lucide/qf_gui_images_lucide.qrc
 	src/reports/widgets/printtableviewwidget/reports/qf_gui_printtablewidget_reports.qrc
     )
 

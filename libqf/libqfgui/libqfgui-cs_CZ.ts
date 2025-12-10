@@ -477,7 +477,7 @@
 <context>
     <name>qf::gui::TableViewToolBar</name>
     <message>
-        <location filename="src/tableviewtoolbar.cpp" line="67"/>
+        <location filename="src/tableviewtoolbar.cpp" line="53"/>
         <source>Filter</source>
         <translation type="unfinished">Filtr</translation>
     </message>

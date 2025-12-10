@@ -19,6 +19,7 @@ add_executable(qsqlmon
     src/tableviewwidget.cpp
 	src/theapp.cpp
 	src/qsqlmon.qrc
+	src/qsqlmon.rc
 	src/centralwidget.ui
 	src/columnselectorwidget.ui
 	src/dlgaltertable.ui
