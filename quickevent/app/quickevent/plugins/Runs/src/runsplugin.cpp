@@ -423,9 +423,10 @@ int RunsPlugin::competitorForRun(int run_id)
 
 int RunsPlugin::runForCompetitorStage(int competitor_id, int stage_id)
 {
-	qfLogFuncFrame() << "competitor id:" << competitor_id << " stage id:" << stage_id;
+	qfLogFuncFrame() << "competitor id:" << competitor_id << "stage id:" << stage_id;
 	if(!competitor_id)
 		return 0;
+	
 	int run_id = 0;
 	{
 		qf::core::sql::Query q;
@@ -437,7 +438,7 @@ int RunsPlugin::runForCompetitorStage(int competitor_id, int stage_id)
 				run_id = q.value(0).toInt();
 			}
 			else {
-				qfWarning() << "Cannot find run id record for competitor id:" << competitor_id << " and stage id:" << stage_id;
+				qfWarning() << "Cannot find run id record for competitor id:" << competitor_id << "and stage id:" << stage_id;
 			}
 		}
 	}

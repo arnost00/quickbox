@@ -1052,10 +1052,15 @@ void RunsWidget::editCompetitors(int mode)
 			for(int ix : sel_rows) {
 				int id = tv->tableRow(ix).value("competitors.id").toInt();
 				if(id > 0) {
+					// Get runs_id instead of competitor_id
+					int current_stage = getPlugin<EventPlugin>()->currentStageId();
+					int run_id = getPlugin<RunsPlugin>()->runForCompetitorStage(id, current_stage);
+					
 					Competitors::CompetitorDocument doc;
 					doc.load(id, qfm::DataDocument::ModeDelete);
 					doc.drop();
-					deleted_ids.append(id);
+					
+					deleted_ids.append(run_id);
 				}
 			}
 			if(!deleted_ids.isEmpty()) {
@@ -1064,11 +1069,7 @@ void RunsWidget::editCompetitors(int mode)
 					
 					// Invoke db delete event for selected rows
 					auto *plugin = getPlugin<EventPlugin>();
-					for (int competitor_id : deleted_ids) {
-
-						// Get runs_id instead of competitor_id
-						int current_stage = getPlugin<EventPlugin>()->currentStageId();
-						int run_id = getPlugin<RunsPlugin>()->runForCompetitorStage(competitor_id, current_stage);
+					for (int run_id : deleted_ids) {
 						if (run_id > 0)
 						{
 							plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, run_id);
