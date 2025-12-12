@@ -147,7 +147,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 	// Handle edit competitor
 	if (domain == QLatin1String(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED))
 	{
-		int competitor_id = data.toInt();		
+		int competitor_id = data.toInt();
 		qfInfo() << serviceName().toStdString() + "DB event competitor EDITED, competitor id: " << competitor_id;
 		onCompetitorEdited(competitor_id);
 	}
@@ -175,7 +175,7 @@ void OFeedClient::onDbEventNotify(const QString &domain, int connection_id, cons
 		int run_id = data.toInt();
 		qfInfo() << serviceName().toStdString() + "DB event competitor DELETED, run id: " << run_id;
 		sendCompetitorDeleted(run_id);
-	}	
+	}
 }
 
 QString OFeedClient::hostUrl() const
@@ -514,58 +514,71 @@ void OFeedClient::sendCompetitorDeleted(int run_id)
 				reply->deleteLater(); });
 }
 
-void OFeedClient::sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization = false)
-{
+namespace {
+QString jsonToString(const QJsonObject &o) {
+	QJsonDocument doc(o);
+	return QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+}
+}
+
+void OFeedClient::sendGraphQLRequest(const QString &query,
+									 const QJsonObject &variables,
+									 std::function<void(QJsonObject)> callback,
+									 bool withAuthorization = false) {
 	QUrl url(hostUrl() + "/graphql");
 	QNetworkRequest request(url);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
 	// Add authorization header if required
-	if (withAuthorization)
-	{
+	if (withAuthorization) {
 		QString combined = eventId() + ":" + eventPassword();
 		QByteArray auth = "Basic " + combined.toUtf8().toBase64();
-        request.setRawHeader("Authorization", auth);
+		request.setRawHeader("Authorization", auth);
 	}
 
 	// Construct the JSON payload for the GraphQL request
 	QJsonObject payload;
 	payload["query"] = query;
-	if (!variables.isEmpty())
-	{
+	if (!variables.isEmpty()) {
 		payload["variables"] = variables;
 	}
 
 	// Compact JSON
-	QByteArray request_body = QJsonDocument(payload).toJson(QJsonDocument::Compact);
+	QByteArray request_body =
+			QJsonDocument(payload).toJson(QJsonDocument::Compact);
 
 	// Send the POST request
 	QNetworkReply *reply = m_networkManager->post(request, request_body);
 
-	connect(reply, &QNetworkReply::finished, this, [=]()
-			{
-        // Default value
-        QJsonObject data_object;
+	connect(reply, &QNetworkReply::finished, this, [=]() {
+		// Default value
+		QJsonObject data_object;
 
-        if (reply->error()) {
-            qfError() << serviceName().toStdString() + " [GraphQL request]: " << reply->errorString();
-        } else {
-            QByteArray response = reply->readAll();
-            QJsonDocument json_response = QJsonDocument::fromJson(response);
-            QJsonObject json_object = json_response.object();
+		if (reply->error()) {
+			qfError() << serviceName().toStdString() + " [GraphQL request]: "
+					  << reply->errorString();
+		} else {
+			QByteArray response = reply->readAll();
+			QJsonDocument json_response = QJsonDocument::fromJson(response);
+			QJsonObject json_object = json_response.object();
 
-            if (json_object.contains("errors")) {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Errors in response: " << json_object;
-            } else if (json_object.contains("data")) {
-                data_object = json_object["data"].toObject();
-            } else {
-                qfError() << serviceName().toStdString() + " [GraphQL request] Unexpected response: " << json_object;
-            }
-        }
-        reply->deleteLater();
+			if (json_object.contains("errors")) {
+				qfError() << serviceName().toStdString() +
+							 " [GraphQL request] Errors in response: "
+						  << jsonToString(json_object);
+			} else if (json_object.contains("data")) {
+				data_object = json_object["data"].toObject();
+			} else {
+				qfError() << serviceName().toStdString() +
+							 " [GraphQL request] Unexpected response: "
+						  << jsonToString(json_object);
+			}
+		}
+		reply->deleteLater();
 
-        // Call the callback with the resulting data_object
-        callback(data_object); });
+		// Call the callback with the resulting data_object
+		callback(data_object);
+	});
 }
 
 void OFeedClient::getChangesByOrigin()
@@ -582,7 +595,7 @@ void OFeedClient::getChangesByOrigin()
 				type
 				previousValue
 				newValue
-				origin    
+				origin
 				competitor {
 					id
 					externalId
@@ -608,7 +621,7 @@ void OFeedClient::getChangesByOrigin()
 					type
 					previousValue
 					newValue
-					origin    
+					origin
 					competitor {
 						id
 						externalId
@@ -643,13 +656,13 @@ void OFeedClient::getChangesByOrigin()
 					QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
 					setLastChangelogCall(request_execution_time);
 				}
- 
+
 			} }, true);
 	}
 	catch (const std::exception &e)
 	{
 		qCritical() << tr("Exception occurred while getting changes by origin: ") << e.what();
-	}	
+	}
 }
 
 void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
@@ -671,7 +684,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 
 		// Extract values
 		QString type = change["type"].toString();
-		QString previous_value = change["previousValue"].toString();		
+		QString previous_value = change["previousValue"].toString();
 		QString new_value = change["newValue"].toString();
 
 		// Retrieve competitor and details
@@ -787,7 +800,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 	QString graphQLquery = R"(
 	query CompetitorById($competitorByIdId: Int!) {
-			competitorById(id: $competitorByIdId) {    
+			competitorById(id: $competitorByIdId) {
 				firstname
 				lastname
 				registration
@@ -798,7 +811,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 				}
 			}
 		}
-		)";		
+		)";
 
 	QJsonObject variables;
 	variables["competitorByIdId"] = ofeed_competitor_id;
@@ -817,31 +830,31 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			doc.setValue("classid", competitor_detail_class.value("externalId").toString());
 			doc.setSiid(competitor_by_id.value("card").toInt());
 			doc.setValue("note", competitor_by_id.value("note").toString());
-			
+
 			// Change the flag to handle emited db event
 			isInsertFromOFeed = true;
-			
+
 			// Save emits db event
-			doc.save();		
+			doc.save();
 
 			auto competitor_id = doc.value("competitors.id");
-			
+
 			// Get runs.id for current stage
 			int current_stage = getPlugin<EventPlugin>()->currentStageId();
 			int run_id = doc.runsIds().value(current_stage - 1);
-	
+
 			// Update externalId at OFeed
 			std::stringstream json_payload;
 			json_payload << "{"
 			<< R"("origin":"IT",)"
 			<< R"("externalId":")" << run_id << R"(")"
 			<< "}";
-	
+
 			std::string json_str = json_payload.str();
-	
+
 			// Convert std::string to QString
 			QString json_body = QString::fromStdString(json_str);
-			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);			
+			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
 		}
 		else
 		{
@@ -1234,7 +1247,7 @@ void OFeedClient::onCompetitorEdited(int competitor_id)
 		// External ids
 		json_payload << R"("useExternalId":true,)"
 						 << R"("classExternalId":")" << class_id << R"(",)";
-				
+
 		// Card number - QE saves 0 for empty si card
 		if (card_number != 0)
 		{

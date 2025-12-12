@@ -537,7 +537,7 @@ EventInfo QxClientService::eventInfo() const
 	// qfInfo() << qf::core::Utils::qvariantToJson(ei, false);
 	return ei;
 }
-
+/*
 namespace {
 auto query_to_json_csv(QSqlQuery &q)
 {
@@ -562,7 +562,7 @@ auto query_to_json_csv(QSqlQuery &q)
 	return csv;
 }
 }
-
+*/
 int QxClientService::currentConnectionId()
 {
 	return qf::core::sql::Connection::forName().connectionId();
