@@ -414,11 +414,35 @@ int RunsPlugin::competitorForRun(int run_id)
 				competitor_id = q.value(0).toInt();
 			}
 			else {
-				qfWarning() << "Cannot find card record for run id:" << run_id;
+				qfWarning() << "Cannot find commpetitor record for run id:" << run_id;
 			}
 		}
 	}
 	return competitor_id;
+}
+
+int RunsPlugin::runForCompetitorStage(int competitor_id, int stage_id)
+{
+	qfLogFuncFrame() << "competitor id:" << competitor_id << "stage id:" << stage_id;
+	if(!competitor_id)
+		return 0;
+	
+	int run_id = 0;
+	{
+		qf::core::sql::Query q;
+		if(q.exec("SELECT runs.id "
+		   "FROM runs "
+		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
+		   "WHERE competitors.id=" QF_IARG(competitor_id) " AND runs.stageId=" QF_IARG(stage_id))) {
+			if(q.next()) {
+				run_id = q.value(0).toInt();
+			}
+			else {
+				qfWarning() << "Cannot find run id record for competitor id:" << competitor_id << "and stage id:" << stage_id;
+			}
+		}
+	}
+	return run_id;
 }
 
 QVariantList RunsPlugin::qxExportRunsCsvJson(int stage_id)
