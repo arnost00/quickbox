@@ -636,7 +636,7 @@ void OFeedClient::getChangesByOrigin()
 			variables["since"] = last_changelog_call_value.toString(Qt::ISODate);
 		}
 
-		sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+		sendGraphQLRequest(graphQLquery, variables, [this](QJsonObject data)
 						   {
 			if (!data.isEmpty())
 			{
@@ -815,7 +815,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 
 	QJsonObject variables;
 	variables["competitorByIdId"] = ofeed_competitor_id;
-	sendGraphQLRequest(graphQLquery, variables, [=, this](QJsonObject data)
+	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id](QJsonObject data)
 	{
 		if (!data.isEmpty())
 		{
@@ -913,7 +913,8 @@ void OFeedClient::storeChange(const QJsonObject &change)
 	}
 }
 
-static QString getIofResultStatus(
+namespace {
+QString getIofResultStatus(
 	int time,
 	bool is_disq,
 	bool is_disq_by_organizer,
@@ -955,9 +956,10 @@ static QString getIofResultStatus(
 	return "Inactive"; // Inactive as default status
 }
 
-static QString datetime_to_string(const QDateTime &dt)
+QString datetime_to_string(const QDateTime &dt)
 {
 	return quickevent::core::Utils::dateTimeToIsoStringWithUtcOffset(dt);
+}
 }
 
 void OFeedClient::onCompetitorAdded(int competitor_id)
