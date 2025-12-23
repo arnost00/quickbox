@@ -83,14 +83,15 @@ RelaysWidget::RelaysWidget(QWidget *parent) :
 	ui->tblRelays->setInlineEditSaveStrategy(qfw::TableView::OnEditedValueCommit);
 	auto *m = new qfm::SqlTableModel(this);
 	using CD = qfm::TableModel::ColumnDefinition;
+	m->setIdColumnName("relays.id");
 	m->clearColumns(col_COUNT);
-	m->setColumn(col_relays_id, CD("id").setReadOnly(true));
+	m->setColumn(col_relays_id, CD("relays.id").setReadOnly(true));
 	m->setColumn(col_classes_name, CD("classes.name", tr("Class")).setReadOnly(true));
-	m->setColumn(col_relays_club, CD("club", tr("Club")));
-	m->setColumn(col_relays_name, CD("name", tr("Name")));
-	m->setColumn(col_relays_number, CD("number", tr("Number")));
-	m->setColumn(col_relays_note, CD("note", tr("Note")));
-	m->setColumn(col_relays_isrunning, CD("isrunning", tr("Is Running")));
+	m->setColumn(col_relays_club, CD("relays.club", tr("Club")));
+	m->setColumn(col_relays_name, CD("relays.name", tr("Name")));
+	m->setColumn(col_relays_number, CD("relays.number", tr("Number")));
+	m->setColumn(col_relays_note, CD("relays.note", tr("Note")));
+	m->setColumn(col_relays_isrunning, CD("relays.isrunning", tr("Is Running")));
 	ui->tblRelays->setTableModel(m);
 	m_tblModel = m;
 
