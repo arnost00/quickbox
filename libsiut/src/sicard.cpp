@@ -43,6 +43,7 @@ QString SICard::toString() const
 	sl << tr("check: %1").arg(time_str(checkTime()));
 	sl << tr("start: %1").arg(time_str(startTime()));
 	sl << tr("finish: %1").arg(time_str(finishTime()));
+	sl << tr("batteryStatus: %1").arg(qf::core::Utils::qvariantToJson(batteryStatus()));
 	for (int n = 0; n < punchCount(); ++n) {
 		SIPunch p = punchAt(n);
 		sl << ("   " + QString::number(n+1)).right(4) + ".\t" + QString::number(p.code()) + "\t" + time_str(p.time());

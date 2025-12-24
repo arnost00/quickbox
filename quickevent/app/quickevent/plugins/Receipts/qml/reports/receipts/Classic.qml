@@ -407,9 +407,10 @@ Report {
 				layout: Frame.LayoutHorizontal
 				Para {
 					textFn: function() {
-						var battery_status = bandCard.data("batteryStatus");
+						var data = bandCard.data("data");
+						var battery_status = data.batteryStatus;
 						if(battery_status)
-							return qsTr("Siac battery: ") + battery_status.voltage + "V, " + (battery_status.low? "LOW": "Ok");
+							return qsTr("Siac battery: ") + battery_status.voltage.toFixed(2) + "V - " + (battery_status.low? "LOW": "Ok");
 						return "";
 					}
 				}

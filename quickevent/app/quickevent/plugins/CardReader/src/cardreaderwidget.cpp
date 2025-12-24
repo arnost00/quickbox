@@ -653,6 +653,9 @@ void CardReaderWidget::processSICard(const siut::SICard &card)
 	quickevent::core::si::ReadCard read_card(card);
 	read_card.setRunId(run_id);
 	read_card.setRunIdAssignError(err_msg);
+	auto data = read_card.data();
+	data["batteryStatus"] = card.batteryStatus();
+	read_card.setData(data);
 	processReadCardInTransaction(read_card);
 }
 

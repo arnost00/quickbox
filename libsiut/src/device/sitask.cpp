@@ -705,9 +705,9 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 					battery_status.setLow(lbat != 0xAA);
 					battery_status.setVoltage(1.9 + 0.09 * mvbat);
 					battery_status.setReferenceVoltage(1.9 + 0.09 * rbat);
-					logCardRead().nospace() << "MVBAT: " << mvbat << " 0x" << QString::number(mvbat, 16);
-					logCardRead().nospace() << "RBAT : " << rbat << " 0x" << QString::number(rbat, 16);
-					logCardRead().nospace() << "LBAT : " << lbat << " 0x" << QString::number(lbat, 16) << " " << (lbat == 0xAA? "OK": "LOW");
+					logCardRead().nospace() << "MVBAT: " << " 0x" << QString::number(mvbat, 16);
+					logCardRead().nospace() << "RBAT : " << " 0x" << QString::number(rbat, 16);
+					logCardRead().nospace() << "LBAT : " << " 0x" << QString::number(lbat, 16) << " " << (lbat == 0xAA? "OK": "LOW");
 					m_card.setBatteryStatus(battery_status);
 
 					sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, (char)(block_number + 1)));
