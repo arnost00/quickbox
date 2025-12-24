@@ -65,8 +65,9 @@ Report {
 						textFn: function() {
 							var s = "";
 							var stage_cnt = bandCompetitor.data("stageCount")
-							if(stage_cnt > 1)
+							if(stage_cnt > 1) {
 								s = qsTr("E") + bandCompetitor.data("currentStageId") + " - ";
+							}
 							s += bandCompetitor.data("event.name")
 							return s;
 						}
@@ -396,6 +397,19 @@ Report {
 						var length = root.courseLength;
 						if(length > 0)
 							return OGTime.msecToString_mmss(((time / length) >> 0) * 1000) + "min/km";
+						return "";
+					}
+				}
+			}
+			Frame {
+				width: "%"
+				hinset: 1
+				layout: Frame.LayoutHorizontal
+				Para {
+					textFn: function() {
+						var battery_status = bandCard.data("batteryStatus");
+						if(battery_status)
+							return qsTr("Siac battery: ") + battery_status.voltage + "V, " + (battery_status.low? "LOW": "Ok");
 						return "";
 					}
 				}

@@ -25,9 +25,6 @@ static QString ob_time_str(int _time)
 }
 */
 
-SICard::SICard()
-= default;
-
 SICard::SICard(int card_number)
 {
 	setCardNumber(card_number);

@@ -11,6 +11,19 @@
 
 namespace siut {
 
+class SIUT_DECL_EXPORT SiCardBatteryStatus : public QVariantMap
+{
+	using Super = QVariantMap;
+public:
+	SiCardBatteryStatus() = default;
+	SiCardBatteryStatus(const QVariantMap &o) : Super(o) {}
+
+	QF_VARIANTMAP_FIELD(double, v, setV, oltage)
+	QF_VARIANTMAP_FIELD(double, r, setR, eferenceVoltage)
+	QF_VARIANTMAP_FIELD(bool, is, set, Low)
+	QF_VARIANTMAP_FIELD(QString, r, setR, eplaceDate)
+};
+
 class SIUT_DECL_EXPORT SICard : public QVariantMap
 {
 	Q_DECLARE_TR_FUNCTIONS(SICard)
@@ -19,7 +32,7 @@ public:
 	using PunchList = QVariantList;
 	static constexpr int INVALID_SI_TIME = 0xEEEE;
 
-	SICard();
+	SICard() = default;
 	SICard(const QVariantMap &o) : Super(o) {}
 	SICard(int card_number);
 
@@ -30,6 +43,7 @@ public:
 	QF_VARIANTMAP_FIELD(int, f, setF, inishTime)
 	QF_VARIANTMAP_FIELD(int, f, setF, inishTimeMs)
 	QF_VARIANTMAP_FIELD(QVariantList, p, setP, unches)
+	QF_VARIANTMAP_FIELD(SiCardBatteryStatus, b, setB, atteryStatus)
 
 	QString toString() const;
 

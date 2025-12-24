@@ -66,13 +66,13 @@ Schema {
 				Field { name: 'id'; type: Serial { primaryKey: true } },
 				Field { name: 'code'; type: Int { } },
 				Field { name: 'altCode'; type: Int { } },
-				Field { name: 'outOfOrder'; 
-					type: Boolean { } 
+				Field { name: 'outOfOrder';
+					type: Boolean { }
 					defaultValue: false;
 					notNull: true
 				},
-				Field { name: 'radio'; 
-					type: Boolean { } 
+				Field { name: 'radio';
+					type: Boolean { }
 					defaultValue: false
 					notNull: true
 				},
@@ -124,13 +124,13 @@ Schema {
 	 			},
 				Field { name: 'startTimeMin'; type: Int { } },
 				Field { name: 'startIntervalMin'; type: Int { } },
-				Field { name: 'vacantsBefore'; type: Int { } 
+				Field { name: 'vacantsBefore'; type: Int { }
 						comment: 'place n vacants gap before first competitor in class start list'
 				},
-				Field { name: 'vacantEvery'; type: Int { } 
+				Field { name: 'vacantEvery'; type: Int { }
 					comment: 'place vacant every n-th competitor in class start list'
 				},
-				Field { name: 'vacantsAfter'; type: Int { } 
+				Field { name: 'vacantsAfter'; type: Int { }
 					comment: 'place n vacants gap after last competitor in class start list'
 				},
 				Field { name: 'mapCount'; type: Int { } },
@@ -418,6 +418,10 @@ Schema {
 						charset: 'latin1'
 					}
 					comment: 'JSON of format [[code, time, msec, day_of_week, week_cnt], ...]}'
+				},
+				Field { name: 'data'
+					type: String { }
+					comment: 'JSON of auxiliary card data like Siac battery status, etc.'
 				},
 				Field { name: 'readerConnectionId'
 					type: Int { }

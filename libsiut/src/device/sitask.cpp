@@ -619,8 +619,11 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
 					else if(m_cardSerie == pCard)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
-					else if(m_cardSerie == Siac)
-						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x03));
+					else if(m_cardSerie == Siac) {
+						// 02 EA 05 7E 05 05 05 05 B2 31 03 - EA - PROBABLY SIAC battery measurement request
+						auto ba = QByteArray::fromHex("7E05050505");
+						sendCommand((int)SIMessageData::Command::SiacMeasureBattery, ba);
+					}
 				}
 			}
 			else {
@@ -682,11 +685,14 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			}
 			else if(m_cardSerie == Siac) {
 				if(block_number == 3) {
-					// read battery date
+					// read battery data
+					SiCardBatteryStatus battery_status;
 					int yy = (uint8_t)data[base + (0xf*4) + 0];
 					int mm = (uint8_t)data[base + (0xf*4) + 1];
 					int dd = (uint8_t)data[base + (0xf*4) + 2];
-					logCardRead().nospace() << "SIAC batery date: " << (2000 + yy) << '-' << mm << '-' << dd;
+					QDate date(yy + 2000, mm, dd);
+					battery_status.setReplaceDate(date.toString(Qt::ISODate));
+					logCardRead().nospace() << "SIAC batery date: " << battery_status.replaceDate();
 					auto hw_ver_1 = (uint8_t)data[base + (0x10*4) + 0];
 					auto hw_ver_0 = (uint8_t)data[base + (0x10*4) + 1];
 					auto sw_ver_1 = (uint8_t)data[base + (0x10*4) + 2];
@@ -696,11 +702,14 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 					auto mvbat = (uint8_t)data[base + (0x11*4) + 3];
 					auto rbat = (uint8_t)data[base + (0x15*4) + 0];
 					auto lbat = (uint8_t)data[base + (0x15*4) + 1];
+					battery_status.setLow(lbat != 0xAA);
+					battery_status.setVoltage(1.9 + 0.09 * mvbat);
+					battery_status.setReferenceVoltage(1.9 + 0.09 * rbat);
 					logCardRead().nospace() << "MVBAT: " << mvbat << " 0x" << QString::number(mvbat, 16);
 					logCardRead().nospace() << "RBAT : " << rbat << " 0x" << QString::number(rbat, 16);
 					logCardRead().nospace() << "LBAT : " << lbat << " 0x" << QString::number(lbat, 16) << " " << (lbat == 0xAA? "OK": "LOW");
+					m_card.setBatteryStatus(battery_status);
 
-					// read battery status
 					sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, (char)(block_number + 1)));
 				}
 				else if(block_number >= 4 && block_number <= 7) {
@@ -733,6 +742,10 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 				abort();
 			}
 		}
+	}
+	else if (cmd == SIMessageData::Command::SiacMeasureBattery) {
+		// continue SIAC card read out
+		sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x03));
 	}
 	else {
 		qfError() << "Invalid command:" << "0x" + QString::number((int)cmd, 16) << "received";

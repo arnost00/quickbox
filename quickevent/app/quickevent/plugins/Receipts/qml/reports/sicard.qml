@@ -207,24 +207,19 @@ Report {
 				width: "%"
 				topBorder: Pen { basedOn: "black2" }
 			}
-			/*
 			Frame {
 				width: "%"
-				vinset: 1
 				hinset: 1
 				layout: Frame.LayoutHorizontal
 				Para {
-					text: "Time: "
-				}
-				Para {
-					width: "%"
 					textFn: function() {
-						var msec = bandCard.data("timeMs");
-						return OGTime.msecToString_mmss(msec);
+						var battery_status = bandCard.data("batteryStatus");
+						if(battery_status)
+							return qsTr("Siac battery: ") + battery_status.voltage + "V, " + (battery_status.low? "LOW": "Ok");
+						return "";
 					}
 				}
 			}
-			*/
 		}
 	}
 }

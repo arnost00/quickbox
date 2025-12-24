@@ -8,11 +8,7 @@
 
 class QSqlRecord;
 
-namespace siut { class SICard; }
-
-namespace quickevent {
-namespace core {
-namespace si {
+namespace quickevent::core::si {
 
 class QUICKEVENTCORE_DECL_EXPORT ReadPunch : public QVariantMap
 {
@@ -59,5 +55,5 @@ public:
 	QString toString() const;
 };
 
-}}}
+}
 

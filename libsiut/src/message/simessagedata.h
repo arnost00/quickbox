@@ -30,7 +30,9 @@ public:
 		SICardRemoved=0xE7,
 		GetSICard5=0xB1,
 		GetSICard6=0xE1,
+		SiacMeasureBattery=0xEA,
 		GetSICard8=0xEF,
+
 		//GetPunch2=0x53, /// autosend only (ie. punch)
 		SetDirectRemoteMode=0xF0,
 		//TimeSend=0x54, /// autosend only (ie. trigger data)
