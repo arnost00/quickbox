@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/quickevent/core">
         <file>js/ogtime.js</file>
+        <file>js/timeext.js</file>
     </qresource>
 </RCC>

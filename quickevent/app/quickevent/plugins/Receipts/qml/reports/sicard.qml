@@ -1,7 +1,7 @@
 import QtQml 2.0
 import qf.qmlreports 1.0
 import shared.qml.reports 1.0
-import "qrc:/qf/core/qml/js/timeext.js" as TimeExt
+import "qrc:/quickevent/core/js/timeext.js" as TimeExt
 import "qrc:/quickevent/core/js/ogtime.js" as OGTime
 
 Report {
@@ -207,24 +207,20 @@ Report {
 				width: "%"
 				topBorder: Pen { basedOn: "black2" }
 			}
-			/*
 			Frame {
 				width: "%"
-				vinset: 1
 				hinset: 1
 				layout: Frame.LayoutHorizontal
 				Para {
-					text: "Time: "
-				}
-				Para {
-					width: "%"
 					textFn: function() {
-						var msec = bandCard.data("timeMs");
-						return OGTime.msecToString_mmss(msec);
+						var data = bandCard.data("data");
+						var battery_status = data.batteryStatus;
+						if(battery_status)
+							return qsTr("Siac battery: ") + battery_status.voltage.toFixed(2) + "V - " + (battery_status.low? "LOW": "Ok");
+						return "";
 					}
 				}
 			}
-			*/
 		}
 	}
 }

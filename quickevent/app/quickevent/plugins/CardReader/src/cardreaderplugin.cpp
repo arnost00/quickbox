@@ -264,8 +264,8 @@ int CardReaderPlugin::saveCardToSql(const quickevent::core::si::ReadCard &read_c
 		punches << p.toJsonArrayString();
 	}
 	qf::core::sql::Query q;
-	q.prepare(QStringLiteral("INSERT INTO cards (stationNumber, siId, checkTime, startTime, finishTime, punches, runId, stageId, readerConnectionId, runIdAssignError)"
-							 " VALUES (:stationNumber, :siId, :checkTime, :startTime, :finishTime, :punches, :runId, :stageId, :readerConnectionId, :runIdAssignError)")
+	q.prepare(QStringLiteral("INSERT INTO cards (stationNumber, siId, checkTime, startTime, finishTime, punches, runId, stageId, readerConnectionId, runIdAssignError, data)"
+							 " VALUES (:stationNumber, :siId, :checkTime, :startTime, :finishTime, :punches, :runId, :stageId, :readerConnectionId, :runIdAssignError, :data)")
 			  , qf::core::Exception::Throw);
 	q.bindValue(QStringLiteral(":stationNumber"), read_card.stationNumber());
 	q.bindValue(QStringLiteral(":siId"), read_card.cardNumber());
@@ -277,6 +277,7 @@ int CardReaderPlugin::saveCardToSql(const quickevent::core::si::ReadCard &read_c
 	q.bindValue(QStringLiteral(":stageId"), currentStageId());
 	q.bindValue(QStringLiteral(":readerConnectionId"), qf::core::sql::Connection::defaultConnection().connectionId());
 	q.bindValue(QStringLiteral(":runIdAssignError"), read_card.runIdAssignError());
+	q.bindValue(QStringLiteral(":data"), qf::core::Utils::qvariantToJson(read_card.data()));
 	if(q.exec()) {
 		ret = q.lastInsertId().toInt();
 	}

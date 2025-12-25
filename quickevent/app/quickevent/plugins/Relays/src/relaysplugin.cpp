@@ -194,8 +194,9 @@ qf::core::utils::TreeTable RelaysPlugin::nLegsResultsTable(const QString &where_
 	}
 	auto wt = [tt]() {
 		QFile f("/home/fanda/t/relays.json");
-		f.open(QFile::WriteOnly);
-		f.write(tt.toString().toUtf8());
+		if (f.open(QFile::WriteOnly)) {
+			f.write(tt.toString().toUtf8());
+		}
 		return f.fileName();
 	};
 	qfDebug() << "nLegsResultsTable table:" << wt();

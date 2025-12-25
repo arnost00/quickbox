@@ -2,7 +2,7 @@ import QtQml 2.0
 import qf.core 1.0
 import qf.qmlreports 1.0
 import shared.qml.reports 1.0
-import "qrc:/qf/core/qml/js/timeext.js" as TimeExt
+import "qrc:/quickevent/core/js/timeext.js" as TimeExt
 import "qrc:/quickevent/core/js/ogtime.js" as OGTime
 import "private" as Private
 
@@ -65,8 +65,9 @@ Report {
 						textFn: function() {
 							var s = "";
 							var stage_cnt = bandCompetitor.data("stageCount")
-							if(stage_cnt > 1)
+							if(stage_cnt > 1) {
 								s = qsTr("E") + bandCompetitor.data("currentStageId") + " - ";
+							}
 							s += bandCompetitor.data("event.name")
 							return s;
 						}
@@ -396,6 +397,20 @@ Report {
 						var length = root.courseLength;
 						if(length > 0)
 							return OGTime.msecToString_mmss(((time / length) >> 0) * 1000) + "min/km";
+						return "";
+					}
+				}
+			}
+			Frame {
+				width: "%"
+				hinset: 1
+				layout: Frame.LayoutHorizontal
+				Para {
+					textFn: function() {
+						var data = bandCard.data("data");
+						var battery_status = data.batteryStatus;
+						if(battery_status)
+							return qsTr("Siac battery: ") + battery_status.voltage.toFixed(2) + "V - " + (battery_status.low? "LOW": "Ok");
 						return "";
 					}
 				}

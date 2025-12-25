@@ -79,8 +79,10 @@ QVariantMap ReceiptsPlugin::readCardTablesData(int card_id)
  		QMapIterator<QString, QVariant> it(read_card);
 		while(it.hasNext()) {
 			it.next();
-			if(it.key() != QLatin1String("punches"))
+			if(it.key() != QLatin1String("punches")) {
+				// qfInfo() << card_id << it.key() << "-->" << it.value().toString();
 				tt.setValue(it.key(), it.value());
+			}
 		}
 		int position = 0;
 		int start_time_ms = read_card.startTime();

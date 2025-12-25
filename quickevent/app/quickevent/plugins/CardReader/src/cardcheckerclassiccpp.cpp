@@ -31,7 +31,7 @@ quickevent::core::si::CheckedCard CardCheckerClassicCpp::checkCard(const quickev
 
 	checked_card.setCourseId(course.id());
 	checked_card.setRunId(run_id);
-	//checked_card.setPunches();
+	checked_card.setData(read_card.data());
 	//Log.info("course:", JSON.stringify(read_card, null, 2));
 	int stage_id = stageIdForRun(run_id);
 

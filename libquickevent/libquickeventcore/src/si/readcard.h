@@ -8,11 +8,7 @@
 
 class QSqlRecord;
 
-namespace siut { class SICard; }
-
-namespace quickevent {
-namespace core {
-namespace si {
+namespace quickevent::core::si {
 
 class QUICKEVENTCORE_DECL_EXPORT ReadPunch : public QVariantMap
 {
@@ -49,6 +45,7 @@ private:
 	QF_VARIANTMAP_FIELD(int, f, setF, inishTimeMs)
 	QF_VARIANTMAP_FIELD(QVariantList, p, setP, unches)
 	QF_VARIANTMAP_FIELD(QString, r, setR, unIdAssignError)
+	QF_VARIANTMAP_FIELD(QVariantMap, d, setD, ata)
 public:
 	ReadCard(const QVariantMap &data = QVariantMap()) : QVariantMap(data) {}
 	ReadCard(const QSqlRecord &rec);
@@ -59,5 +56,5 @@ public:
 	QString toString() const;
 };
 
-}}}
+}
 

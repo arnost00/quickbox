@@ -54,6 +54,9 @@ ReadCard::ReadCard(const QSqlRecord &rec)
 		punchlst << punch;
 	}
 	this->setPunches(punchlst);
+	auto s = rec.value("data").toString();
+	auto data = qf::core::Utils::jsonToQVariant(s).toMap();
+	setData(data);
 }
 
 int ReadCard::punchCount() const
