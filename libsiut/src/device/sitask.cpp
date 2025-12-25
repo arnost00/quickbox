@@ -572,7 +572,70 @@ void SiTaskReadCard8::start()
 		sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x00));
 	}
 }
+/*
+CARD 10, block 0
+00 0000 02 ef 83 00 01 00 85 df c1 9b ea ea ea ea 0c 0f
+01 0010 9c d0 ee ee ee ee 8c a5 a6 3a 08 2c 09 31 0f 7b
+02 0020 3a e3 0b 17 58 66 38 30 37 36 30 30 33 3b 4b 65
+03 0030 41 72 20 73 2e 72 2e 6f 2e 3b 3b 3b 3b 3b 3b 3b
+04 0040 3b 3b 3b ee ee ee ee ee ee ee ee ee ee ee ee ee
+05 0050 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+06 0060 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+07 0070 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+08 0080 ee ee ee ee ee ee 5b f8 03
 
+SIAC, block 0
+00 0000 02 ef 83 00 04 00 ad 49 13 9e ea ea ea ea 0d 03
+01 0010 55 1b ee ee ee ee 8d da 6a 58 11 14 12 33 0f 7d
+02 0020 86 13 07 18 3f 78 38 32 32 36 33 32 33 3b 48 2e
+03 0030 53 2e 48 2e 20 53 70 6f 72 74 20 73 2e 72 2e 6f
+04 0040 2e 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b ee ee ee ee ee
+05 0050 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+06 0060 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+07 0070 ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee ee
+08 0080 ee ee ee ee ee ee 0c b1 03
+
+both have card serie == 15
+ */
+namespace {
+enum class CardTypeByNumber {
+	InvalidNumber,
+	Siac,
+	Card11,
+	Card10,
+	Card9,
+	Card8,
+	Card6,
+	Card5,
+	pCard,
+};
+
+CardTypeByNumber cardNumberToType(int number)
+{
+	if (number < 500000) {
+		return CardTypeByNumber::Card5;
+	}
+	if (number < 1000000 || (number >= 2003000 && number < 2004000)) {
+		return CardTypeByNumber::Card6;
+	}
+	if ((number >= 2000000 && number < 2003000) || (number >= 2004000 && number < 3000000)) {
+		return CardTypeByNumber::Card8;
+	}
+	if (number >= 1000000 && number < 2000000) {
+		return CardTypeByNumber::Card9;
+	}
+	if (number >= 7000000 && number < 8000000) {
+		return CardTypeByNumber::Card10;
+	}
+	if (number >= 8000000 && number < 9000000) {
+		return CardTypeByNumber::Siac;
+	}
+	if (number >= 9000000 && number < 10000000) {
+		return CardTypeByNumber::Card11;
+	}
+	return CardTypeByNumber::InvalidNumber;
+}
+}
 void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 {
 	SIMessageData::Command cmd = msg.command();
@@ -586,6 +649,7 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			int station_number = (int)SIPunch::getUnsigned(data, base - 3);
 			int card_number = (int)SIPunch::getUnsigned(data, base + 0x19, 3);
 			m_cardSerie = static_cast<CardSerie>(((uint8_t)data[base + 0x18]) & 15);
+			qfInfo() << "CS:" << m_cardSerie;
 			logCardRead() << "CS:" << m_cardSerie << cardSerieToString(m_cardSerie) << "SI:" << card_number;
 			m_card.setStationNumber(station_number);
 			m_card.setCardNumber(card_number);
@@ -620,9 +684,15 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 					else if(m_cardSerie == pCard)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
 					else if(m_cardSerie == Siac) {
-						// 02 EA 05 7E 05 05 05 05 B2 31 03 - EA - PROBABLY SIAC battery measurement request
-						auto ba = QByteArray::fromHex("7E05050505");
-						sendCommand((int)SIMessageData::Command::SiacMeasureBattery, ba);
+						if (cardNumberToType(m_card.cardNumber()) == CardTypeByNumber::Siac) {
+							// Invoke battery voltage measurement
+							// 02 EA 05 7E 05 05 05 05 B2 31 03 - EA - PROBABLY SIAC battery measurement request
+							auto ba = QByteArray::fromHex("7E05050505");
+							sendCommand((int)SIMessageData::Command::SiacMeasureBattery, ba);
+						} else {
+							// Card 10, 11
+							sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x03));
+						}
 					}
 				}
 			}
