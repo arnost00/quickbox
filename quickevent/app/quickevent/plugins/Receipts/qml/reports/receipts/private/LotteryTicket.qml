@@ -1,7 +1,7 @@
 import QtQml 2.0
 import qf.qmlreports 1.0
 import shared.qml.reports 1.0
-import "qrc:/qf/core/qml/js/timeext.js" as TimeExt
+import "qrc:/quickevent/core/js/timeext.js" as TimeExt
 import "qrc:/quickevent/core/js/ogtime.js" as OGTime
 
 Frame {
