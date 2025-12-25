@@ -691,7 +691,7 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 							sendCommand((int)SIMessageData::Command::SiacMeasureBattery, ba);
 						} else {
 							// Card 10, 11
-							sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x03));
+							sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x04));
 						}
 					}
 				}
