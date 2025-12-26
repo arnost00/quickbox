@@ -47,7 +47,8 @@ TheApp::TheApp(int & argc, char ** argv)
 	: QApplication(argc, argv)
 {
 	auto *style = qf::gui::Style::instance();
-	//style->addIconSearchPath(":/qf/gui/images/flat");
+	style->addIconSearchPath(":/qf/gui/images/lucide");
+	style->addIconSearchPath(":/qf/gui/images/flat");
 	style->addIconSearchPath(":/qf/gui/images");
 
 	QSqlDatabase::registerSqlDriver("QFHTTPMYSQL", new QFHttpMySqlDriverCreator());
