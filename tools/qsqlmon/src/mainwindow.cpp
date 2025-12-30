@@ -1454,8 +1454,8 @@ void MainWindow::loadPersistentSettings()
 	if(!path.isEmpty()) {
 		QSettings settings;
 		settings.beginGroup(path);
-		restoreGeometry(settings.value("geometry").toByteArray());
 		restoreState(settings.value("state").toByteArray());
+		restoreGeometry(settings.value("geometry").toByteArray());
 	}
 }
 
