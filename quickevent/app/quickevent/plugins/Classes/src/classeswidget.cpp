@@ -720,11 +720,6 @@ void ClassesWidget::import_ocad_iofxml_2()
 
 void ClassesWidget::import_ocad_iofxml_3()
 {
-	if (getPlugin<EventPlugin>()->eventConfig()->isRelays()) {
-		QMessageBox::warning(this,tr("Warning"),tr("Import does not yet support relays."));
-		return;
-	}
-
 	qfLogFuncFrame();
 	//static constexpr int START_CODE0 = 0;
 	//static const int FINISH_CODE0 = quickevent::core::CodeDef::FINISH_PUNCH_CODE - 1;
@@ -799,6 +794,31 @@ void ClassesWidget::import_ocad_iofxml_3()
 					ImportCourseDef &coursedef = defined_courses[course_name];
 					coursedef.addClass(class_name);
 				}
+			}
+			if (getPlugin<EventPlugin>()->eventConfig()->isRelays()) {
+				QDomNodeList ndlst = xdoc.elementsByTagName(QStringLiteral("TeamCourseAssignment"));
+				QMap<QString, ImportCourseDef> relay_courses;
+				for (int i = 0; i < ndlst.count(); ++i) {
+					QDomElement team_assignment = ndlst.at(i).toElement();
+					int bib = element_text(team_assignment, QStringLiteral("BibNumber")).toInt();
+					QDomNodeList ndlst2 = team_assignment.elementsByTagName(QStringLiteral("TeamMemberCourseAssignment"));
+					for (int j = 0; j < ndlst2.count(); ++j) {
+						QDomElement class_assignment = ndlst2.at(j).toElement();
+						int leg = normalize_course_name(element_text(class_assignment, QStringLiteral("Leg"))).toInt();
+						QString course_name = normalize_course_name(element_text(class_assignment, QStringLiteral("CourseName")));
+						QString class_name = element_text(class_assignment, QStringLiteral("CourseFamily"));
+						if(course_name.isEmpty())
+							QF_EXCEPTION(QString("Xml file format error: empty course name in '%1'").arg(dump_element(class_assignment)));
+						ImportCourseDef &coursedef = defined_courses[course_name];
+						if (!coursedef.classes().contains(class_name))
+							coursedef.addClass(class_name);
+						auto new_name = QString("%1.%2").arg(bib).arg(leg);
+						coursedef.setName(new_name);
+						relay_courses[new_name] = coursedef;
+					}
+				}
+				defined_courses.clear();
+				defined_courses = relay_courses;
 			}
 			{
 				// guess empty class names from course name
