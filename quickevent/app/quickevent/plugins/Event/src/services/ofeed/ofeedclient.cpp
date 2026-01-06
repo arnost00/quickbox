@@ -692,7 +692,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		int ofeed_competitor_id = competitor["id"].toInt();
 		QString external_id_str = competitor["externalId"].toString();
 		int runs_id = external_id_str.toInt();
-		qDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
+		qfInfo() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
 
 		// Handle each type of change
 		if (type == "si_card_change")

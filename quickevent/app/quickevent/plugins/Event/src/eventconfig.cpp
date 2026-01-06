@@ -6,6 +6,7 @@
 #include <qf/core/sql/connection.h>
 #include <qf/core/sql/query.h>
 #include <qf/core/sql/querybuilder.h>
+#include <qf/core/log.h>
 
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/dialogs/messagebox.h>
@@ -62,6 +63,14 @@ void EventConfig::load()
 {
 	using namespace qf::core::sql;
 	Connection conn = Connection::forName();
+
+	// Check connection existence / validity
+	if(!conn.isOpen()) {
+		qfWarning() << "EventConfig::load(): database connection is not open:"
+		            << conn.errorString();
+		return;
+	}
+
 	Query q(conn);
 	QueryBuilder qb;
 	qb.select("ckey, cvalue, ctype").from("config").orderBy("ckey");
