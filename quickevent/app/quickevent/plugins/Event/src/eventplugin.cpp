@@ -1337,6 +1337,10 @@ void EventPlugin::onServiceDockVisibleChanged(bool on)
 {
 	if(on && !m_servicesDockWidget->widget()) {
 		auto *rw = new services::ServicesWidget();
+		rw->setEnabled(isEventOpen());
+		connect(this, &EventPlugin::eventOpenChanged, rw, [rw](bool is_open) {
+			rw->setEnabled(is_open);
+		});
 		m_servicesDockWidget->setWidget(rw);
 		rw->reload();
 	}
