@@ -57,10 +57,14 @@ Report {
 				}
 			}
 		}
+		Para {
+			width: "%"
+			height: 2
+		}
 		Image {
 			width: 60
-			fillMode: Image.Stretch
-			source: "F:\\devel\\quickbox.a.qe3\\quickevent\\app\\quickevent\\plugins\\Receipts\\qml\\reports\\no_runner.svg"
+			height: 60
+			dataSource: "qrc:/quickevent/Receipts/images/no_runner.svg"
 		}
 	}
 }
