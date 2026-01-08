@@ -6728,6 +6728,14 @@ Přejete si uložit změny?</translation>
     </message>
 </context>
 <context>
+    <name>errorlong</name>
+    <message>
+        <location filename="plugins/Receipts/qml/reports/errorlong.qml" line="48"/>
+        <source>!!! Error !!!</source>
+        <translation>!!! Chyba !!!</translation>
+    </message>
+</context>
+<context>
     <name>results</name>
     <message>
         <location filename="plugins/Relays/qml/reports/results.qml" line="9"/>
