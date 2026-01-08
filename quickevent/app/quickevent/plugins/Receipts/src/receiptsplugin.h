@@ -30,9 +30,10 @@ public:
 
 	void previewCard(int card_id);
 	void previewReceipt(int card_id);
+	void previewError(int card_id, QString error_qml);
 	bool printReceipt(int card_id);
 	bool printCard(int card_id);
-	bool printError(int card_id);
+	bool printError(int card_id, QString error_qml);
 	void printOnAutoPrintEnabled(int card_id);
 
 	QVariantMap readCardTablesData(int card_id);

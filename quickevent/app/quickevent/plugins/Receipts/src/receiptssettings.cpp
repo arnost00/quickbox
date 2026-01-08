@@ -4,6 +4,8 @@ ReceiptsSettings::WhenRunnerNotFoundPrint ReceiptsSettings::whenRunnerNotFoundPr
 {
 	if(whenRunnerNotFoundPrint() == "ReceiptWithoutName")
 		return WhenRunnerNotFoundPrint::ReceiptWithoutName;
+	if(whenRunnerNotFoundPrint() == "ErrorInfoLong")
+		return WhenRunnerNotFoundPrint::ErrorInfoLong;
 	return WhenRunnerNotFoundPrint::ErrorInfo;
 }
 
