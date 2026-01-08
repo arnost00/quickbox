@@ -240,7 +240,7 @@
        <item row="0" column="1">
         <widget class="QLabel" name="processChangesOnOffLabel">
          <property name="text">
-          <string>Zpracování zapnuto/vypnuto</string>
+          <string>Processing changes is deactivated</string>
          </property>
         </widget>
        </item>
