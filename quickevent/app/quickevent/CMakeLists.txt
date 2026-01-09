@@ -204,6 +204,7 @@ add_executable(quickevent
 	plugins/Event/qml/sql/def/private/FieldType.qml
 
 	plugins/Receipts/qml/reports/error.qml
+	plugins/Receipts/qml/reports/errorlong.qml
 	plugins/Receipts/qml/reports/sicard.qml
 	plugins/Receipts/qml/reports/receipts/Classic.qml
 	plugins/Receipts/qml/reports/receipts/ClassicLottery.qml

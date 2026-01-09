@@ -318,10 +318,10 @@ void CardReaderWidget::onTestButtonClicked()
 
 void CardReaderWidget::onCustomContextMenuRequest(const QPoint & pos)
 {
+	qfLogFuncFrame();
 	int card_id = ui->tblCards->tableRow().value("cards.id").toInt();
 	quickevent::core::si::ReadCard read_card = getPlugin<CardReaderPlugin>()->readCard(card_id);
 	bool has_runner = read_card.runId_isset() && read_card.runId() > 0;
-	qfLogFuncFrame();
 	QAction a_show_receipt(tr("Show receipt"), nullptr);
 	a_show_receipt.setEnabled(has_runner);
 	QAction a_print_receipt(tr("Print receipt"), nullptr);
