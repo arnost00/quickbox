@@ -19,6 +19,7 @@ ReceiptsSettingsPage::ReceiptsSettingsPage(QWidget *parent)
 	m_caption = tr("Receipts");
 
 	ui->cbxWhenRunnerNotFound->addItem(tr("Error info"), "ErrorInfo");
+	ui->cbxWhenRunnerNotFound->addItem(tr("Error info with picture"), "ErrorInfoLong");
 	ui->cbxWhenRunnerNotFound->addItem(tr("Receipt without name"), "ReceiptWithoutName");
 	ui->cbxWhenRunnerNotFound->setCurrentIndex(0);
 

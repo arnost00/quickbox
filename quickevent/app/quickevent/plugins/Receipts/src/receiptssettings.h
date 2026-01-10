@@ -7,7 +7,7 @@ class ReceiptsSettings : public Core::Settings
 {
 	Q_DECLARE_TR_FUNCTIONS(ReceiptsSettings)
 public:
-	enum class WhenRunnerNotFoundPrint { ErrorInfo, ReceiptWithoutName, };
+	enum class WhenRunnerNotFoundPrint { ErrorInfo, ErrorInfoLong, ReceiptWithoutName, };
 	enum class PrinterType { Invalid, GraphicPrinter,  CharacterPrinter};
 	enum class CharacterPrinteType { LPT, Directory, Network, };
 public:

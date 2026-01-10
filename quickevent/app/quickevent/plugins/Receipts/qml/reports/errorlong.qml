@@ -59,7 +59,12 @@ Report {
 		}
 		Para {
 			width: "%"
-			height: 15
+			height: 2
+		}
+		Image {
+			width: 60
+			height: 60
+			dataSource: "qrc:/quickevent/Receipts/images/no_runner.svg"
 		}
 	}
 }

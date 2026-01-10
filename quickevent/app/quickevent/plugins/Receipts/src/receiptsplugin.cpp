@@ -450,13 +450,30 @@ bool ReceiptsPlugin::printCard(int card_id)
 	return false;
 }
 
-bool ReceiptsPlugin::printError(int card_id)
+void ReceiptsPlugin::previewError(int card_id, QString error_qml)
+{
+	qfLogFuncFrame() << "card id:" << card_id;
+	auto *w = new qf::gui::reports::ReportViewWidget();
+	w->setPersistentSettingsId("errorPreview");
+	w->setWindowTitle(tr("Error"));
+	w->setReport(findReportFile(error_qml));
+	QVariantMap dt = readCardTablesData(card_id);
+	for(const auto &[k, v] : dt.asKeyValueRange()) {
+		w->setTableData(k, v);
+	}
+	qff::MainWindow *fwk = qff::MainWindow::frameWork();
+	qf::gui::dialogs::Dialog dlg(fwk);
+	dlg.setCentralWidget(w);
+	dlg.exec();
+}
+
+bool ReceiptsPlugin::printError(int card_id, QString error_qml)
 {
 	qfLogFuncFrame() << "card id:" << card_id;
 	QF_TIME_SCOPE("ReceiptsPlugin::printError()");
 	try {
 		QVariantMap dt = readCardTablesData(card_id);
-		return receiptsPrinter()->printReceipt("error.qml", dt, card_id);
+		return receiptsPrinter()->printReceipt(error_qml, dt, card_id);
 	}
 		catch(const qf::core::Exception &e) {
 		qfError() << e.toString();

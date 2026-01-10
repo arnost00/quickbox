@@ -24,6 +24,8 @@
 #include <qf/core/sql/dbenum.h>
 #include <qf/gui/model/sqltablemodel.h>
 #include <plugins/Event/src/eventplugin.h>
+#include <quickevent/core/si/readcard.h>
+#include <plugins/CardReader/src/cardreaderplugin.h>
 
 #include <QSettings>
 #include <QFile>
@@ -204,18 +206,26 @@ void ReceiptsWidget::onPrintNewClicked()
 void ReceiptsWidget::onCustomContextMenuRequest(const QPoint &pos)
 {
 	qfLogFuncFrame();
+	int card_id = ui->tblCards->tableRow().value("cards.id").toInt();
+	quickevent::core::si::ReadCard read_card = getPlugin<CardReader::CardReaderPlugin>()->readCard(card_id);
+	bool has_runner = read_card.runId_isset() && read_card.runId() > 0;
 	QAction a_print_receipts(tr("Print receipts for selected rows"), nullptr);
 	QAction a_show_receipt(tr("Show receipt"), nullptr);
+	a_show_receipt.setEnabled(has_runner);
+	QAction a_show_card(tr("Show card data"), nullptr);
 	QList<QAction*> lst;
 	lst << &a_print_receipts;
 	lst << &a_show_receipt;
+	lst << &a_show_card;
 	QAction *a = QMenu::exec(lst, ui->tblCards->viewport()->mapToGlobal(pos));
 	if(a == &a_print_receipts) {
 		printSelectedCards();
 	}
 	else if(a == &a_show_receipt) {
-		int card_id = ui->tblCards->selectedRow().value("cards.id").toInt();
 		getPlugin<ReceiptsPlugin>()->previewReceipt(card_id);
+	}
+	else if(a == &a_show_card) {
+		getPlugin<ReceiptsPlugin>()->previewCard(card_id);
 	}
 }
 
@@ -241,8 +251,11 @@ bool ReceiptsWidget::printReceipt(int card_id)
 				ok = getPlugin<ReceiptsPlugin>()->printReceipt(card_id);
 			else {
 				ReceiptsSettings settings;
-				if (settings.whenRunnerNotFoundPrintEnum() == ReceiptsSettings::WhenRunnerNotFoundPrint::ErrorInfo)
-					ok = getPlugin<ReceiptsPlugin>()->printError(card_id);
+				auto runner_not_found = settings.whenRunnerNotFoundPrintEnum();
+				if (runner_not_found == ReceiptsSettings::WhenRunnerNotFoundPrint::ErrorInfo)
+					ok = getPlugin<ReceiptsPlugin>()->printError(card_id,"error.qml");
+				else if (runner_not_found == ReceiptsSettings::WhenRunnerNotFoundPrint::ErrorInfoLong)
+					ok = getPlugin<ReceiptsPlugin>()->printError(card_id,"errorlong.qml");
 				else
 					ok = getPlugin<ReceiptsPlugin>()->printCard(card_id);
 			}

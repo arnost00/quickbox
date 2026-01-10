@@ -319,8 +319,20 @@ void CardReaderWidget::onTestButtonClicked()
 void CardReaderWidget::onCustomContextMenuRequest(const QPoint & pos)
 {
 	qfLogFuncFrame();
+	int card_id = ui->tblCards->tableRow().value("cards.id").toInt();
+	quickevent::core::si::ReadCard read_card = getPlugin<CardReaderPlugin>()->readCard(card_id);
+	bool has_runner = read_card.runId_isset() && read_card.runId() > 0;
 	QAction a_show_receipt(tr("Show receipt"), nullptr);
+	a_show_receipt.setEnabled(has_runner);
 	QAction a_print_receipt(tr("Print receipt"), nullptr);
+	a_print_receipt.setEnabled(has_runner);
+#ifdef QT_DEBUG
+	QAction a_sep0(nullptr); a_sep0.setSeparator(true);
+	QAction a_show_error1(tr("Show error"), nullptr);
+	a_show_error1.setEnabled(!has_runner);
+	QAction a_show_error2(tr("Show error long"), nullptr);
+	a_show_error2.setEnabled(!has_runner);
+#endif
 	QAction a_sep1(nullptr); a_sep1.setSeparator(true);
 	QAction a_show_card(tr("Show card data"), nullptr);
 	QAction a_print_card(tr("Print card data"), nullptr);
@@ -328,6 +340,9 @@ void CardReaderWidget::onCustomContextMenuRequest(const QPoint & pos)
 	QAction a_recalculate_times(tr("Recalculate times in selected rows"), nullptr);
 	QList<QAction*> lst;
 	lst << &a_show_receipt << &a_print_receipt
+#ifdef QT_DEBUG
+		<< &a_sep0 << &a_show_error1 << &a_show_error2
+#endif
 		<< &a_sep1
 		<< &a_show_card << &a_print_card
 		<< &a_sep2
@@ -368,6 +383,14 @@ void CardReaderWidget::onCustomContextMenuRequest(const QPoint & pos)
 		}
 		fwk->hideProgress();
 	}
+#ifdef QT_DEBUG
+	else if(a == &a_show_error1) {
+		getPlugin<ReceiptsPlugin>()->previewError(card_id,"error.qml");
+	}
+	else if(a == &a_show_error2) {
+		getPlugin<ReceiptsPlugin>()->previewError(card_id,"errorlong.qml");
+	}
+#endif
 }
 
 void CardReaderWidget::settleDownInPartWidget(::PartWidget *part_widget)
