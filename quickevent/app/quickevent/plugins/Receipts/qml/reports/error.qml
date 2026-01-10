@@ -17,7 +17,7 @@ Report {
 			Brush {
 				id: brushError
 				name: "error"
-				color: Color {def:"salmon"}
+				color: Color {def:"lightsalmon"}
 			}
 		]
 	}
@@ -56,6 +56,10 @@ Report {
 					textFn: function() { return "SI: " + bandCard.data("cardNumber"); }
 				}
 			}
+		}
+		Para {
+			width: "%"
+			height: 15
 		}
 	}
 }

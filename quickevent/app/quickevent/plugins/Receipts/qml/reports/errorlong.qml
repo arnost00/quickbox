@@ -17,7 +17,7 @@ Report {
 			Brush {
 				id: brushError
 				name: "error"
-				color: Color {def:"salmon"}
+				color: Color {def:"lightsalmon"}
 			}
 		]
 	}
