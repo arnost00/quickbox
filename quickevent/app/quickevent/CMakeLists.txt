@@ -125,6 +125,7 @@ add_executable(quickevent
 	plugins/Relays/src/relayswidget.ui
 	plugins/Relays/src/relaywidget.cpp
 	plugins/Relays/src/relaywidget.ui
+	plugins/Relays/src/relaystableitemdelegate.cpp
 
 	plugins/Runs/src/cardflagsdialog.cpp
 	plugins/Runs/src/cardflagsdialog.ui
