@@ -5,6 +5,7 @@
 #include "relaydocument.h"
 #include "relaysplugin.h"
 #include "partwidget.h"
+#include "relaystableitemdelegate.h"
 
 #include <plugins/Event/src/eventplugin.h>
 #include <plugins/Runs/src/runsplugin.h>
@@ -64,6 +65,7 @@ enum Columns {
 	col_relays_number,
 	col_relays_note,
 	col_relays_isrunning,
+	col_relays_legs,
 	col_COUNT
 };
 }// namespace
@@ -85,15 +87,19 @@ RelaysWidget::RelaysWidget(QWidget *parent) :
 	using CD = qfm::TableModel::ColumnDefinition;
 	m->setIdColumnName("relays.id");
 	m->clearColumns(col_COUNT);
-	m->setColumn(col_relays_id, CD("relays.id").setReadOnly(true));
+	m->setColumn(col_relays_id, CD("relays.id", tr("Id")).setReadOnly(true));
 	m->setColumn(col_classes_name, CD("classes.name", tr("Class")).setReadOnly(true));
 	m->setColumn(col_relays_club, CD("relays.club", tr("Club")));
 	m->setColumn(col_relays_name, CD("relays.name", tr("Name")));
 	m->setColumn(col_relays_number, CD("relays.number", tr("Number")));
 	m->setColumn(col_relays_note, CD("relays.note", tr("Note")));
 	m->setColumn(col_relays_isrunning, CD("relays.isrunning", tr("Is Running")));
+	m->setColumn(col_relays_legs, CD("legs", tr("Legs")).setToolTip(tr("Color indication :\n * red - relay has no leg\n * magenta - one or more legs are missing\n * yellow - too many legs")).setReadOnly(true));
 	ui->tblRelays->setTableModel(m);
 	m_tblModel = m;
+	m_relaysTableItemDelegate = new RelaysTableItemDelegate(ui->tblRelays);
+	m_relaysTableItemDelegate->setColumns(col_classes_name,col_relays_legs);
+	ui->tblRelays->setItemDelegate(m_relaysTableItemDelegate);
 
 	connect(ui->tblRelays, &qfw::TableView::editRowInExternalEditor, this, &RelaysWidget::editRelay, Qt::QueuedConnection);
 	connect(ui->tblRelays, &qfw::TableView::editSelectedRowsInExternalEditor, this, &RelaysWidget::editRelays, Qt::QueuedConnection);
@@ -228,12 +234,32 @@ void RelaysWidget::reset()
 
 void RelaysWidget::reload()
 {
+	if (m_relaysTableItemDelegate) {
+		m_relaysTableItemDelegate->resetClassLegs();
+
+		qf::core::sql::QueryBuilder qbc;
+		qbc.select2("classdefs", "classId, relayLegCount")
+				.select2("classes", "name")
+				.from("classdefs")
+				.join("classdefs.classId", "classes.id");
+		qf::core::sql::Query q;
+		q.execThrow(qbc.toString());
+		while(q.next()) {
+			auto name = q.value("name").toString();
+			auto legs = q.value("relayLegCount").toInt();
+			m_relaysTableItemDelegate->addClassLegs(name,legs);
+		}
+	}
+
 	qfs::QueryBuilder qb;
 	qb.select2("relays", "*")
 			.select2("classes", "name")
+			.select("COUNT(runs.id) as legs")
 			.from("relays")
 			.join("relays.classId", "classes.id")
-			.orderBy("classes.name, relays.name");//.limit(10);
+			.join("relays.id", "runs.relayId")
+			.groupBy("relays.id")
+			.orderBy("classes.name, relays.name");
 	int class_id = m_cbxClasses->currentData().toInt();
 	if(class_id > 0) {
 		qb.where("relays.classId=" + QString::number(class_id));
