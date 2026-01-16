@@ -53,12 +53,12 @@ using Event::EventPlugin;
 using CardReader::CardReaderPlugin;
 
 namespace Runs {
-
-static QString datetime_to_string(const QDateTime &dt)
+namespace {
+QString datetime_to_string(const QDateTime &dt)
 {
 	return quickevent::core::Utils::dateTimeToIsoStringWithUtcOffset(dt);
 }
-
+}
 RunsPlugin::RunsPlugin(QObject *parent)
 	: Super("Runs", parent)
 {
@@ -171,14 +171,14 @@ int RunsPlugin::courseForRun(int run_id)
 	}
 	return courseForRun_Classic(run_id);
 }
-
-static int latlng_distance(double lat1, double lng1, double lat2, double lng2)
+namespace {
+int latlng_distance(double lat1, double lng1, double lat2, double lng2)
 {
 	/// http://www.movable-type.co.uk/scripts/latlong.html
 	if(qFuzzyIsNull(lng2 - lng1) && qFuzzyIsNull(lat2 - lat1))
 		return 0;
 	auto deg2rad = [](double deg) {
-		static constexpr double PI = 3.1415926535;
+		static constexpr double PI = std::numbers::pi;
 		return deg * PI / 180;
 	};
 	lat1 = deg2rad(lat1);
@@ -191,7 +191,7 @@ static int latlng_distance(double lat1, double lng1, double lat2, double lng2)
 	double d = std::sqrt(x*x + y*y) * R;
 	return static_cast<int>(std::ceil(d));
 }
-
+}
 quickevent::core::CourseDef RunsPlugin::courseCodesForRunId(int run_id)
 {
 	qfLogFuncFrame() << "run id:" << run_id;
@@ -426,7 +426,7 @@ int RunsPlugin::runForCompetitorStage(int competitor_id, int stage_id)
 	qfLogFuncFrame() << "competitor id:" << competitor_id << "stage id:" << stage_id;
 	if(!competitor_id)
 		return 0;
-	
+
 	int run_id = 0;
 	{
 		qf::core::sql::Query q;
@@ -904,7 +904,7 @@ qf::core::utils::TreeTable RunsPlugin::addLapsToStageResultsTable(int course_id,
 		for(int pos : control_positions) {
 			RunStpMap &map = times[pos];
 			QList<RunStp> lst = map.values();
-			std::sort(lst.begin(), lst.end(), [](const RunStp &a, const RunStp &b) { return a.time < b.time; });
+			std::ranges::sort(lst, [](const RunStp &a, const RunStp &b) { return a.time < b.time; });
 			for (int i = 0; i < lst.size(); ++i) {
 				const RunStp &rs = lst[i];
 				map[rs.runId].pos = i+1;
@@ -1161,14 +1161,15 @@ bool RunsPlugin::exportResultsIofXml30Stage(int stage_id, const QString &file_na
 	return true;
 }
 
-static QString make_width(const QString &s, int width)
+namespace {
+QString make_width(const QString &s, int width)
 {
 	static const auto SS = QStringLiteral("%1");
 	int abs_width = width < 0? -width: width;
 	QString ret = SS.arg(s, width, QChar(' ')).mid(0, abs_width);
 	return ret;
 }
-
+}
 void RunsPlugin::writeCSOSHeader(QTextStream &ts) const
 {
 	auto *evp = getPlugin<EventPlugin>();
@@ -2045,11 +2046,12 @@ void RunsPlugin::report_nStagesAwards()
 								);
 }
 
-static void append_list(QVariantList &lst, const QVariantList &new_lst)
+namespace {
+void append_list(QVariantList &lst, const QVariantList &new_lst)
 {
 	lst.insert(lst.count(), new_lst);
 }
-
+}
 void RunsPlugin::export_startListClassesHtml()
 {
 	qf::core::utils::TreeTable tt1 = startListClassesTable("", false, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
@@ -2892,7 +2894,9 @@ bool RunsPlugin::exportStartListCurrentStageTvGraphics(const QString &file_name)
 	const QString separator = ";";
 	QTextStream csv(&f);
 #if QT_VERSION_MAJOR >= 6
-	csv.setEncoding(QStringConverter::encodingForName("UTF-8").value());
+	if (auto enc = QStringConverter::encodingForName("UTF-8"); enc.has_value()) {
+		csv.setEncoding(enc.value());
+	}
 #else
 	csv.setCodec("UTF-8");
 #endif

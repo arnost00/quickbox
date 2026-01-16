@@ -72,7 +72,7 @@ bool ResultsExporter::exportResults() const
 	}
 	if(ss.outputFormat() == static_cast<int>(ResultsExporterSettings::OutputFormat::IofXml3)) {
 		int current_stage = getPlugin<EventPlugin>()->currentStageId();
-		QString file_name = ss.exportDir() + "/" + getPlugin<EventPlugin>()->eventName() + ".results.iof30.xml";
+		QString file_name = ss.exportDir() + "/" + getPlugin<EventPlugin>()->eventName() + "." + Event::RESULTS_IOFXML3_FILE;
 		bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
 
 		QString str = is_relays

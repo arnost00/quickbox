@@ -84,7 +84,7 @@ private:
 
 	void import_start_times_ob2000();
 
-	QString getSaveFileName(const QString &file_name, int stage_id);
+	QString getSaveFileName(const QString &file_name, std::optional<int> stage_id);
 private:
 	enum class DrawMethod : int {Invalid = 0, RandomNumber,
 		EquidistantClubs, RandomizedEquidistantClubs, StageReverseOrder, Handicap,
