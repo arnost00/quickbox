@@ -117,28 +117,24 @@ RelaysWidget::~RelaysWidget()
 void RelaysWidget::settleDownInPartWidget(::PartWidget *part_widget)
 {
 	connect(part_widget, &::PartWidget::resetPartRequest, this, &RelaysWidget::reset);
-	connect(part_widget, &::PartWidget::reloadPartRequest, this, &RelaysWidget::reload);
+	connect(part_widget, &::PartWidget::reloadPartRequest, this, [this]() {
+		updateClassComboBox();
+		reload();
+	});;
 
 	qfw::ToolBar *main_tb = part_widget->toolBar("main", true);
 	{
-		QLabel *lbl;
-		{
-			lbl = new QLabel(tr("&Class "));
-			main_tb->addWidget(lbl);
-		}
-		{
-			m_cbxClasses = new qfw::ForeignKeyComboBox();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-			m_cbxClasses->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 10);
-#else
-			m_cbxClasses->setMinimumWidth(fontMetrics().width('X') * 10);
-#endif
-			m_cbxClasses->setMaxVisibleItems(100);
-			m_cbxClasses->setReferencedTable("classes");
-			m_cbxClasses->setReferencedField("id");
-			m_cbxClasses->setReferencedCaptionField("name");
-			main_tb->addWidget(m_cbxClasses);
-		}
+		auto *lbl = new QLabel(tr("&Class "));
+		main_tb->addWidget(lbl);
+		m_cbxClasses = new qfw::ForeignKeyComboBox();
+		m_cbxClasses->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+		m_cbxClasses->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 15);
+		m_cbxClasses->setMaxVisibleItems(100);
+		m_cbxClasses->setReferencedTable("classes");
+		m_cbxClasses->setReferencedField("id");
+		m_cbxClasses->setReferencedCaptionField("name");
+		connect(m_cbxClasses, &qf::gui::ForeignKeyComboBox::currentDataChanged, this, &RelaysWidget::reload, Qt::UniqueConnection);
+		main_tb->addWidget(m_cbxClasses);
 		lbl->setBuddy(m_cbxClasses);
 	}
 	/*
@@ -221,14 +217,7 @@ void RelaysWidget::reset()
 		m_tblModel->clearRows();
 		return;
 	}
-	{
-		m_cbxClasses->blockSignals(true);
-		m_cbxClasses->loadItems(true);
-		m_cbxClasses->insertItem(0, tr("--- all ---"), 0);
-		m_cbxClasses->setCurrentIndex(0);
-		connect(m_cbxClasses, &qf::gui::ForeignKeyComboBox::currentDataChanged, this, &RelaysWidget::reload, Qt::UniqueConnection);
-		m_cbxClasses->blockSignals(false);
-	}
+	updateClassComboBox();
 	reload();
 }
 
@@ -765,4 +754,13 @@ void RelaysWidget::relays_addVacants()
 	catch (const qf::core::Exception &e) {
 		qf::gui::dialogs::MessageBox::showException(fwk, e);
 	}
+}
+
+void RelaysWidget::updateClassComboBox()
+{
+	m_cbxClasses->blockSignals(true);
+	m_cbxClasses->loadItems(true);
+	m_cbxClasses->insertItem(0, tr("--- all ---"), 0);
+	m_cbxClasses->setCurrentIndex(0);
+	m_cbxClasses->blockSignals(false);
 }
