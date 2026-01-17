@@ -51,6 +51,7 @@ private:
 	void export_start_list_iofxml3();
 
 	//void printResults(const QString &settings_id, const QVariantMap &default_options);
+	void updateClassComboBox();
 private:
 	Ui::RelaysWidget *ui;
 	qf::gui::model::SqlTableModel *m_tblModel;
