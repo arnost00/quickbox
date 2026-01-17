@@ -4,11 +4,11 @@
 
 #include "relaydocument.h"
 #include "relaysplugin.h"
+#include "partwidget.h"
 
 #include <plugins/Event/src/eventplugin.h>
 #include <plugins/Runs/src/runsplugin.h>
 
-#include "partwidget.h"
 #include <quickevent/gui/reportoptionsdialog.h>
 
 #include <quickevent/core/si/siid.h>
@@ -573,13 +573,12 @@ void RelaysWidget::save_xml_file(QString str, QString fn) {
 
 
 void RelaysWidget::export_start_list_iofxml3() {
-
-	QString fn = getPlugin<EventPlugin>()->eventName() + ".startlist.iof30.xml";
+	QString fn = getPlugin<EventPlugin>()->startListIofXml3FileName(std::nullopt);
 	save_xml_file(getPlugin<RelaysPlugin>()->startListIofXml30(), fn);
 }
 
 void RelaysWidget::export_results_iofxml3() {
-	QString fn = getPlugin<EventPlugin>()->eventName() + ".results.iof30.xml";
+	QString fn = getPlugin<EventPlugin>()->resultsIofXml3FileName(std::nullopt);
 	save_xml_file(getPlugin<RelaysPlugin>()->resultsIofXml30(), fn);
 }
 

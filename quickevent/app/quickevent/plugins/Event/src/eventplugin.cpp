@@ -544,6 +544,26 @@ QString EventPlugin::createApiKey(int length)
 	return key;
 }
 
+QString EventPlugin::fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id)
+{
+	auto ret = eventName();
+	if(stageCount() > 1) {
+		ret += QStringLiteral(".e%1").arg(stage_id.value_or(currentStageId()));
+	}
+	ret += '.' + fn;
+	return ret;
+}
+
+QString EventPlugin::startListIofXml3FileName(std::optional<int> stage_id)
+{
+	return fileNameWithStageAndEventName(START_LIST_IOFXML3_FILE, stage_id);
+}
+
+QString EventPlugin::resultsIofXml3FileName(std::optional<int> stage_id)
+{
+	return fileNameWithStageAndEventName(RESULTS_IOFXML3_FILE, stage_id);
+}
+
 DbSchema *EventPlugin::dbSchema()
 {
 	return new DbSchema(this);

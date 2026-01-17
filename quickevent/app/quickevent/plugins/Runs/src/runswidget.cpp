@@ -414,18 +414,19 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 	}
 }
 
-static bool list_length_greater_than(const QList<int> &lst1, const QList<int> &lst2)
+namespace {
+bool list_length_greater_than(const QList<int> &lst1, const QList<int> &lst2)
 {
 	return lst1.count() > lst2.count();
 }
 
-static void shuffle(QList<int> &lst)
+void shuffle(QList<int> &lst)
 {
 	std::random_device rd;
 	std::mt19937 g(rd());
 	std::shuffle(lst.begin(), lst.end(), g);
 }
-
+}
 QList< QList<int> > RunsWidget::runnersByClubSortedByCount(int stage_id, int class_id, QMap<int, QString> &runner_id_to_club)
 {
 	qfLogFuncFrame();
@@ -456,7 +457,7 @@ QList< QList<int> > RunsWidget::runnersByClubSortedByCount(int stage_id, int cla
 	}
 	QList< QList<int> > ret = ids_by_clubs.values();
 	// use list_length_greater_than to sort DESC
-	std::sort(ret.begin(), ret.end(), list_length_greater_than);
+	std::ranges::sort(ret, list_length_greater_than);
 	for (int i = 0; i < ret.count(); ++i) {
 		shuffle(ret[i]);
 	}
@@ -589,15 +590,13 @@ void RunsWidget::import_start_times_ob2000()
 	}
 }
 
-QString RunsWidget::getSaveFileName(const QString &file_name, int stage_id)
+QString RunsWidget::getSaveFileName(const QString &file_name, std::optional<int> stage_id)
 {
-	QString fn = file_name;
 	QString ext;
-	int ix = fn.lastIndexOf('.');
-	if(ix > 0)
-		ext = fn.mid(ix);
-	if(getPlugin<EventPlugin>()->stageCount() > 1 && stage_id > 0)
-		fn = QStringLiteral("e%1-").arg(stage_id) + fn;
+	if(auto ix = file_name.lastIndexOf('.'); ix > 0) {
+		ext = file_name.mid(ix);
+	}
+	auto fn = getPlugin<EventPlugin>()->fileNameWithStageAndEventName(file_name, stage_id);
 
 	fn = qfd::FileDialog::getSaveFileName(this, tr("Save as %1").arg(ext.mid(1).toUpper()), fn, '*' + ext);
 	if(!fn.isEmpty()) {
@@ -629,7 +628,7 @@ void RunsWidget::export_results_stage_csos()
 
 void RunsWidget::export_results_overall_csos()
 {
-	QString fn = getSaveFileName("overall-results-csos.txt", 0);
+	QString fn = getSaveFileName("overall-results-csos.txt", std::nullopt);
 	if(fn.isEmpty())
 		return;
 	int stage_count = getPlugin<EventPlugin>()->stageCount();
@@ -1060,18 +1059,18 @@ void RunsWidget::editCompetitors(int mode)
 					// Get runs_id instead of competitor_id
 					int current_stage = getPlugin<EventPlugin>()->currentStageId();
 					int run_id = getPlugin<RunsPlugin>()->runForCompetitorStage(id, current_stage);
-					
+
 					Competitors::CompetitorDocument doc;
 					doc.load(id, qfm::DataDocument::ModeDelete);
 					doc.drop();
-					
+
 					deleted_ids.append(run_id);
 				}
 			}
 			if(!deleted_ids.isEmpty()) {
 				if(qfd::MessageBox::askYesNo(this, tr("Confirm deletion of %1 competitors.").arg(deleted_ids.count()), false)) {
 					transaction.commit();
-					
+
 					// Invoke db delete event for selected rows
 					auto *plugin = getPlugin<EventPlugin>();
 					for (int run_id : deleted_ids) {
@@ -1202,7 +1201,7 @@ void RunsWidget::editCompetitor_helper(const QVariant &id, int mode, int siid)
 		}
 		connect(doc, &Competitors::CompetitorDocument::saved, this, [this, doc, mode]() {
 			if (auto run_id = doc->runsIds().value(selectedStageId() - 1); run_id > 0) {
-				
+
 				// Invoke delete db event for single delete
 				if(mode == qfm::DataDocument::ModeDelete){
 					getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, run_id);

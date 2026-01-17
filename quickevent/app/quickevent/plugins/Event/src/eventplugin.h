@@ -107,6 +107,10 @@ public:
 	QString shvApiEventId() const;
 	static QString createApiKey(int length);
 
+	QString startListIofXml3FileName(std::optional<int> stage_id = std::nullopt);
+	QString resultsIofXml3FileName(std::optional<int> stage_id = std::nullopt);
+	QString fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id);
+
 	DbSchema* dbSchema();
 	static int dbVersion();
 	static QString dbVersionString();
