@@ -571,8 +571,10 @@ DbSchema *EventPlugin::dbSchema()
 
 int EventPlugin::dbVersion()
 {
-	// equals to minimal app version compatible with this DB
-	return 30301;
+	// equals to app version ignoring patch number
+	auto app_ver = QCoreApplication::applicationVersion();
+	auto db_ver = (qf::core::Utils::versionStringToInt(app_ver) / 100) * 100;
+	return db_ver;
 }
 
 QString EventPlugin::dbVersionString()
