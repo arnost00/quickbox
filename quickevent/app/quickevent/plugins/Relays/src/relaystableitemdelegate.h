@@ -12,11 +12,11 @@ public:
 
 	void setColumns(int class_col, int legs_col);
 	void addClassLegs(QString class_name, int legs);
-	void resetClassLegs() { m_legs_count.clear(); }
+	void resetClassLegs() { m_legsCount.clear(); }
 protected:
 	void paintBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 private:
-	int m_class_name_col = -1;
-	int m_legs_col = -1;
-	QMap <QString, int> m_legs_count;
+	std::optional<int> m_classNameCol = std::nullopt;
+	std::optional<int> m_legsCol = std::nullopt;
+	QMap <QString, int> m_legsCount;
 };
