@@ -10,10 +10,11 @@ RelaysTableItemDelegate::RelaysTableItemDelegate(qf::gui::TableView * parent)
 {
 }
 
-void RelaysTableItemDelegate::setColumns(int class_col, int legs_col)
+void RelaysTableItemDelegate::setColumns(int class_col, int legs_col, int running_col)
 {
 	m_classNameCol = class_col;
 	m_legsCol = legs_col;
+	m_isRunningCol = running_col;
 }
 
 void RelaysTableItemDelegate::addClassLegs(QString class_name, int legs)
@@ -31,12 +32,15 @@ void RelaysTableItemDelegate::paintBackground(QPainter *painter, const QStyleOpt
 
 	auto *m = v->model();
 	auto *tm = qobject_cast< qf::gui::model::SqlTableModel*>(v->tableModel());
-	if(!(m && tm && m_classNameCol.has_value() && m_legsCol.has_value()))
+	if(!(m && tm && m_classNameCol.has_value() && m_legsCol.has_value() && m_isRunningCol.has_value()))
 		return;
 
 	if(index.column() == m_legsCol.value()) {
 		auto legs_cnt = m_legsCount[m->data(index.sibling(index.row(),m_classNameCol.value()), Qt::EditRole).toString()];
 		auto legs = m->data(index.sibling(index.row(),m_legsCol.value()), Qt::EditRole).toInt();
+		auto is_running = m->data(index.sibling(index.row(),m_isRunningCol.value()), Qt::EditRole).toBool();
+		if (!is_running)
+			return;
 		if(legs == 0) {
 			QColor c = Qt::red;
 			c.setAlphaF(0.3);
