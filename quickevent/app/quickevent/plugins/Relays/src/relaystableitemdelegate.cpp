@@ -12,13 +12,13 @@ RelaysTableItemDelegate::RelaysTableItemDelegate(qf::gui::TableView * parent)
 
 void RelaysTableItemDelegate::setColumns(int class_col, int legs_col)
 {
-	m_class_name_col = class_col;
-	m_legs_col = legs_col;
+	m_classNameCol = class_col;
+	m_legsCol = legs_col;
 }
 
 void RelaysTableItemDelegate::addClassLegs(QString class_name, int legs)
 {
-	m_legs_count[class_name] = legs;
+	m_legsCount[class_name] = legs;
 }
 
 void RelaysTableItemDelegate::paintBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -31,12 +31,12 @@ void RelaysTableItemDelegate::paintBackground(QPainter *painter, const QStyleOpt
 
 	auto *m = v->model();
 	auto *tm = qobject_cast< qf::gui::model::SqlTableModel*>(v->tableModel());
-	if(!(m && tm))
+	if(!(m && tm && m_classNameCol.has_value() && m_legsCol.has_value()))
 		return;
 
-	if(index.column() == m_legs_col) {
-		auto legs_cnt = m_legs_count[m->data(index.sibling(index.row(),m_class_name_col), Qt::EditRole).toString()];
-		auto legs = m->data(index.sibling(index.row(),m_legs_col), Qt::EditRole).toInt();
+	if(index.column() == m_legsCol.value()) {
+		auto legs_cnt = m_legsCount[m->data(index.sibling(index.row(),m_classNameCol.value()), Qt::EditRole).toString()];
+		auto legs = m->data(index.sibling(index.row(),m_legsCol.value()), Qt::EditRole).toInt();
 		if(legs == 0) {
 			QColor c = Qt::red;
 			c.setAlphaF(0.3);
