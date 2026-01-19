@@ -247,7 +247,7 @@ void RelaysWidget::reload()
 			.from("relays")
 			.join("relays.classId", "classes.id")
 			.join("relays.id", "runs.relayId")
-			.groupBy("relays.id")
+			.groupBy("relays.id, classes.name")
 			.orderBy("classes.name, relays.name");
 	int class_id = m_cbxClasses->currentData().toInt();
 	if(class_id > 0) {
