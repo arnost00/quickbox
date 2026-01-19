@@ -98,7 +98,7 @@ RelaysWidget::RelaysWidget(QWidget *parent) :
 	ui->tblRelays->setTableModel(m);
 	m_tblModel = m;
 	m_relaysTableItemDelegate = new RelaysTableItemDelegate(ui->tblRelays);
-	m_relaysTableItemDelegate->setColumns(col_classes_name,col_relays_legs);
+	m_relaysTableItemDelegate->setColumns(col_classes_name,col_relays_legs,col_relays_isrunning);
 	ui->tblRelays->setItemDelegate(m_relaysTableItemDelegate);
 
 	connect(ui->tblRelays, &qfw::TableView::editRowInExternalEditor, this, &RelaysWidget::editRelay, Qt::QueuedConnection);

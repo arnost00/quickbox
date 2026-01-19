@@ -10,7 +10,7 @@ private:
 public:
 	RelaysTableItemDelegate(qf::gui::TableView * parent = nullptr);
 
-	void setColumns(int class_col, int legs_col);
+	void setColumns(int class_col, int legs_col, int running_col);
 	void addClassLegs(QString class_name, int legs);
 	void resetClassLegs() { m_legsCount.clear(); }
 protected:
@@ -18,5 +18,6 @@ protected:
 private:
 	std::optional<int> m_classNameCol = std::nullopt;
 	std::optional<int> m_legsCol = std::nullopt;
+	std::optional<int> m_isRunningCol = std::nullopt;
 	QMap <QString, int> m_legsCount;
 };
