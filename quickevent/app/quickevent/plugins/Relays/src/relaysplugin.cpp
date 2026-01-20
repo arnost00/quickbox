@@ -697,10 +697,14 @@ QString RelaysPlugin::resultsIofXml30()
 				}
 				append_list(person, QVariantList{"Id", QVariantMap{{"type", "QuickEvent"}}, tt_leg_row.value(QStringLiteral("runId"))});
 				auto iof_id = tt_leg_row.value(QStringLiteral("iofId"));
-				if (!iof_id.isNull() && !iof_id.toString().isEmpty())
-					append_list(person, QVariantList{"Id", QVariantMap{{"type", "IOF"}}, iof_id});
 				auto family = tt_leg_row.value(QStringLiteral("lastName"));
 				auto given = tt_leg_row.value(QStringLiteral("firstName"));
+				if (!iof_id.isNull() && !iof_id.toString().isEmpty() && iof_id.toInt() > 0) {
+					append_list(person, QVariantList{"Id", QVariantMap{{"type", "IOF"}}, iof_id});
+				}
+				else if (is_iof_race) {
+					qfWarning() << "Missing IOF ID for runner :" << family << given;
+				}
 				append_list(person, QVariantList{"Name", QVariantList{"Family", family}, QVariantList{"Given", given}});
 				append_list(member_result, person);
 
@@ -841,6 +845,8 @@ QString RelaysPlugin::startListIofXml30()
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(1);
 	qfDebug() << "creating table";
+	Event::EventConfig *event_config = getPlugin<EventPlugin>()->eventConfig();
+	bool is_iof_race = event_config->isIofRace();
 	qf::core::utils::TreeTable tt_classes = startListByClassesTableData(QString(), false);
 	QVariantList start_list{
 		"StartList",
@@ -854,7 +860,8 @@ QString RelaysPlugin::startListIofXml30()
 	{
 		QVariantList event_lst{"Event"};
 		QVariantMap event = tt_classes.value("event").toMap();
-		event_lst.insert(event_lst.count(), QVariantList{"Id", QVariantMap{{"type", "ORIS"}}, event.value("importId")});
+		if (!is_iof_race)
+			event_lst.insert(event_lst.count(), QVariantList{"Id", QVariantMap{{"type", "ORIS"}}, event.value("importId")});
 		event_lst.insert(event_lst.count(), QVariantList{"Name", event.value("name")});
 		event_lst.insert(event_lst.count(), QVariantList{"StartTime",
 				   QVariantList{"Date", event.value("date")},
@@ -925,13 +932,18 @@ QString RelaysPlugin::startListIofXml30()
 				const qf::core::utils::TreeTableRow tt_leg_row = tt_legs.row(k);
 				QVariantList member_start{"TeamMemberStart"};
 				QVariantList person{"Person"};
-				append_list(person, QVariantList{"Id", QVariantMap{{"type", "CZE"}}, tt_leg_row.value(QStringLiteral("registration"))});
+				if (!is_iof_race)
+					append_list(person, QVariantList{"Id", QVariantMap{{"type", "CZE"}}, tt_leg_row.value(QStringLiteral("registration"))});
 				append_list(person, QVariantList{"Id", QVariantMap{{"type", "QuickEvent"}}, tt_leg_row.value(QStringLiteral("runs.id"))});
 				auto iof_id = tt_leg_row.value(QStringLiteral("iofId"));
-				if (!iof_id.isNull())
-					append_list(person, QVariantList{"Id", QVariantMap{{"type", "IOF"}}, iof_id});
 				auto family = tt_leg_row.value(QStringLiteral("lastName"));
 				auto given = tt_leg_row.value(QStringLiteral("firstName"));
+				if (!iof_id.isNull() && !iof_id.toString().isEmpty() && iof_id.toInt() > 0) {
+					append_list(person, QVariantList{"Id", QVariantMap{{"type", "IOF"}}, iof_id});
+				}
+				else if (is_iof_race) {
+					qfWarning() << "Missing IOF ID for runner :" << family << given;
+				}
 				append_list(person, QVariantList{"Name", QVariantList{"Family", family}, QVariantList{"Given", given}});
 				append_list(member_start, person);
 
