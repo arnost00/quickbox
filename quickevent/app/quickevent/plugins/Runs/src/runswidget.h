@@ -42,7 +42,7 @@ public:
 
 	void settleDownInPartWidget(::PartWidget *part_widget);
 
-	Q_SLOT void reset(int class_id = 0);
+	Q_SLOT void reset();
 	Q_SLOT void reload();
 
 	Q_INVOKABLE int selectedStageId();
@@ -85,6 +85,9 @@ private:
 	void import_start_times_ob2000();
 
 	QString getSaveFileName(const QString &file_name, std::optional<int> stage_id);
+
+	void updateClassComboBox();
+	void updateLegsComboBox();
 private:
 	enum class DrawMethod : int {Invalid = 0, RandomNumber,
 		EquidistantClubs, RandomizedEquidistantClubs, StageReverseOrder, Handicap,

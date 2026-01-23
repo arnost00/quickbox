@@ -2476,22 +2476,22 @@ Use: File --&gt; Import --&gt; Event (*.qbe) to convert event to current version
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1373"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1377"/>
         <source>Name</source>
         <translation type="unfinished">Nom</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1374"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1378"/>
         <source>Reg</source>
         <translation type="unfinished">Ins</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1375"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1379"/>
         <source>Lic</source>
         <translation type="unfinished">Lic</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1376"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1380"/>
         <source>SI</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4585,12 +4585,12 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relaysplugin.cpp" line="828"/>
+        <location filename="plugins/Relays/src/relaysplugin.cpp" line="837"/>
         <source>Relays IOF-XML 3.0 results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relaysplugin.cpp" line="969"/>
+        <location filename="plugins/Relays/src/relaysplugin.cpp" line="984"/>
         <source>Relays IOF-XML 3.0 startlist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4603,249 +4603,267 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
         <translation type="unfinished">Formulaire</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="89"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="90"/>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="91"/>
         <source>Class</source>
         <translation type="unfinished">Classe</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="90"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="92"/>
         <source>Club</source>
         <translation type="unfinished">Club</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="91"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="93"/>
         <source>Name</source>
         <translation type="unfinished">Nom</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="92"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="94"/>
         <source>Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="93"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="95"/>
         <source>Note</source>
         <translation type="unfinished">Remarque</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="94"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="96"/>
         <source>Is Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="120"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
+        <source>Legs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
+        <source>Color indication :
+ * red - relay has no leg
+ * magenta - one or more legs are missing
+ * yellow - too many legs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="126"/>
         <source>&amp;Class </source>
         <translation type="unfinished">Classe </translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="147"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="153"/>
         <source>&amp;Relays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="149"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="155"/>
         <source>&amp;Assign numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="154"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="160"/>
         <source>&amp;Import bibs from CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="159"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="165"/>
         <source>Add new &amp;vacants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="165"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="171"/>
         <source>&amp;Print</source>
         <translation type="unfinished">&amp;Afficher</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="167"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="194"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="173"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="200"/>
         <source>&amp;Start list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="168"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="174"/>
         <source>&amp;Classes</source>
         <translation type="unfinished">&amp;Classes</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="171"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="177"/>
         <source>C&amp;lubs</source>
         <translation type="unfinished">C&amp;lubs</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="175"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="200"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="181"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="206"/>
         <source>&amp;Results</source>
         <translation type="unfinished">&amp;Résultats</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="177"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="183"/>
         <source>&amp;After n legs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="182"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="188"/>
         <source>&amp;Overall</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="187"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="193"/>
         <source>Overall condensed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="193"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="199"/>
         <source>E&amp;xport</source>
         <translation type="unfinished">E&amp;xporter</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="196"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="202"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="208"/>
         <source>IOF-XML 3.0</source>
         <translation type="unfinished">IOF-XML 3.0</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="221"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="227"/>
         <source>--- all ---</source>
         <translation type="unfinished">--- tout ---</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="250"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="276"/>
         <source>Edit Relay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="253"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="279"/>
         <source>Save and &amp;next</source>
         <translation type="unfinished">Enregistrer et passer au suivant</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="285"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="311"/>
         <source>Really delete all the selected relays? This action cannot be reverted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="298"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="324"/>
         <source>Confirm deletion of %1 relays.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="318"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="344"/>
         <source>Dialog</source>
         <translation type="unfinished">Boîte de dialogue</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="318"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="344"/>
         <source>Assign relay numbers method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="319"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="345"/>
         <source>Random number</source>
         <translation type="unfinished">Nombre aléatoire</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="319"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="345"/>
         <source>In alphabetical order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="448"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="474"/>
         <source>Start list by classes</source>
         <translation type="unfinished">Démarrer la liste par les classes</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="471"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="497"/>
         <source>Start list by clubs</source>
         <translation type="unfinished">Démarrer la liste par les clubs</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="499"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="523"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="547"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="525"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="549"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="573"/>
         <source>Results</source>
         <translation type="unfinished">Résultats</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="557"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="583"/>
         <source>Save as %1</source>
         <translation type="unfinished">Enregistrer sous %1</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="590"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="616"/>
         <source>Import UTF8 text file with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing relays (key is Club, Relay Name &amp; Class).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="591"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="617"/>
         <source>Each row should have following columns: &lt;ol&gt;&lt;li&gt;Club abbr &lt;i&gt;- key (part1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Relay name &lt;i&gt;- key (part2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Start number (Bib)&lt;/li&gt;&lt;li&gt;Class (Optional - if not filed, trying to guess from the starting number)&lt;/li&gt;&lt;/ol&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="603"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="629"/>
         <source>Open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="603"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="629"/>
         <source>CSV files (*.csv *.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="619"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="645"/>
         <source>Cannot open file &apos;%1&apos; for reading.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="638"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="664"/>
         <source>Fields separation error, invalid CSV format, Error reading CSV line: [%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="648"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="674"/>
         <source>Error reading CSV line: [%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="659"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="685"/>
         <source>Cannot guess class name from bib: &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="664"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="690"/>
         <source>Undefined class name: &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="701"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="727"/>
         <source>Information</source>
         <translation type="unfinished">Information</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="701"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="727"/>
         <source>Import file finished. Imported %1 of %2 lines
 
 Press refresh button to show imported data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="722"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="748"/>
         <source>vac</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="724"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="750"/>
         <source>Enter number of new vacants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="724"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="750"/>
         <source>Vacants count for class %1 :</source>
         <translation type="unfinished"></translation>
     </message>

@@ -2080,7 +2080,7 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="51"/>
         <source>Code count</source>
-        <translation type="unfinished"></translation>
+        <translation>Počet kontrol</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="52"/>
@@ -2570,22 +2570,22 @@ Použij: Soubor --&gt; Importovat --&gt; Závod (*.qbe) pro konverzi dat do aktu
         <translation>Otevřít importovaný závod &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1373"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1377"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1374"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1378"/>
         <source>Reg</source>
         <translation>Reg. č.</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1375"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1379"/>
         <source>Lic</source>
         <translation>Lic</translation>
     </message>
     <message>
-        <location filename="plugins/Event/src/eventplugin.cpp" line="1376"/>
+        <location filename="plugins/Event/src/eventplugin.cpp" line="1380"/>
         <source>SI</source>
         <translation>SI</translation>
     </message>
@@ -4735,12 +4735,12 @@ Přejděte do Nastavení -&gt; Mezičasy a nastavte typ mezičasů.</translation
         <translation>&amp;Štafety</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relaysplugin.cpp" line="828"/>
+        <location filename="plugins/Relays/src/relaysplugin.cpp" line="837"/>
         <source>Relays IOF-XML 3.0 results</source>
         <translation>Výsledky štafet ve formátu IOF XML 3.0</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relaysplugin.cpp" line="969"/>
+        <location filename="plugins/Relays/src/relaysplugin.cpp" line="984"/>
         <source>Relays IOF-XML 3.0 startlist</source>
         <translation>Startovka štafet ve formátu IOF XML 3.0</translation>
     </message>
@@ -4753,234 +4753,255 @@ Přejděte do Nastavení -&gt; Mezičasy a nastavte typ mezičasů.</translation
         <translation>Formulář</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="89"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="90"/>
+        <source>Id</source>
+        <translation>Id</translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="91"/>
         <source>Class</source>
         <translation>Kategorie</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="90"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="92"/>
         <source>Club</source>
         <translation>Klub</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="91"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="93"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="92"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="94"/>
         <source>Number</source>
         <translation>Číslo</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="93"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="95"/>
         <source>Note</source>
         <translation>Poznámka</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="94"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="96"/>
         <source>Is Running</source>
         <translation>Startuje</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="120"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
+        <source>Legs</source>
+        <translation>Úseků</translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
+        <source>Color indication :
+ * red - relay has no leg
+ * magenta - one or more legs are missing
+ * yellow - too many legs</source>
+        <translation>Barevná indikace:
+ * červená - štafeta nemá žádný úsek
+ * purpurová - chybí jeden nebo více úseků
+ * žlutá - příliš mnoho úseků</translation>
+    </message>
+    <message>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="126"/>
         <source>&amp;Class </source>
         <translation>&amp;Kategorie </translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="147"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="153"/>
         <source>&amp;Relays</source>
         <translation>&amp;Štafety</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="149"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="155"/>
         <source>&amp;Assign numbers</source>
         <translation>&amp;Přiřadit čísla</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="154"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="160"/>
         <source>&amp;Import bibs from CSV</source>
         <translation>&amp;Importovat startovní čísla z soubrou CSV</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="159"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="165"/>
         <source>Add new &amp;vacants</source>
         <translation>Přidat nové &amp;vakanty</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="165"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="171"/>
         <source>&amp;Print</source>
         <translation>&amp;Tisk</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="167"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="194"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="173"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="200"/>
         <source>&amp;Start list</source>
         <translation>&amp;Startovní listina</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="168"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="174"/>
         <source>&amp;Classes</source>
         <translation>&amp;Kategorie</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="171"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="177"/>
         <source>C&amp;lubs</source>
         <translation>K&amp;luby</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="175"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="200"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="181"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="206"/>
         <source>&amp;Results</source>
         <translation>&amp;Výsledky</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="177"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="183"/>
         <source>&amp;After n legs</source>
         <translation>&amp;Po n úsecích</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="182"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="188"/>
         <source>&amp;Overall</source>
         <oldsource>&amp;Overal</oldsource>
         <translation>&amp;Celkové</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="187"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="193"/>
         <source>Overall condensed</source>
         <translation>Celkové zestručněné</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="193"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="199"/>
         <source>E&amp;xport</source>
         <translation>E&amp;xportovat</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="196"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="202"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="208"/>
         <source>IOF-XML 3.0</source>
         <translation>IOF XML 3.0</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="221"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="227"/>
         <source>--- all ---</source>
         <translation>-- všechny --</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="250"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="276"/>
         <source>Edit Relay</source>
         <oldsource>Edit  Relay</oldsource>
         <translation>Upravit štafetu</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="253"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="279"/>
         <source>Save and &amp;next</source>
         <translation>Uložit a &amp;další</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="285"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="311"/>
         <source>Really delete all the selected relays? This action cannot be reverted.</source>
         <translation>Opravdu odstranit všechny vybrané štafety? Tuto akci nelze vrátit zpět.</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="298"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="324"/>
         <source>Confirm deletion of %1 relays.</source>
         <translation>Potvrďte smazání %1 štafet.</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="318"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="344"/>
         <source>Dialog</source>
         <translation>Dialog</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="318"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="344"/>
         <source>Assign relay numbers method</source>
         <translation>Způsob přiřazení čísel štafetám</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="319"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="345"/>
         <source>Random number</source>
         <translation>Náhodné číslo</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="319"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="345"/>
         <source>In alphabetical order</source>
         <translation>V abecedním pořadí</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="448"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="474"/>
         <source>Start list by classes</source>
         <translation>Startovní listina po kategoriích</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="471"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="497"/>
         <source>Start list by clubs</source>
         <translation>Startovní listina po klubech</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="499"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="523"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="547"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="525"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="549"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="573"/>
         <source>Results</source>
         <translation>Výsledky</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="557"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="583"/>
         <source>Save as %1</source>
         <translation>Uložit jako %1</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="590"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="616"/>
         <source>Import UTF8 text file with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing relays (key is Club, Relay Name &amp; Class).</source>
         <translation>Importovat soubor s hodnotami oddělenými čárkou (CSV), včetně záhlaví, v kódování UTF-8.&lt;br/&gt;Oddělovač je středník(;).&lt;br/&gt;Aktualizuje pouze existujiící štafety (klíč je Klub, Název štafety a Kategorie).</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="591"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="617"/>
         <source>Each row should have following columns: &lt;ol&gt;&lt;li&gt;Club abbr &lt;i&gt;- key (part1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Relay name &lt;i&gt;- key (part2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Start number (Bib)&lt;/li&gt;&lt;li&gt;Class (Optional - if not filed, trying to guess from the starting number)&lt;/li&gt;&lt;/ol&gt;</source>
         <translation>Každý řádek by měl mít následující sloupce:&lt;ol&gt;&lt;li&gt;Zkratka klubu &lt;i&gt;- klíč (část1)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Název štafety&lt;i&gt; - klíč (část2)&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Startovní číslo&lt;/li&gt;&lt;li&gt;Kategorii (Volitelné - pokud není vyplněno,  zkouší se kategorie odhadnout podle startovního čísla)&lt;/li&gt;&lt;/ol&gt;</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="603"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="629"/>
         <source>Open file</source>
         <translation>Otevřít soubor</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="603"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="629"/>
         <source>CSV files (*.csv *.txt)</source>
         <translation>soubory CSV (*.csv *.txt)</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="619"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="645"/>
         <source>Cannot open file &apos;%1&apos; for reading.</source>
         <translation>Soubor &apos;%1&apos; nelze otevřít pro čtení.</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="638"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="664"/>
         <source>Fields separation error, invalid CSV format, Error reading CSV line: [%1]</source>
         <translation>Chyba při analýze CSV souboru, neplatný formát, chyba při čtení řádky: [%1]</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="648"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="674"/>
         <source>Error reading CSV line: [%1]</source>
         <translation>Chyba při čtení souboru CSV, řádek: [%1]</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="659"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="685"/>
         <source>Cannot guess class name from bib: &apos;%1&apos;</source>
         <translation>Nemohu odhadnout název kategorie podle startovního čísla: &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="664"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="690"/>
         <source>Undefined class name: &apos;%1&apos;</source>
         <translation>Neznámý název kategorie: &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="701"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="727"/>
         <source>Information</source>
         <translation>Informace</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="701"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="727"/>
         <source>Import file finished. Imported %1 of %2 lines
 
 Press refresh button to show imported data.</source>
@@ -4989,17 +5010,17 @@ Press refresh button to show imported data.</source>
 Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="722"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="748"/>
         <source>vac</source>
         <translation>vak</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="724"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="750"/>
         <source>Enter number of new vacants</source>
         <translation>Zadejte počet nových vakantů</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="724"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="750"/>
         <source>Vacants count for class %1 :</source>
         <translation>Počet vakantů pro kategorii %1 :</translation>
     </message>

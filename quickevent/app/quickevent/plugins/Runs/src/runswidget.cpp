@@ -100,7 +100,7 @@ RunsWidget::~RunsWidget()
 	delete ui;
 }
 
-void RunsWidget::reset(int class_id)
+void RunsWidget::reset()
 {
 	qfLogFuncFrame();
 	if(!getPlugin<EventPlugin>()->isEventOpen()) {
@@ -122,17 +122,8 @@ void RunsWidget::reset(int class_id)
 	m_toolbarActionLabelLeg->setVisible(is_relays);
 	m_toolbarActionComboLeg->setVisible(is_relays);
 	//qfWarning() << "is relays:" << is_relays << "legs visible:" << m_cbxLeg->isVisible();
-	{
-		m_cbxClasses->blockSignals(true);
-		m_cbxClasses->loadItems(true);
-		m_cbxClasses->insertItem(0, tr("--- all ---"), 0);
-		if(class_id <= 0)
-			m_cbxClasses->setCurrentIndex(0);
-		else
-			m_cbxClasses->setCurrentData(class_id);
-		connect(m_cbxClasses, &qf::gui::ForeignKeyComboBox::currentDataChanged, this, &RunsWidget::reload, Qt::UniqueConnection);
-		m_cbxClasses->blockSignals(false);
-	}
+	updateClassComboBox();
+	updateLegsComboBox();
 	reload();
 }
 
@@ -149,7 +140,11 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 {
 	qfLogFuncFrame();
 	connect(part_widget, &::PartWidget::resetPartRequest, this, [this]() { reset(); });
-	connect(part_widget, &::PartWidget::reloadPartRequest, this, &RunsWidget::reload);
+	connect(part_widget, &::PartWidget::reloadPartRequest, this, [this]() {
+		updateClassComboBox();
+		updateLegsComboBox();
+		reload();
+	});
 
 	connect(getPlugin<RunsPlugin>(), &Runs::RunsPlugin::editCompetitorOnPunchRequest, this, &RunsWidget::editCompetitorOnPunch);
 
@@ -373,6 +368,7 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		m_cbxClasses->setReferencedTable("classes");
 		m_cbxClasses->setReferencedField("id");
 		m_cbxClasses->setReferencedCaptionField("name");
+		connect(m_cbxClasses, &qf::gui::ForeignKeyComboBox::currentDataChanged, this, &RunsWidget::reload, Qt::UniqueConnection);
 		main_tb->addWidget(m_cbxClasses);
 	}
 	lbl_classes->setBuddy(m_cbxClasses);
@@ -380,21 +376,12 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		auto *lbl_leg = new QLabel(tr("&Leg "));
 		m_toolbarActionLabelLeg = main_tb->addWidget(lbl_leg);
 		m_cbxLeg = new QComboBox();
-		{
-			m_cbxLeg->addItem(tr("--- all ---"), 0);
-			m_cbxLeg->addItem("1", 1);
-			m_cbxLeg->addItem("2", 2);
-			m_cbxLeg->addItem("3", 3);
-			m_cbxLeg->addItem("4", 4);
-			m_cbxLeg->addItem("5", 5);
-			m_cbxLeg->addItem("6", 6);
-			m_cbxLeg->addItem("7", 7);
-			m_cbxLeg->addItem("8", 8);
-			m_cbxLeg->addItem("9", 9);
-			m_cbxLeg->addItem("10", 10);
-			connect(m_cbxLeg, SIGNAL(currentIndexChanged(int)), this, SLOT(reload()));
-			m_toolbarActionComboLeg = main_tb->addWidget(m_cbxLeg);
-		}
+		m_cbxLeg->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+		m_cbxLeg->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 15);
+		m_cbxLeg->setMaxVisibleItems(100);
+		m_cbxLeg->addItem(tr("--- all ---"), 0);
+		connect(m_cbxLeg, SIGNAL(currentIndexChanged(int)), this, SLOT(reload()));
+		m_toolbarActionComboLeg = main_tb->addWidget(m_cbxLeg);
 		lbl_leg->setBuddy(m_cbxLeg);
 	}
 	main_tb->addSeparator();
@@ -1218,3 +1205,40 @@ void RunsWidget::editCompetitor_helper(const QVariant &id, int mode, int siid)
 		});
 	}
 }
+
+void RunsWidget::updateClassComboBox()
+{
+	m_cbxClasses->blockSignals(true);
+	m_cbxClasses->loadItems(true);
+	m_cbxClasses->insertItem(0, tr("--- all ---"), 0);
+	m_cbxClasses->setCurrentIndex(0);
+	m_cbxClasses->blockSignals(false);
+}
+
+void RunsWidget::updateLegsComboBox()
+{
+	int max_legs_count = 0;
+	qfs::Query q;
+	try {
+		q.execThrow("SELECT MAX(relayLegCount) FROM classdefs");
+		if(q.next())
+			max_legs_count = q.value(0).toInt();
+	}
+	catch (const qf::core::Exception &e) {
+		qf::gui::dialogs::MessageBox::showException(this, e);
+	}
+
+	max_legs_count++;	// add "--- all ---"
+
+	if (max_legs_count != m_cbxLeg->count()){
+		m_cbxLeg->blockSignals(true);
+		m_cbxLeg->clear();
+		m_cbxLeg->addItem(tr("--- all ---"), 0);
+		for (int i = 1; i < max_legs_count; i++){
+			m_cbxLeg->addItem(QString("%1").arg(i), i);
+		}
+		m_cbxLeg->setCurrentIndex(0);
+		m_cbxLeg->blockSignals(false);
+	}
+}
+

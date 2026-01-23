@@ -179,8 +179,8 @@
          <string>Add leg Ctrl+Ins</string>
         </property>
         <property name="icon">
-         <iconset resource="../../../../../../libqf/libqfgui/images/flat/flat.qrc">
-          <normaloff>:/qf/gui/images/flat/insert-row.svg</normaloff>:/qf/gui/images/flat/insert-row.svg</iconset>
+         <iconset resource="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc">
+          <normaloff>:/qf/gui/images/lucide/insert-row.svg</normaloff>:/qf/gui/images/lucide/insert-row.svg</iconset>
         </property>
         <property name="shortcut">
          <string>Ctrl+Ins</string>
@@ -193,8 +193,8 @@
          <string>Remove leg Ctrl+Del</string>
         </property>
         <property name="icon">
-         <iconset resource="../../../../../../libqf/libqfgui/images/flat/flat.qrc">
-          <normaloff>:/qf/gui/images/flat/delete-row.svg</normaloff>:/qf/gui/images/flat/delete-row.svg</iconset>
+         <iconset resource="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc">
+          <normaloff>:/qf/gui/images/lucide/delete-row.svg</normaloff>:/qf/gui/images/lucide/delete-row.svg</iconset>
         </property>
         <property name="shortcut">
          <string>Ctrl+Del</string>
@@ -207,8 +207,8 @@
          <string>Move leg down Ctrl+D</string>
         </property>
         <property name="icon">
-         <iconset resource="../../../../../../libqf/libqfgui/images/flat/flat.qrc">
-          <normaloff>:/qf/gui/images/flat/down.svg</normaloff>:/qf/gui/images/flat/down.svg</iconset>
+         <iconset resource="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc">
+          <normaloff>:/qf/gui/images/lucide/down.svg</normaloff>:/qf/gui/images/lucide/down.svg</iconset>
         </property>
         <property name="shortcut">
          <string>Ctrl+D</string>
@@ -221,8 +221,8 @@
          <string>Move leg up Ctrl+U</string>
         </property>
         <property name="icon">
-         <iconset resource="../../../../../../libqf/libqfgui/images/flat/flat.qrc">
-          <normaloff>:/qf/gui/images/flat/up.svg</normaloff>:/qf/gui/images/flat/up.svg</iconset>
+         <iconset resource="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc">
+          <normaloff>:/qf/gui/images/lucide/up.svg</normaloff>:/qf/gui/images/lucide/up.svg</iconset>
         </property>
         <property name="shortcut">
          <string>Ctrl+U</string>
@@ -235,8 +235,8 @@
          <string>Reload Ctrl+R</string>
         </property>
         <property name="icon">
-         <iconset resource="../../../../../../libqf/libqfgui/images/flat/flat.qrc">
-          <normaloff>:/qf/gui/images/flat/reload.svg</normaloff>:/qf/gui/images/flat/reload.svg</iconset>
+         <iconset resource="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc">
+          <normaloff>:/qf/gui/images/lucide/reload.svg</normaloff>:/qf/gui/images/lucide/reload.svg</iconset>
         </property>
         <property name="shortcut">
          <string>Ctrl+R</string>
@@ -287,7 +287,7 @@
   <tabstop>tblLegs</tabstop>
  </tabstops>
  <resources>
-  <include location="../../../../../../libqf/libqfgui/images/flat/flat.qrc"/>
+  <include location="../../../../../../libqf/libqfgui/images/lucide/qf_gui_images_lucide.qrc"/>
  </resources>
  <connections/>
 </ui>

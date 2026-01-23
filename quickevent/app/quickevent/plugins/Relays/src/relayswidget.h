@@ -5,6 +5,7 @@
 #include "partwidget.h"
 
 class QCheckBox;
+class RelaysTableItemDelegate;
 
 namespace Ui {
 class RelaysWidget;
@@ -50,10 +51,13 @@ private:
 	void export_start_list_iofxml3();
 
 	//void printResults(const QString &settings_id, const QVariantMap &default_options);
+	void updateClassComboBox();
 private:
 	Ui::RelaysWidget *ui;
 	qf::gui::model::SqlTableModel *m_tblModel;
 	qf::gui::ForeignKeyComboBox *m_cbxClasses = nullptr;
+	RelaysTableItemDelegate *m_relaysTableItemDelegate = nullptr;
+
 	void save_xml_file(QString str, QString fn);
 };
 
