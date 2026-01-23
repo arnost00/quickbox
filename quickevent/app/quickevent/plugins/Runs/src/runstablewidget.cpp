@@ -168,13 +168,7 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 	}
 	bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
 	if (!is_relays && m_courseItemDelegate) {
-		QMap<int, QString> courses;
-		qf::core::sql::Query q;
-		q.exec("SELECT id, name, note FROM courses ORDER BY name, note");
-		while(q.next()) {
-			courses[q.value(0).toInt()] = q.value(1).toString() + ' ' + q.value(2).toString();
-		}
-		m_courseItemDelegate->setCourses(courses);
+		m_courseItemDelegate->setCourses(definedCourses());
 	}
 	auto qb = getPlugin<RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
 	qfDebug() << qb.toString();
@@ -234,6 +228,17 @@ qf::gui::TableView *RunsTableWidget::tableView()
 	return ui->tblRuns;
 }
 
+QMap<int, QString> RunsTableWidget::definedCourses()
+{
+	QMap<int, QString> courses;
+	qf::core::sql::Query q;
+	q.exec("SELECT id, name, note FROM courses ORDER BY name, note");
+	while(q.next()) {
+		courses[q.value(0).toInt()] = q.value(1).toString() + ' ' + q.value(2).toString();
+	}
+	return courses;
+}
+
 void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 {
 	qfLogFuncFrame();
@@ -244,12 +249,14 @@ void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 	QAction a_shift_start_times(tr("Shift start times in selected rows"), nullptr);
 	QAction a_clear_start_times(tr("Clear start times in selected rows"), nullptr);
 	QAction a_change_class(tr("Set class in selected rows"), nullptr);
+	QAction a_change_course(tr("Set course in selected rows"), nullptr);
 	QList<QAction*> lst;
 	lst << &a_show_receipt << &a_load_card << &a_print_card
 		<< &a_sep1
 		<< &a_shift_start_times
 		<< &a_clear_start_times
-		<< &a_change_class;
+		<< &a_change_class
+		<< &a_change_course;
 	QAction *a = QMenu::exec(lst, ui->tblRuns->viewport()->mapToGlobal(pos));
 	if(a == &a_load_card) {
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
@@ -362,13 +369,48 @@ void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 					for(int i : rows) {
 						qf::core::utils::TableRow row = ui->tblRuns->tableRowRef(i);
 						int competitor_id = row.value("competitors.id").toInt();
-						q.exec(QString("UPDATE competitors SET classId=%1 WHERE id=%2").arg(class_id).arg(competitor_id), qfc::Exception::Throw);
+						q.exec(QStringLiteral("UPDATE competitors SET classId=%1 WHERE id=%2").arg(class_id).arg(competitor_id), qfc::Exception::Throw);
 					}
 					transaction.commit();
 				}
 				catch (std::exception &e) {
 					qfError() << e.what();
 				}
+			}
+			ui->tblRuns->reload(true);
+		}
+	}
+	else if(a == &a_change_course) {
+		qfw::dialogs::GetItemInputDialog dlg(this);
+		QComboBox *box = dlg.comboBox();
+		auto courses = definedCourses();
+		box->addItem(tr("Implicit"), {});
+		QMap<QString, int> name_to_id;
+		for (const auto &[id, name] : courses.asKeyValueRange()) {
+			name_to_id[name] = id;
+		}
+		for (const auto &[name, id] : name_to_id.asKeyValueRange()) {
+			box->addItem(name, id);
+		}
+		dlg.setWindowTitle(tr("Quick Event - Select course"));
+		dlg.setLabelText(tr("Select course"));
+		dlg.setCurrentItemIndex(0);
+		if(dlg.exec()) {
+			auto course_id = dlg.currentData();
+			qfs::Transaction transaction;
+			try {
+				QList<int> rows = ui->tblRuns->selectedRowsIndexes();
+				qfs::Query q;
+				for(int i : rows) {
+					qf::core::utils::TableRow row = ui->tblRuns->tableRowRef(i);
+					int run_id = row.value("runs.id").toInt();
+					auto course_id_str = course_id.isNull() ? QStringLiteral("NULL") : QString::number(course_id.toInt());
+					q.exec(QStringLiteral("UPDATE runs SET courseId=%1 WHERE id=%2").arg(course_id_str).arg(run_id), qfc::Exception::Throw);
+				}
+				transaction.commit();
+			}
+			catch (std::exception &e) {
+				qfError() << e.what();
 			}
 			ui->tblRuns->reload(true);
 		}
