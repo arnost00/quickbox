@@ -191,6 +191,7 @@ Schema {
 					//defaultValue: 0;
 					//notNull: true
 				},
+				Field { name: 'courseId'; type: Int {} },
 				Field { name: 'relayId'; type: Int {} },
 				Field { name: 'corridorTime'; type: DateTime {}
 					comment: 'DateTime when competitor entered start corridor. (Experimental)'

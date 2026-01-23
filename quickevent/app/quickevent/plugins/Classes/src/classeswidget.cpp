@@ -1,11 +1,14 @@
-#include "classesplugin.h"
 #include "classeswidget.h"
 #include "ui_classeswidget.h"
 
+#include "classesplugin.h"
 #include "importcoursedef.h"
 #include "editcodeswidget.h"
 #include "editcourseswidget.h"
 #include "drawing/drawingganttwidget.h"
+
+#include <plugins/Classes/src/courseitemdelegate.h>
+#include <plugins/Event/src/eventplugin.h>
 
 #include <quickevent/core/si/punchrecord.h>
 #include <quickevent/core/codedef.h>
@@ -26,7 +29,6 @@
 #include <qf/core/sql/querybuilder.h>
 #include <qf/core/sql/connection.h>
 #include <qf/core/assert.h>
-#include <plugins/Event/src/eventplugin.h>
 
 #include <QDomDocument>
 #include <QComboBox>
@@ -47,70 +49,6 @@ namespace qfs = qf::core::sql;
 using qf::gui::framework::getPlugin;
 using Event::EventPlugin;
 using Classes::ClassesPlugin;
-
-class CourseItemDelegate : public QStyledItemDelegate
-{
-	Q_OBJECT
-public:
-	CourseItemDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
-
-	Q_SIGNAL void courseIdChanged();
-
-	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE
-	{
-		Q_UNUSED(option)
-		Q_UNUSED(index)
-		auto *editor = new QComboBox(parent);
-#if QT_VERSION_MAJOR >= 6
-		QMultiMapIterator<QString, int> it(m_courseNameToId);
-#else
-		QMapIterator<QString, int> it(m_courseNameToId);
-#endif
-		while(it.hasNext()) {
-			it.next();
-			editor->addItem(it.key(), it.value());
-		}
-		return editor;
-	}
-	void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE
-	{
-		auto *cbx = qobject_cast<QComboBox *>(editor);
-		QF_ASSERT(cbx != nullptr, "Bad combo!", return);
-		QString id = index.data(Qt::EditRole).toString();
-		int ix = cbx->findData(id);
-		cbx->setCurrentIndex(ix);
-	}
-	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const Q_DECL_OVERRIDE
-	{
-		qfLogFuncFrame();
-		auto *cbx = qobject_cast<QComboBox *>(editor);
-		QF_ASSERT(cbx != nullptr, "Bad combo!", return);
-		qfDebug() << "setting model data:" << cbx->currentText() << cbx->currentData();
-		model->setData(index, cbx->currentData(), Qt::EditRole);
-		emit const_cast<CourseItemDelegate*>(this)->courseIdChanged(); // NOLINT(cppcoreguidelines-pro-type-const-cast)
-	}
-
-	QString displayText(const QVariant &value, const QLocale &locale) const Q_DECL_OVERRIDE
-	{
-		Q_UNUSED(locale)
-		return m_idToCourseName.value(value.toInt(), QStringLiteral("???"));
-	}
-
-	void setCourses(const QMap<int, QString> &courses)
-	{
-		m_idToCourseName = courses;
-		m_courseNameToId.clear();
-		QMapIterator<int, QString> it(m_idToCourseName);
-		while(it.hasNext()) {
-			it.next();
-			m_courseNameToId.insert(it.value(), it.key());
-		}
-	}
-
-private:
-	QMap<int, QString> m_idToCourseName;
-	QMultiMap<QString, int> m_courseNameToId;
-};
 
 class CourseCodesTableModel : public qfm::SqlTableModel
 {

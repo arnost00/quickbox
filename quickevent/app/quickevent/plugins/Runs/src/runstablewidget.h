@@ -4,6 +4,8 @@
 
 class RunsTableModel;
 class RunsTableItemDelegate;
+class CourseItemDelegate;
+
 namespace qf::gui { class TableView; }
 
 namespace Ui {
@@ -36,5 +38,6 @@ private:
 	Ui::RunsTableWidget *ui;
 	RunsTableModel *m_runsModel;
 	RunsTableItemDelegate *m_runsTableItemDelegate;
+	CourseItemDelegate *m_courseItemDelegate = nullptr;
 };
 

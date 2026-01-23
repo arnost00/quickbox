@@ -7,6 +7,11 @@
 #include "runflagsdialog.h"
 #include "cardflagsdialog.h"
 
+#include <plugins/Classes/src/courseitemdelegate.h>
+#include <plugins/Event/src/eventplugin.h>
+#include <plugins/CardReader/src/cardreaderplugin.h>
+#include <plugins/Receipts/src/receiptsplugin.h>
+
 #include <quickevent/core/si/siid.h>
 #include <quickevent/core/og/timems.h>
 
@@ -19,9 +24,6 @@
 #include <qf/core/sql/transaction.h>
 #include <qf/core/log.h>
 #include <qf/core/assert.h>
-#include <plugins/Event/src/eventplugin.h>
-#include <plugins/CardReader/src/cardreaderplugin.h>
-#include <plugins/Receipts/src/receiptsplugin.h>
 
 #include <QSortFilterProxyModel>
 #include <QMenu>
@@ -54,7 +56,14 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	ui->tblRuns->setInlineEditSaveStrategy(qfw::TableView::OnEditedValueCommit);
 	m_runsTableItemDelegate = new RunsTableItemDelegate(ui->tblRuns);
 	ui->tblRuns->setItemDelegate(m_runsTableItemDelegate);
-
+	auto *event_plugin = getPlugin<Event::EventPlugin>();
+	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
+		if (is_open && !event_plugin->eventConfig()->isRelays() && !m_courseItemDelegate) {
+			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
+			m_courseItemDelegate->setNullText(tr("Implicit"));
+			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, m_courseItemDelegate);
+		}
+	});
 	//ui->tblRuns->setSelectionMode(QTableView::SingleSelection);
 	ui->tblRuns->viewport()->setAcceptDrops(true);
 	ui->tblRuns->setDropIndicatorShown(true);
@@ -158,6 +167,15 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 		ui->lblClassInterval->setText(class_start_interval_min >= 0? QString::number(class_start_interval_min): "---");
 	}
 	bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
+	if (!is_relays && m_courseItemDelegate) {
+		QMap<int, QString> courses;
+		qf::core::sql::Query q;
+		q.exec("SELECT id, name, note FROM courses ORDER BY name, note");
+		while(q.next()) {
+			courses[q.value(0).toInt()] = q.value(1).toString() + ' ' + q.value(2).toString();
+		}
+		m_courseItemDelegate->setCourses(courses);
+	}
 	auto qb = getPlugin<RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
 	qfDebug() << qb.toString();
 	m_runsTableItemDelegate->setHighlightedClassId(class_id, stage_id);

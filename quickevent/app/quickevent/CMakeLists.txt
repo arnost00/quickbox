@@ -43,6 +43,7 @@ add_executable(quickevent
 	plugins/Classes/src/editcourseswidget.cpp
 	plugins/Classes/src/editcourseswidget.ui
 	plugins/Classes/src/importcoursedef.cpp
+	plugins/Classes/src/courseitemdelegate.h plugins/Classes/src/courseitemdelegate.cpp
 
 	plugins/Competitors/src/competitordocument.cpp
 	plugins/Competitors/src/competitorwidget.cpp
