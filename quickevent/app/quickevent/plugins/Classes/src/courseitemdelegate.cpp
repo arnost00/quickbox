@@ -3,6 +3,7 @@
 #include <qf/core/assert.h>
 
 #include <QComboBox>
+#include <QCompleter>
 
 CourseItemDelegate::CourseItemDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
@@ -13,6 +14,10 @@ QWidget *CourseItemDelegate::createEditor(QWidget *parent, const QStyleOptionVie
 	Q_UNUSED(option)
 	Q_UNUSED(index)
 	auto *editor = new QComboBox(parent);
+	editor->setInsertPolicy(QComboBox::NoInsert);
+	editor->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+	editor->setMaxVisibleItems(20);
+	editor->setEditable(true);
 	QMap<QString, int> name_to_id;
 	if (!m_nullText.isEmpty()) {
 		editor->addItem(m_nullText, {});
@@ -23,6 +28,15 @@ QWidget *CourseItemDelegate::createEditor(QWidget *parent, const QStyleOptionVie
 	for (const auto &[name, id] : name_to_id.asKeyValueRange()) {
 		editor->addItem(name, id);
 	}
+	// Enable filtering
+	auto items = name_to_id.keys();
+	if (!m_nullText.isEmpty()) {
+		items.insert(0, m_nullText);
+	}
+	auto *completer = new QCompleter(items, editor);
+	completer->setCaseSensitivity(Qt::CaseInsensitive);
+	completer->setFilterMode(Qt::MatchContains);
+	editor->setCompleter(completer);
 	return editor;
 }
 void CourseItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const

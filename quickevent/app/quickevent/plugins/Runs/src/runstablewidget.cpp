@@ -63,6 +63,10 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 			m_courseItemDelegate->setNullText(tr("Implicit"));
 			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, m_courseItemDelegate);
 		}
+		else if (!is_open && m_courseItemDelegate) {
+			delete m_courseItemDelegate;
+			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, nullptr);
+		}
 	});
 	//ui->tblRuns->setSelectionMode(QTableView::SingleSelection);
 	ui->tblRuns->viewport()->setAcceptDrops(true);
