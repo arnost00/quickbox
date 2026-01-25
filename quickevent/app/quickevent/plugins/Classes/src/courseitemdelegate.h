@@ -2,6 +2,8 @@
 
 #include <QStyledItemDelegate>
 
+class QComboBox;
+
 class CourseItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
@@ -18,6 +20,9 @@ public:
 	void setNullText(const QString &text) { m_nullText = text; }
 
 	void setCourses(const QMap<int, QString> &courses);
+
+	static QString textImplicit();
+	static void initCombo(QComboBox *combo, const QMap<int, QString> &courses, const QString &null_text);
 private:
 	QMap<int, QString> m_idToCourseName;
 	QString m_nullText;

@@ -386,16 +386,9 @@ void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 	}
 	else if(a == &a_change_course) {
 		qfw::dialogs::GetItemInputDialog dlg(this);
-		QComboBox *box = dlg.comboBox();
 		auto courses = definedCourses();
-		box->addItem(tr("Implicit"), {});
-		QMap<QString, int> name_to_id;
-		for (const auto &[id, name] : courses.asKeyValueRange()) {
-			name_to_id[name] = id;
-		}
-		for (const auto &[name, id] : name_to_id.asKeyValueRange()) {
-			box->addItem(name, id);
-		}
+		QComboBox *box = dlg.comboBox();
+		CourseItemDelegate::initCombo(box, courses, CourseItemDelegate::textImplicit());
 		dlg.setWindowTitle(tr("Quick Event - Select course"));
 		dlg.setLabelText(tr("Select course"));
 		dlg.setCurrentItemIndex(0);
