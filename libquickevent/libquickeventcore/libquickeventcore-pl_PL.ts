@@ -7,42 +7,42 @@
         <location filename="src/runstatus.cpp" line="121"/>
         <source>DISQ</source>
         <comment>Disqualified</comment>
-        <translation type="unfinished"></translation>
+        <translation>NKL</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="123"/>
         <source>MP</source>
         <comment>Missing Punch</comment>
-        <translation type="unfinished"></translation>
+        <translation>BPK</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="125"/>
         <source>DNS</source>
         <comment>Did Not Start</comment>
-        <translation type="unfinished"></translation>
+        <translation>DNS</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="127"/>
         <source>DNF</source>
         <comment>Did Not Finish</comment>
-        <translation type="unfinished"></translation>
+        <translation>DNF</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="129"/>
         <source>OVRT</source>
         <comment>Over Time</comment>
-        <translation type="unfinished"></translation>
+        <translation>OVRT</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="119"/>
         <source>NC</source>
         <comment>Not Competing</comment>
-        <translation type="unfinished"></translation>
+        <translation>NC</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="130"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -50,7 +50,7 @@
     <message>
         <location filename="src/exporters/htmlfileexporter.cpp" line="60"/>
         <source>E%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2</translation>
     </message>
 </context>
 <context>
@@ -58,52 +58,52 @@
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="20"/>
         <source>Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyniki</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="42"/>
         <source>E%1 %2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2 %3</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source> length: </source>
-        <translation type="unfinished"></translation>
+        <translation> długość: </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source>climb: </source>
-        <translation type="unfinished"></translation>
+        <translation>przewyższenie: </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="64"/>
         <source>Pos</source>
-        <translation type="unfinished"></translation>
+        <translation>Poz</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="65"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Imię</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="66"/>
         <source>Registration</source>
-        <translation type="unfinished"></translation>
+        <translation>Licecnja</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="67"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Czas</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="68"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Status</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="101"/>
         <source>Results %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyniiki %1</translation>
     </message>
 </context>
 <context>
@@ -111,47 +111,47 @@
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="19"/>
         <source>Start List</source>
-        <translation type="unfinished"></translation>
+        <translation>Lista Startowa</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="41"/>
         <source>E%1 %2 Start list</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2 Lista startowa</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="45"/>
         <source> length: </source>
-        <translation type="unfinished"></translation>
+        <translation> długość: </translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="45"/>
         <source>climb: </source>
-        <translation type="unfinished"></translation>
+        <translation>przewyższenie: </translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="63"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="64"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Imię</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="65"/>
         <source>Registration</source>
-        <translation type="unfinished"></translation>
+        <translation>Licencja</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="66"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>Czip</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="89"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 </TS>
