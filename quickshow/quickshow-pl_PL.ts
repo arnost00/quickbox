@@ -6,7 +6,7 @@
     <message>
         <location filename="src/cellrenderer.cpp" line="78"/>
         <source>length: {{length}} climb: {{climb}}</source>
-        <translation type="unfinished"></translation>
+        <translation>długość: {{length}} przewyższenie: {{climb}}</translation>
     </message>
 </context>
 <context>
