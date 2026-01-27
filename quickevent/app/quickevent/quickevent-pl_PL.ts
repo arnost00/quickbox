@@ -7,7 +7,7 @@
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="36"/>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="38"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazwa</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="37"/>
