@@ -114,8 +114,8 @@ ClassesWidget::ClassesWidget(QWidget *parent) :
 
 		ui->tblClassesTB->setTableView(ui->tblClasses);
 		auto *m = new qfm::SqlTableModel(this);
-		//m->setObjectName("classes.classesModel");
-		m->addColumn("id").setReadOnly(true);
+		m->setIdColumnName("classes.id");
+		m->addColumn("classes.id").setReadOnly(true);
 		m->addColumn("classes.name", tr("Class"));
 		m->addColumn("classdefs.drawLock", tr("DL")).setToolTip(tr("Locked for drawing"));
 		m->addColumn("classdefs.startTimeMin", tr("Start"));
