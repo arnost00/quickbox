@@ -65,6 +65,7 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 		}
 		else if (!is_open && m_courseItemDelegate) {
 			delete m_courseItemDelegate;
+			m_courseItemDelegate = nullptr;
 			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, nullptr);
 		}
 	});
