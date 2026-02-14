@@ -4,6 +4,8 @@
 
 class RunsTableModel;
 class RunsTableItemDelegate;
+class CourseItemDelegate;
+
 namespace qf::gui { class TableView; }
 
 namespace Ui {
@@ -28,6 +30,8 @@ public:
 
 	Q_SIGNAL void editCompetitorRequest(int competitor_id, int mode);
 private:
+	QMap<int, QString> definedCourses();
+
 	void updateStartTimeHighlight() const;
 	void onCustomContextMenuRequest(const QPoint &pos);
 	void onTableViewSqlException(const QString &what, const QString &where, const QString &stack_trace);
@@ -36,5 +40,6 @@ private:
 	Ui::RunsTableWidget *ui;
 	RunsTableModel *m_runsModel;
 	RunsTableItemDelegate *m_runsTableItemDelegate;
+	CourseItemDelegate *m_courseItemDelegate = nullptr;
 };
 

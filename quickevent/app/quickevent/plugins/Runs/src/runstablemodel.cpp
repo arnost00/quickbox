@@ -29,6 +29,7 @@ RunsTableModel::RunsTableModel(QObject *parent)
 	setColumn(col_runs_leg, ColumnDefinition("runs.leg", tr("Leg")));
 	setColumn(col_classes_name, ColumnDefinition("classes.name", tr("Class")));
 	setColumn(col_startNumber, ColumnDefinition("startNumber", tr("SN", "start number")).setToolTip(tr("Start number")));
+	setColumn(col_course_id, ColumnDefinition("runs.courseId", tr("Course")));
 	setColumn(col_competitors_siId, ColumnDefinition("competitors.siId", tr("SI")).setToolTip(tr("Registered SI")).setReadOnly(true));
 	setColumn(col_competitorName, ColumnDefinition("competitorName", tr("Name")));
 	setColumn(col_registration, ColumnDefinition("registration", tr("Reg")));
@@ -49,13 +50,6 @@ RunsTableModel::RunsTableModel(QObject *parent)
 	connect(this, &RunsTableModel::dataChanged, this, &RunsTableModel::onDataChanged, Qt::QueuedConnection);
 }
 
-QVariant RunsTableModel::data(const QModelIndex &index, int role) const
-{
-	QVariant ret;
-	ret = Super::data(index, role);
-	return ret;
-}
-
 Qt::ItemFlags RunsTableModel::flags(const QModelIndex &index) const
 {
 	Qt::ItemFlags flgs = Super::flags(index);
@@ -64,7 +58,25 @@ Qt::ItemFlags RunsTableModel::flags(const QModelIndex &index) const
 		flgs = Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | flgs;
 		//qfInfo() << flgs;
 	}
+	if(index.column() == col_course_id) {
+		if (getPlugin<Event::EventPlugin>()->eventConfig()->isRelays()) {
+			flgs &= ~Qt::ItemIsEditable;
+		}
+	}
 	return flgs;
+}
+
+QVariant RunsTableModel::data(const QModelIndex &index, int role) const
+{
+	if(index.column() == col_course_id && role == Qt::DisplayRole) {
+		if (getPlugin<Event::EventPlugin>()->eventConfig()->isRelays()) {
+			auto start_number = value(index.row(), "startNumber").toInt();
+			auto leg = value(index.row(), "runs.leg").toInt();
+			return QStringLiteral("%1.%2").arg(start_number).arg(leg);
+		}
+	}
+
+	return Super::data(index, role);
 }
 
 QVariant RunsTableModel::value(int row_ix, int column_ix) const

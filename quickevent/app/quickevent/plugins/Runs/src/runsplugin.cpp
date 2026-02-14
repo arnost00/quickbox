@@ -283,7 +283,8 @@ quickevent::core::CourseDef RunsPlugin::courseForCourseId(int course_id)
 int RunsPlugin::courseForRun_Classic(int run_id)
 {
 	qfs::QueryBuilder qb;
-	qb.select("classdefs.courseId")
+	qb.select("classdefs.courseId AS implicitCourseId")
+			.select("runs.courseId AS explicitCourseId")
 			.from("runs")
 			.join("runs.competitorId", "competitors.id")
 			.joinRestricted("competitors.classId", "classdefs.classId", "classdefs.stageId=runs.stageId")
@@ -297,7 +298,9 @@ int RunsPlugin::courseForRun_Classic(int run_id)
 			qfError() << "more courses found for run_id:" << run_id;
 			return 0;
 		}
-		ret = q.value(0).toInt();
+		auto implicit_course_id = q.value("implicitCourseId").toInt();
+		auto explicit_course_id = q.value("explicitCourseId").toInt();
+		ret = explicit_course_id > 0 ? explicit_course_id : implicit_course_id;
 		cnt++;
 	}
 	return ret;

@@ -15,6 +15,7 @@ public:
 		col_relays_name,
 		col_runs_leg,
 		col_classes_name,
+		col_course_id,
 		col_startNumber,
 		col_competitors_siId,
 		col_competitorName,
@@ -38,9 +39,9 @@ public:
 	RunsTableModel(QObject *parent = nullptr);
 
 	int columnCount(const QModelIndex &) const override { return col_COUNT; }
+	Qt::ItemFlags flags(const QModelIndex &index) const override;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	//bool setData(const QModelIndex &index, const QVariant &value, int role) override;
-	Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 	using Super::value;
 	QVariant value(int row_ix, int column_ix) const override;

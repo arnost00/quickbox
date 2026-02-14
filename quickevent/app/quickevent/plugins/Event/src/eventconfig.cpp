@@ -65,11 +65,12 @@ void EventConfig::load()
 	Connection conn = Connection::forName();
 
 	// Check connection existence / validity
-	if(!conn.isOpen()) {
-		qfWarning() << "EventConfig::load(): database connection is not open:"
-		            << conn.errorString();
-		return;
-	}
+	Q_ASSERT(conn.isOpen());
+	// if(!conn.isOpen()) {
+	// 	qfWarning() << "EventConfig::load(): database connection is not open:"
+	// 	            << conn.errorString();
+	// 	return;
+	// }
 
 	Query q(conn);
 	QueryBuilder qb;

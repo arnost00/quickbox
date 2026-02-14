@@ -7,6 +7,11 @@
 #include "runflagsdialog.h"
 #include "cardflagsdialog.h"
 
+#include <plugins/Classes/src/courseitemdelegate.h>
+#include <plugins/Event/src/eventplugin.h>
+#include <plugins/CardReader/src/cardreaderplugin.h>
+#include <plugins/Receipts/src/receiptsplugin.h>
+
 #include <quickevent/core/si/siid.h>
 #include <quickevent/core/og/timems.h>
 
@@ -19,9 +24,6 @@
 #include <qf/core/sql/transaction.h>
 #include <qf/core/log.h>
 #include <qf/core/assert.h>
-#include <plugins/Event/src/eventplugin.h>
-#include <plugins/CardReader/src/cardreaderplugin.h>
-#include <plugins/Receipts/src/receiptsplugin.h>
 
 #include <QSortFilterProxyModel>
 #include <QMenu>
@@ -54,7 +56,19 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	ui->tblRuns->setInlineEditSaveStrategy(qfw::TableView::OnEditedValueCommit);
 	m_runsTableItemDelegate = new RunsTableItemDelegate(ui->tblRuns);
 	ui->tblRuns->setItemDelegate(m_runsTableItemDelegate);
-
+	auto *event_plugin = getPlugin<Event::EventPlugin>();
+	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
+		if (is_open && !event_plugin->eventConfig()->isRelays() && !m_courseItemDelegate) {
+			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
+			m_courseItemDelegate->setNullText(tr("Implicit"));
+			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, m_courseItemDelegate);
+		}
+		else if (!is_open && m_courseItemDelegate) {
+			delete m_courseItemDelegate;
+			m_courseItemDelegate = nullptr;
+			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, nullptr);
+		}
+	});
 	//ui->tblRuns->setSelectionMode(QTableView::SingleSelection);
 	ui->tblRuns->viewport()->setAcceptDrops(true);
 	ui->tblRuns->setDropIndicatorShown(true);
@@ -158,6 +172,9 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 		ui->lblClassInterval->setText(class_start_interval_min >= 0? QString::number(class_start_interval_min): "---");
 	}
 	bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
+	if (!is_relays && m_courseItemDelegate) {
+		m_courseItemDelegate->setCourses(definedCourses());
+	}
 	auto qb = getPlugin<RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
 	qfDebug() << qb.toString();
 	m_runsTableItemDelegate->setHighlightedClassId(class_id, stage_id);
@@ -216,6 +233,17 @@ qf::gui::TableView *RunsTableWidget::tableView()
 	return ui->tblRuns;
 }
 
+QMap<int, QString> RunsTableWidget::definedCourses()
+{
+	QMap<int, QString> courses;
+	qf::core::sql::Query q;
+	q.exec("SELECT id, name, note FROM courses ORDER BY name, note");
+	while(q.next()) {
+		courses[q.value(0).toInt()] = q.value(1).toString() + ' ' + q.value(2).toString();
+	}
+	return courses;
+}
+
 void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 {
 	qfLogFuncFrame();
@@ -226,12 +254,14 @@ void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 	QAction a_shift_start_times(tr("Shift start times in selected rows"), nullptr);
 	QAction a_clear_start_times(tr("Clear start times in selected rows"), nullptr);
 	QAction a_change_class(tr("Set class in selected rows"), nullptr);
+	QAction a_change_course(tr("Set course in selected rows"), nullptr);
 	QList<QAction*> lst;
 	lst << &a_show_receipt << &a_load_card << &a_print_card
 		<< &a_sep1
 		<< &a_shift_start_times
 		<< &a_clear_start_times
-		<< &a_change_class;
+		<< &a_change_class
+		<< &a_change_course;
 	QAction *a = QMenu::exec(lst, ui->tblRuns->viewport()->mapToGlobal(pos));
 	if(a == &a_load_card) {
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
@@ -344,13 +374,41 @@ void RunsTableWidget::onCustomContextMenuRequest(const QPoint &pos)
 					for(int i : rows) {
 						qf::core::utils::TableRow row = ui->tblRuns->tableRowRef(i);
 						int competitor_id = row.value("competitors.id").toInt();
-						q.exec(QString("UPDATE competitors SET classId=%1 WHERE id=%2").arg(class_id).arg(competitor_id), qfc::Exception::Throw);
+						q.exec(QStringLiteral("UPDATE competitors SET classId=%1 WHERE id=%2").arg(class_id).arg(competitor_id), qfc::Exception::Throw);
 					}
 					transaction.commit();
 				}
 				catch (std::exception &e) {
 					qfError() << e.what();
 				}
+			}
+			ui->tblRuns->reload(true);
+		}
+	}
+	else if(a == &a_change_course) {
+		qfw::dialogs::GetItemInputDialog dlg(this);
+		auto courses = definedCourses();
+		QComboBox *box = dlg.comboBox();
+		CourseItemDelegate::initCombo(box, courses, CourseItemDelegate::textImplicit());
+		dlg.setWindowTitle(tr("Quick Event - Select course"));
+		dlg.setLabelText(tr("Select course"));
+		dlg.setCurrentItemIndex(0);
+		if(dlg.exec()) {
+			auto course_id = dlg.currentData();
+			qfs::Transaction transaction;
+			try {
+				QList<int> rows = ui->tblRuns->selectedRowsIndexes();
+				qfs::Query q;
+				for(int i : rows) {
+					qf::core::utils::TableRow row = ui->tblRuns->tableRowRef(i);
+					int run_id = row.value("runs.id").toInt();
+					auto course_id_str = course_id.isNull() ? QStringLiteral("NULL") : QString::number(course_id.toInt());
+					q.exec(QStringLiteral("UPDATE runs SET courseId=%1 WHERE id=%2").arg(course_id_str).arg(run_id), qfc::Exception::Throw);
+				}
+				transaction.commit();
+			}
+			catch (std::exception &e) {
+				qfError() << e.what();
 			}
 			ui->tblRuns->reload(true);
 		}
