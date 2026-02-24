@@ -61,6 +61,13 @@ int main(int argc, char *argv[])
 	QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
 
+#ifdef Q_OS_MACOS
+	// Disable native macOS menu bar - keeps all menus in the window
+	QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
+	// Use Fusion style on macOS for consistent cross-platform appearance
+	QApplication::setStyle("Fusion");
+#endif
+
 	//qfError() << "QFLog(ERROR) test OK.";// << QVariant::typeToName(QVariant::Int) << QVariant::typeToName(QVariant::String);
 	//qfWarning() << "QFLog(WARNING) test OK.";
 	//qfInfo() << "QFLog(INFO) test OK.";

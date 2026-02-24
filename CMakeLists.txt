@@ -17,6 +17,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 endif()
 
+if(APPLE)
+	# For macOS app bundles, set rpath to find bundled frameworks
+	set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)  # Use install rpath at build time
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)  # Don't use build paths
+	set(CMAKE_MACOSX_RPATH TRUE)
+endif()
+
 if (WIN32)
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		set(CMAKE_WIN32_EXECUTABLE ON) # Don't open a console window for Windows apps on Relase mode.

@@ -271,11 +271,67 @@ target_sources(quickevent PRIVATE ${QM_FILES})
 target_include_directories(quickevent PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(quickevent PUBLIC libquickeventcore libquickeventgui libqfgui libsiut)
 
-install(TARGETS quickevent)
-install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR}/translations)
+# Extract version from appversion.h
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/appversion.h" APP_VERSION_H)
+string(REGEX MATCH "#define APP_VERSION \"([0-9.]+)\"" _ ${APP_VERSION_H})
+set(APP_VERSION ${CMAKE_MATCH_1})
+message(STATUS "QuickEvent version: ${APP_VERSION}")
 
-#install(DIRECTORY plugins/Runs/qml/reports DESTINATION ${CMAKE_INSTALL_BINDIR}/reports/Runs/qml)
-#install(DIRECTORY plugins/Receipts/qml/reports DESTINATION ${CMAKE_INSTALL_BINDIR}/reports/Receipts/qml)
-foreach(plugin IN ITEMS Classes Runs Relays Receipts shared)
-	install(DIRECTORY plugins/${plugin}/qml/reports DESTINATION ${CMAKE_INSTALL_BINDIR}/reports/${plugin}/qml)
-endforeach()
+if(APPLE)
+	target_link_libraries(quickevent PRIVATE iconv)
+	
+	# Create macOS icon from PNG
+	set(ICON_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/images/quickevent64.png")
+	set(ICON_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/quickevent.icns")
+	add_custom_command(
+		OUTPUT ${ICON_OUTPUT}
+		COMMAND mkdir -p quickevent.iconset
+		COMMAND sips -z 16 16 ${ICON_SOURCE} --out quickevent.iconset/icon_16x16.png
+		COMMAND sips -z 32 32 ${ICON_SOURCE} --out quickevent.iconset/icon_32x32.png
+		COMMAND sips -z 128 128 ${ICON_SOURCE} --out quickevent.iconset/icon_128x128.png
+		COMMAND sips -z 256 256 ${ICON_SOURCE} --out quickevent.iconset/icon_256x256.png
+		COMMAND sips -z 512 512 ${ICON_SOURCE} --out quickevent.iconset/icon_512x512.png
+		COMMAND iconutil -c icns quickevent.iconset -o ${ICON_OUTPUT}
+		DEPENDS ${ICON_SOURCE}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Generating macOS icon"
+	)
+	add_custom_target(quickevent_icon ALL DEPENDS ${ICON_OUTPUT})
+	add_dependencies(quickevent quickevent_icon)
+	
+	set_target_properties(quickevent PROPERTIES
+		MACOSX_BUNDLE TRUE
+		MACOSX_BUNDLE_BUNDLE_NAME "QuickEvent"
+		MACOSX_BUNDLE_GUI_IDENTIFIER "cz.quickevent.QuickEvent"
+		MACOSX_BUNDLE_INFO_STRING "Quick Event - Orienteering Software"
+		MACOSX_BUNDLE_SHORT_VERSION_STRING "${APP_VERSION}"
+		MACOSX_BUNDLE_BUNDLE_VERSION "${APP_VERSION}"
+		MACOSX_BUNDLE_ICON_FILE "quickevent.icns"
+	)
+	install(TARGETS quickevent BUNDLE DESTINATION .)
+	install(FILES ${ICON_OUTPUT} DESTINATION quickevent.app/Contents/Resources)
+	install(FILES ${QM_FILES} DESTINATION quickevent.app/Contents/MacOS/translations)
+	
+	foreach(plugin IN ITEMS Classes Runs Relays Receipts shared)
+		install(DIRECTORY plugins/${plugin}/qml/reports 
+			DESTINATION quickevent.app/Contents/MacOS/reports/${plugin}/qml)
+	endforeach()
+	
+	# Post-install: copy libraries, QML plugins, translations into bundle MacOS directory
+	install(CODE "
+		# Copy libraries to Frameworks
+		file(GLOB LIBS \"${CMAKE_INSTALL_PREFIX}/lib/*.dylib\")
+		file(COPY \${LIBS} DESTINATION \"${CMAKE_INSTALL_PREFIX}/quickevent.app/Contents/Frameworks\")
+		
+		# Copy QML and translations to MacOS (same structure as Linux)
+		file(COPY \"${CMAKE_INSTALL_PREFIX}/bin/qml\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/quickevent.app/Contents/MacOS\")
+		file(COPY \"${CMAKE_INSTALL_PREFIX}/bin/translations\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/quickevent.app/Contents/MacOS\")
+	")
+else()
+	install(TARGETS quickevent)
+	install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR}/translations)
+	foreach(plugin IN ITEMS Classes Runs Relays Receipts shared)
+		install(DIRECTORY plugins/${plugin}/qml/reports 
+			DESTINATION ${CMAKE_INSTALL_BINDIR}/reports/${plugin}/qml)
+	endforeach()
+endif()
