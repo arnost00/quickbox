@@ -51,6 +51,7 @@ jobs:
       - name: Install PostgreSQL driver
         run: |
           brew install qt-postgresql
+          mkdir -p '${{ github.workspace }}/install/quickevent.app/Contents/PlugIns/sqldrivers'
           cp $(brew --prefix qt-postgresql)/share/qt/plugins/sqldrivers/libqsqlpsql.dylib \
              '${{ github.workspace }}/install/quickevent.app/Contents/PlugIns/sqldrivers/'
 
