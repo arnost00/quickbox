@@ -61,6 +61,11 @@ jobs:
           -qmldir='${{ github.workspace }}/quickevent/app/quickevent/plugins' \
           -always-overwrite
 
+      - name: Fix qsqlmon Qt framework paths
+        run: |
+          chmod +x '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh'
+          '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh' '${{ github.workspace }}/install/quickevent.app'
+
       - name: Get app version
         run: echo "VERSION=$(grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\" -f2)" >> "$GITHUB_ENV"
 
