@@ -25,6 +25,11 @@ int main(int argc, char *argv[])
 
 	TheApp app(argc, argv);
 
+#ifdef Q_OS_MACOS
+	app.setAttribute(Qt::AA_DontUseNativeMenuBar);
+	app.setStyle("Fusion");
+#endif
+
 	MainWindow main_window;
 	main_window.show();
 	ret = app.exec();
