@@ -23,11 +23,14 @@ private:
 	void onBtExportResultsXml30Clicked();
 	void onBtExportStartListXml30Clicked();
 	void onProcessChangesOnOffButtonClicked();
+	void onBtTestConnectionClicked();
+	void updateTestConnectionState();
 	OFeedClient* service();
 	bool saveSettings();
 private:
 	Ui::OFeedClientWidget *ui;
 	bool acceptDialogDone(int result);
+	bool m_isTestConnectionRunning = false;
 };
 
 }}

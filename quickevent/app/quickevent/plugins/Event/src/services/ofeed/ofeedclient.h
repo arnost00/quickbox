@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../service.h"
+#include <functional>
 
 class QTimer;
 class QNetworkAccessManager;
@@ -54,10 +55,15 @@ public:
 	void setRunXmlValidation(bool runXmlValidation);
 	bool runChangesProcessing();
 	void setRunChangesProcessing(bool runChangesProcessing);
+	void testConnection(const QString &hostUrl,
+						const QString &eventId,
+						const QString &eventPassword,
+						std::function<void(bool success, const QString &message)> callback);
 
 	private:
 	QTimer *m_exportTimer = nullptr;
 	QNetworkAccessManager *m_networkManager = nullptr;
+	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
 	private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
 	void onExportTimerTimeOut();

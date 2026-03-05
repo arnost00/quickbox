@@ -9,6 +9,7 @@
 #include <qf/core/log.h>
 
 #include <QFileDialog>
+#include <QPointer>
 
 #include <plugins/Event/src/eventplugin.h>
 
@@ -53,6 +54,11 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->btExportResultsXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportResultsXml30Clicked);
 	connect(ui->btExportStartListXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportStartListXml30Clicked);
 	connect(ui->processChangesOnOffButton, &QPushButton::clicked,this, &OFeedClientWidget::onProcessChangesOnOffButtonClicked);
+	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
+	connect(ui->edHostUrl, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
+	connect(ui->edEventId, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
+	connect(ui->edEventPassword, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
+	updateTestConnectionState();
 }
 
 OFeedClientWidget::~OFeedClientWidget()
@@ -126,5 +132,43 @@ void OFeedClientWidget::onProcessChangesOnOffButtonClicked()
     ui->processChangesOnOffButton->setText(newState ? tr("ON") : tr("OFF"));
 	ui->processChangesOnOffButton->setChecked(svc->runChangesProcessing());
 	ui->processChangesOnOffLabel->setText(svc->runChangesProcessing() ? tr("Changes are automatically processed") : tr("Processing changes is deactivated"));
+}
+
+void OFeedClientWidget::onBtTestConnectionClicked()
+{
+	OFeedClient *svc = service();
+	if(!svc) {
+		return;
+	}
+
+	m_isTestConnectionRunning = true;
+	ui->btTestConnection->setText(tr("Testing..."));
+	ui->lbConnectionTestResult->setStyleSheet("color:#666;");
+	ui->lbConnectionTestResult->setText(tr("Testing connection..."));
+	updateTestConnectionState();
+
+	const QString host_url = ui->edHostUrl->text().trimmed();
+	const QString event_id = ui->edEventId->text().trimmed();
+	const QString event_password = ui->edEventPassword->text().trimmed();
+	QPointer<OFeedClientWidget> widget_guard(this);
+
+	svc->testConnection(host_url, event_id, event_password, [widget_guard](bool success, const QString &message) {
+		if(!widget_guard) {
+			return;
+		}
+		widget_guard->m_isTestConnectionRunning = false;
+		widget_guard->ui->btTestConnection->setText(widget_guard->tr("Test connection"));
+		widget_guard->ui->lbConnectionTestResult->setStyleSheet(success ? "color:#0a7a2f;" : "color:#b00020;");
+		widget_guard->ui->lbConnectionTestResult->setText(message);
+		widget_guard->updateTestConnectionState();
+	});
+}
+
+void OFeedClientWidget::updateTestConnectionState()
+{
+	const bool has_required_credentials = !ui->edHostUrl->text().trimmed().isEmpty()
+		&& !ui->edEventId->text().trimmed().isEmpty()
+		&& !ui->edEventPassword->text().trimmed().isEmpty();
+	ui->btTestConnection->setEnabled(has_required_credentials && !m_isTestConnectionRunning);
 }
 }
