@@ -4,6 +4,7 @@
 
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/dialogs/messagebox.h>
+#include <qf/gui/style.h>
 
 #include <qf/core/assert.h>
 #include <qf/core/log.h>
@@ -61,6 +62,15 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->processChangesOnOffButton, &QPushButton::clicked,this, &OFeedClientWidget::onProcessChangesOnOffButtonClicked);
 	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
 	connect(ui->btRefreshEventImage, &QPushButton::clicked, this, &OFeedClientWidget::onBtRefreshEventImageClicked);
+	const QIcon show_password_icon = qf::gui::Style::icon("eye");
+	const QIcon hide_password_icon = qf::gui::Style::icon("eye-off");
+	const auto update_password_visibility = [this, show_password_icon, hide_password_icon](bool visible) {
+		ui->edEventPassword->setEchoMode(visible ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::Password);
+		ui->btToggleEventPasswordVisibility->setIcon(visible ? hide_password_icon : show_password_icon);
+		ui->btToggleEventPasswordVisibility->setToolTip(visible ? tr("Hide password value") : tr("Show password value"));
+	};
+	connect(ui->btToggleEventPasswordVisibility, &QToolButton::toggled, this, update_password_visibility);
+	update_password_visibility(ui->btToggleEventPasswordVisibility->isChecked());
 	connect(ui->additionalSettingsPrintEventImageOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
 		ui->lbReceiptImageHeight->setEnabled(on);
 		ui->edReceiptImageHeight->setEnabled(on);
