@@ -1,0 +1,93 @@
+name: macOS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  macos:
+    name: Qt 6.8 / macOS 15
+    runs-on: macos-15
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: brew install ninja create-dmg
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          cache: true
+          version: 6.8.3
+          install-deps: false
+          modules: qtserialport qtmultimedia
+
+      - name: Get Git SHA
+        run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: |
+          cmake \
+          -S '${{github.workspace}}' \
+          -B '${{github.workspace}}/build' \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DQF_BUILD_QML_PLUGINS=ON \
+          -DBUILD_TESTING=OFF \
+          -DUSE_QT6=ON \
+          -DCOMMIT_SHA=${{ env.COMMIT_SHA }} \
+          -DCMAKE_INSTALL_PREFIX='${{ github.workspace }}/install'
+
+      - name: Build
+        run: cmake --build '${{github.workspace}}/build' --parallel "$(sysctl -n hw.ncpu)"
+
+      - name: Install
+        run: cmake --install '${{ github.workspace }}/build'
+
+      - name: Install PostgreSQL driver
+        run: |
+          brew install qt-postgresql
+          mkdir -p '${{ github.workspace }}/install/quickevent.app/Contents/PlugIns/sqldrivers'
+          cp $(brew --prefix qt-postgresql)/share/qt/plugins/sqldrivers/libqsqlpsql.dylib \
+             '${{ github.workspace }}/install/quickevent.app/Contents/PlugIns/sqldrivers/'
+
+      - name: Run macdeployqt
+        run: |
+          macdeployqt '${{ github.workspace }}/install/quickevent.app' \
+          -qmldir='${{ github.workspace }}/quickevent/app/quickevent/plugins' \
+          -always-overwrite
+
+      - name: Fix qsqlmon Qt framework paths
+        run: |
+          chmod +x '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh'
+          '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh' '${{ github.workspace }}/install/quickevent.app'
+
+      - name: Code sign the app
+        run: |
+          codesign --sign - --force --deep '${{ github.workspace }}/install/quickevent.app'
+
+      - name: Get app version
+        run: echo "VERSION=$(grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\" -f2)" >> "$GITHUB_ENV"
+
+      - name: Create DMG
+        run: |
+          create-dmg \
+            --volname "QuickEvent ${{ env.VERSION }}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "quickevent.app" 175 190 \
+            --hide-extension "quickevent.app" \
+            --app-drop-link 425 185 \
+            '${{ github.workspace }}/quickevent-${{ env.VERSION }}.dmg' \
+            '${{ github.workspace }}/install/quickevent.app'
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickevent-${{ env.VERSION }}.dmg
+          path: ${{ github.workspace }}/quickevent-*.dmg

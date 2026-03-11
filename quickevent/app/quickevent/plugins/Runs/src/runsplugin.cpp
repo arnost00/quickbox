@@ -43,6 +43,8 @@
 #include <QTextStream>
 #include <QSqlField>
 
+#include <numbers>
+
 namespace qff = qf::gui::framework;
 namespace qfu = qf::core::utils;
 namespace qfs = qf::core::sql;

@@ -67,6 +67,20 @@ sudo usermod -aG dialout $USER
 sudo usermod -aG lp $USER 
 ```
 
+#### macOS
+1. download the DMG file from https://github.com/Quick-Event/quickbox/releases or github action build
+2. open the DMG and drag QuickEvent to the Applications folder
+3. **Important**: macOS will block the app with "QuickEvent is damaged" message because it's not code signed with apple developer account. To remove the quarantine attribute, run:
+```sh
+xattr -cr /Applications/quickevent.app
+```
+4. for installing the driver for sporident unit, see [this guide](https://github.com/Quick-Box/quickevent/pull/1096#issue-3985492466)
+
+For PostgreSQL database connections, you may need to install PostgreSQL client libraries:
+```sh
+brew install libpq
+```
+
 ### SQLite vs PostgreSQL
 If you do not need to connect to the database simultaneously with multiple computers, you do not have to use a bulky database and opt for the SQLite instead. Event data will be stored as a single file with a _.qbe_ extension. When starting QuickEvent and `Connect to database` dialog will pop up, select `Single file` and choose a working directory where event files will be stored.
 
