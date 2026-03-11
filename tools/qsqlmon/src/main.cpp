@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 	MainWindow main_window;
 	main_window.show();
-	ret = app.exec();
+	ret = TheApp::exec();
 
 	qfInfo() << "bye ...";
 	return ret;
