@@ -75,6 +75,7 @@ sudo usermod -aG lp $USER
 ```sh
 xattr -cr /Applications/quickevent.app
 ```
+5. for installing the driver for sporident unit, see [this guide](https://github.com/Quick-Box/quickevent/pull/1096#issue-3985492466)
 
 For PostgreSQL database connections, you may need to install PostgreSQL client libraries:
 ```sh
