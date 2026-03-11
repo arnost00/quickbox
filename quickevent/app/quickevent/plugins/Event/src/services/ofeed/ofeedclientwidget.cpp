@@ -9,12 +9,104 @@
 #include <qf/core/assert.h>
 #include <qf/core/log.h>
 
+#include <QClipboard>
 #include <QFileDialog>
+#include <QGuiApplication>
 #include <QPointer>
+#include <QUrl>
+#include <QUrlQuery>
+
+#include <initializer_list>
 
 #include <plugins/Event/src/eventplugin.h>
 
 namespace Event::services {
+
+namespace {
+struct ParsedOFeedSetupLink {
+	QString host_url;
+	QString event_id;
+	QString event_password;
+	QString error;
+};
+
+QString firstNonEmptyQueryValue(const QUrlQuery &query, std::initializer_list<const char *> keys)
+{
+	for(const char *key : keys) {
+		const QString value = query.queryItemValue(QString::fromLatin1(key), QUrl::FullyDecoded).trimmed();
+		if(!value.isEmpty())
+			return value;
+	}
+	return {};
+}
+
+QString normalizedHostUrlFromSetupLink(const QString &host_url)
+{
+	QString value = host_url.trimmed();
+	if(value.isEmpty())
+		return {};
+
+	if(!value.contains(QStringLiteral("://")))
+		value.prepend(QStringLiteral("https://"));
+
+	QUrl parsed_url = QUrl::fromUserInput(value);
+	if(!parsed_url.isValid() || parsed_url.host().isEmpty())
+		return {};
+
+	QString host = parsed_url.host().toLower();
+	if(host == QStringLiteral("orienteerfeed.com") || host == QStringLiteral("www.orienteerfeed.com")) {
+		parsed_url.setHost(QStringLiteral("api.orienteerfeed.com"));
+	}
+
+	QUrl base_url;
+	base_url.setScheme(parsed_url.scheme().isEmpty() ? QStringLiteral("https") : parsed_url.scheme());
+	base_url.setHost(parsed_url.host());
+	if(parsed_url.port() > 0)
+		base_url.setPort(parsed_url.port());
+	return base_url.toString();
+}
+
+ParsedOFeedSetupLink parseOFeedSetupLink(const QString &input)
+{
+	ParsedOFeedSetupLink result;
+	const QString text = input.trimmed();
+	if(text.isEmpty()) {
+		result.error = QObject::tr("Clipboard does not contain OFeed setup link.");
+		return result;
+	}
+
+	QUrl url(text);
+	if(!url.isValid() || url.scheme().isEmpty()) {
+		url = QUrl::fromUserInput(text);
+	}
+
+	QUrlQuery query;
+	if(url.isValid() && !url.scheme().isEmpty()) {
+		query = QUrlQuery(url);
+	}
+	if(!query.hasQueryItem(QStringLiteral("id"))
+		&& !query.hasQueryItem(QStringLiteral("eventId"))
+		&& !query.hasQueryItem(QStringLiteral("event_id"))
+		&& text.contains(QLatin1Char('='))) {
+		query = QUrlQuery(text);
+	}
+
+	result.host_url = normalizedHostUrlFromSetupLink(firstNonEmptyQueryValue(query, {"url", "host", "hostUrl", "baseUrl", "base_url"}));
+	result.event_id = firstNonEmptyQueryValue(query, {"id", "eventId", "event_id"});
+	result.event_password = firstNonEmptyQueryValue(query, {"pwd", "password", "pass"});
+
+	const QString auth = firstNonEmptyQueryValue(query, {"auth"});
+	if(!auth.isEmpty() && auth.compare(QStringLiteral("basic"), Qt::CaseInsensitive) != 0) {
+		result.error = QObject::tr("Unsupported auth type '%1' in setup link.").arg(auth);
+		return result;
+	}
+
+	if(result.event_id.isEmpty() || result.event_password.isEmpty()) {
+		result.error = QObject::tr("Setup link must contain id and pwd (or password) query parameters.");
+	}
+	return result;
+}
+}
 
 OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	: Super(parent)
@@ -60,6 +152,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->btExportResultsXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportResultsXml30Clicked);
 	connect(ui->btExportStartListXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportStartListXml30Clicked);
 	connect(ui->processChangesOnOffButton, &QPushButton::clicked,this, &OFeedClientWidget::onProcessChangesOnOffButtonClicked);
+	connect(ui->btPasteSetupLink, &QPushButton::clicked, this, &OFeedClientWidget::onBtPasteSetupLinkClicked);
 	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
 	connect(ui->btRefreshEventImage, &QPushButton::clicked, this, &OFeedClientWidget::onBtRefreshEventImageClicked);
 	const QIcon show_password_icon = qf::gui::Style::icon("eye");
@@ -154,6 +247,26 @@ void OFeedClientWidget::onProcessChangesOnOffButtonClicked()
     ui->processChangesOnOffButton->setText(newState ? tr("ON") : tr("OFF"));
 	ui->processChangesOnOffButton->setChecked(svc->runChangesProcessing());
 	ui->processChangesOnOffLabel->setText(svc->runChangesProcessing() ? tr("Changes are automatically processed") : tr("Processing changes is deactivated"));
+}
+
+void OFeedClientWidget::onBtPasteSetupLinkClicked()
+{
+	const QClipboard *clipboard = QGuiApplication::clipboard();
+	const QString clipboard_text = clipboard ? clipboard->text(QClipboard::Clipboard).trimmed() : QString();
+	const ParsedOFeedSetupLink parsed_link = parseOFeedSetupLink(clipboard_text);
+	if(!parsed_link.error.isEmpty()) {
+		qf::gui::dialogs::MessageBox::showError(this, parsed_link.error);
+		return;
+	}
+
+	if(!parsed_link.host_url.isEmpty())
+		ui->edHostUrl->setText(parsed_link.host_url);
+	ui->edEventId->setText(parsed_link.event_id);
+	ui->edEventPassword->setText(parsed_link.event_password);
+
+	ui->lbConnectionTestResult->setStyleSheet("color:#0a7a2f;");
+	ui->lbConnectionTestResult->setText(tr("Setup link parsed. Credentials were filled in."));
+	updateTestConnectionState();
 }
 
 void OFeedClientWidget::onBtTestConnectionClicked()

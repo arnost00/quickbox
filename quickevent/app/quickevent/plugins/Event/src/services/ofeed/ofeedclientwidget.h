@@ -23,6 +23,7 @@ private:
 	void onBtExportResultsXml30Clicked();
 	void onBtExportStartListXml30Clicked();
 	void onProcessChangesOnOffButtonClicked();
+	void onBtPasteSetupLinkClicked();
 	void onBtTestConnectionClicked();
 	void onBtRefreshEventImageClicked();
 	void updateTestConnectionState();
