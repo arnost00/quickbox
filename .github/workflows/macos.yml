@@ -66,6 +66,10 @@ jobs:
           chmod +x '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh'
           '${{ github.workspace }}/tools/macos-fix-qsqlmon.sh' '${{ github.workspace }}/install/quickevent.app'
 
+      - name: Code sign the app
+        run: |
+          codesign --sign - --force --deep '${{ github.workspace }}/install/quickevent.app'
+
       - name: Get app version
         run: echo "VERSION=$(grep APP_VERSION quickevent/app/quickevent/src/appversion.h | cut -d\" -f2)" >> "$GITHUB_ENV"
 
