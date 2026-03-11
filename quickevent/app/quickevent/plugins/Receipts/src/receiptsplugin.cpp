@@ -41,6 +41,8 @@
 #include <QPrinterInfo>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include <QUrl>
+#include <QUrlQuery>
 
 //#define QF_TIMESCOPE_ENABLED
 #include <qf/core/utils/timescope.h>
@@ -186,7 +188,42 @@ QString ensureReceiptQrCodeFile(const QString &link_url)
 	return file_path;
 }
 
-void setReceiptMediaData(qf::core::utils::TreeTable &tt)
+QString receiptQrCodeUrlForCompetitor(const QString &base_url, const QString &class_name)
+{
+	const QString trimmed_base_url = base_url.trimmed();
+	if(trimmed_base_url.isEmpty())
+		return {};
+
+	const QString trimmed_class_name = class_name.trimmed();
+	if(trimmed_class_name.isEmpty())
+		return trimmed_base_url;
+
+	const QUrl url = QUrl::fromUserInput(trimmed_base_url);
+	if(!url.isValid() || url.host().isEmpty())
+		return trimmed_base_url;
+
+	const QString host = url.host().toLower();
+	const bool is_orienteerfeed_host = host == QStringLiteral("orienteerfeed.com")
+		|| host.endsWith(QStringLiteral(".orienteerfeed.com"));
+
+	const QString normalized_path = url.path().toLower();
+	if(!normalized_path.startsWith(QStringLiteral("/events/")))
+		return trimmed_base_url;
+
+	QUrlQuery query(url);
+	const bool is_ofeed_like_url = is_orienteerfeed_host || query.hasQueryItem(QStringLiteral("tab"));
+	if(!is_ofeed_like_url)
+		return trimmed_base_url;
+
+	query.removeAllQueryItems(QStringLiteral("class"));
+	query.addQueryItem(QStringLiteral("class"), trimmed_class_name);
+
+	QUrl updated_url(url);
+	updated_url.setQuery(query);
+	return updated_url.toString();
+}
+
+void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &class_name = {})
 {
 	auto *ofeed_svc = qobject_cast<Event::services::OFeedClient*>(
 		Event::services::Service::serviceByName(Event::services::OFeedClient::serviceName()));
@@ -205,7 +242,7 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt)
 	}
 
 	if(ofeed_svc && ofeed_svc->printEventQrCodeOnReceipt()) {
-		const QString receipt_link = ofeed_svc->receiptEventLinkUrl().trimmed();
+		const QString receipt_link = receiptQrCodeUrlForCompetitor(ofeed_svc->receiptEventLinkUrl(), class_name);
 		tt.setValue("event.receiptQrCodeUrl", receipt_link);
 		tt.setValue("event.receiptQrCodePath", ensureReceiptQrCodeFile(receipt_link));
 	}
@@ -332,6 +369,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 	QMap<int, int> best_laps; // position->time
 	QMap<int, int> lap_stand; // position->standing in lap
 	QMap<int, int> lap_stand_cummulative;  // position->cummulative standing after lap
+	QString competitor_class_name;
 	{
 		qf::gui::model::SqlTableModel model;
 		qf::core::sql::QueryBuilder qb;
@@ -357,6 +395,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		model.setQuery(qb.toString());
 		model.reload();
 		if(model.rowCount() == 1) {
+			competitor_class_name = model.value(0, QStringLiteral("classes.name")).toString().trimmed();
 			stage_id = model.value(0, "runs.stageId").toInt();
 			qf::core::sql::Query run_laps;
 			run_laps.execThrow("SELECT runlaps.position, runlaps.code, runlaps.lapTimeMs FROM runlaps WHERE runId = " QF_IARG(run_id) " ORDER BY position");
@@ -519,7 +558,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		tt.setValue("appVersion", QCoreApplication::applicationVersion());
 		tt.setValue("stageCount", getPlugin<EventPlugin>()->stageCount());
 		tt.setValue("currentStageId", stage_id);
-		setReceiptMediaData(tt);
+		setReceiptMediaData(tt, competitor_class_name);
 		qfDebug() << "competitor:\n" << tt.toString();
 		ret["competitor"] = tt.toVariant();
 	}
@@ -600,7 +639,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		tt.setValue("appVersion", QCoreApplication::applicationVersion());
 		tt.setValue("stageCount", getPlugin<EventPlugin>()->stageCount());
 		tt.setValue("currentStageId", stage_id);
-		setReceiptMediaData(tt);
+		setReceiptMediaData(tt, competitor_class_name);
 
 		qfDebug() << "card:\n" << tt.toString();
 		ret["card"] = tt.toVariant();
