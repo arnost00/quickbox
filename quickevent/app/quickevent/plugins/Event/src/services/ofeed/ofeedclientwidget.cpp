@@ -40,7 +40,7 @@ QString firstNonEmptyQueryValue(const QUrlQuery &query, std::initializer_list<co
 	return {};
 }
 
-QString normalizedHostUrlFromSetupLink(const QString &host_url)
+QString userFacingHostUrl(const QString &host_url)
 {
 	QString value = host_url.trimmed();
 	if(value.isEmpty())
@@ -54,8 +54,11 @@ QString normalizedHostUrlFromSetupLink(const QString &host_url)
 		return {};
 
 	QString host = parsed_url.host().toLower();
-	if(host == QStringLiteral("orienteerfeed.com") || host == QStringLiteral("www.orienteerfeed.com")) {
-		parsed_url.setHost(QStringLiteral("api.orienteerfeed.com"));
+	if(host == QStringLiteral("api.orienteerfeed.com")) {
+		parsed_url.setHost(QStringLiteral("orienteerfeed.com"));
+	}
+	else if(host == QStringLiteral("www.orienteerfeed.com")) {
+		parsed_url.setHost(QStringLiteral("orienteerfeed.com"));
 	}
 
 	QUrl base_url;
@@ -91,7 +94,7 @@ ParsedOFeedSetupLink parseOFeedSetupLink(const QString &input)
 		query = QUrlQuery(text);
 	}
 
-	result.host_url = normalizedHostUrlFromSetupLink(firstNonEmptyQueryValue(query, {"url", "host", "hostUrl", "baseUrl", "base_url"}));
+	result.host_url = userFacingHostUrl(firstNonEmptyQueryValue(query, {"url", "host", "hostUrl", "baseUrl", "base_url"}));
 	result.event_id = firstNonEmptyQueryValue(query, {"id", "eventId", "event_id"});
 	result.event_password = firstNonEmptyQueryValue(query, {"pwd", "password", "pass"});
 
@@ -119,7 +122,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	if(svc) {
 		OFeedClientSettings ss = svc->settings();
 		ui->edExportInterval->setValue(ss.exportIntervalSec());
-		ui->edHostUrl->setText(svc->hostUrl());
+		ui->edHostUrl->setText(userFacingHostUrl(svc->hostUrl()));
 		ui->edEventId->setText(svc->eventId());
 		ui->edEventPassword->setText(svc->eventPassword());
 		ui->edChangelogOrigin->setText(svc->changelogOrigin());
