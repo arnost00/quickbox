@@ -70,12 +70,11 @@ sudo usermod -aG lp $USER
 #### macOS
 1. download the DMG file from https://github.com/Quick-Event/quickbox/releases or github action build
 2. open the DMG and drag QuickEvent to the Applications folder
-3. **Important**: macOS will block the app with "QuickEvent is damaged" message because it's not code signed
-4. remove the quarantine attribute:
+3. **Important**: macOS will block the app with "QuickEvent is damaged" message because it's not code signed with apple developer account. To remove the quarantine attribute, run:
 ```sh
 xattr -cr /Applications/quickevent.app
 ```
-5. for installing the driver for sporident unit, see [this guide](https://github.com/Quick-Box/quickevent/pull/1096#issue-3985492466)
+4. for installing the driver for sporident unit, see [this guide](https://github.com/Quick-Box/quickevent/pull/1096#issue-3985492466)
 
 For PostgreSQL database connections, you may need to install PostgreSQL client libraries:
 ```sh
