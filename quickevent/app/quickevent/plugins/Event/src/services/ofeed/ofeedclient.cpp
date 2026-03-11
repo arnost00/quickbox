@@ -79,6 +79,33 @@ namespace Event::services {
 				base_url.setPort(parsed_url.port());
 			return base_url.toString();
 		}
+
+		QString normalized_receipt_host_url(QString host_url)
+		{
+			host_url = host_url.trimmed();
+			if (host_url.isEmpty())
+				host_url = QStringLiteral("https://orienteerfeed.com");
+
+			if (!host_url.contains("://"))
+				host_url.prepend(QStringLiteral("https://"));
+
+			QUrl parsed_url = QUrl::fromUserInput(host_url);
+			if (!parsed_url.isValid() || parsed_url.host().isEmpty())
+				parsed_url = QUrl(QStringLiteral("https://orienteerfeed.com"));
+
+			QString host = parsed_url.host().toLower();
+			if (host == QStringLiteral("api.orienteerfeed.com") || host == QStringLiteral("www.orienteerfeed.com"))
+			{
+				parsed_url.setHost(QStringLiteral("orienteerfeed.com"));
+			}
+
+			QUrl base_url;
+			base_url.setScheme(parsed_url.scheme().isEmpty() ? QStringLiteral("https") : parsed_url.scheme());
+			base_url.setHost(parsed_url.host());
+			if (parsed_url.port() > 0)
+				base_url.setPort(parsed_url.port());
+			return base_url.toString();
+		}
 	}
 
 OFeedClient::OFeedClient(QObject *parent)
@@ -301,10 +328,24 @@ void OFeedClient::setPrintEventImageOnReceipt(bool on)
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 
+bool OFeedClient::printEventQrCodeOnReceipt() const
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	QString key = serviceName().toLower() + ".printEventQrCodeOnReceipt.E" + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->eventConfig()->value(key, false).toBool();
+}
+
+void OFeedClient::setPrintEventQrCodeOnReceipt(bool on)
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".printEventQrCodeOnReceipt.E" + QString::number(current_stage), on);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
 int OFeedClient::receiptImageHeightMm() const
 {
 	bool ok = false;
-	int height_mm = getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageHeightMm"), 18).toInt(&ok);
+	int height_mm = getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageHeightMm"), 18).toInt(&ok);
 	if(!ok)
 		return 18;
 	if(height_mm < 10)
@@ -320,11 +361,41 @@ void OFeedClient::setReceiptImageHeightMm(int height_mm)
 		height_mm = 10;
 	else if(height_mm > 60)
 		height_mm = 60;
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageHeightMm"), height_mm);
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageHeightMm"), height_mm);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 
-QString OFeedClient::eventImageConfigKey(const QString &suffix) const
+QString OFeedClient::receiptEventLinkUrl() const
+{
+	const QString custom_url = getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptEventLinkUrl")).toString().trimmed();
+	if(!custom_url.isEmpty())
+		return custom_url;
+	return defaultReceiptEventLinkUrl();
+}
+
+QString OFeedClient::defaultReceiptEventLinkUrl() const
+{
+	QUrl event_url(normalized_receipt_host_url(hostUrl()));
+	const QString event_id = eventId().trimmed();
+	if(event_id.isEmpty())
+		return event_url.toString();
+	event_url.setPath(QStringLiteral("/events/%1").arg(event_id));
+	QUrlQuery query(event_url);
+	query.addQueryItem(QStringLiteral("tab"), QStringLiteral("results"));
+	event_url.setQuery(query);
+	return event_url.toString();
+}
+
+void OFeedClient::setReceiptEventLinkUrl(QString link_url)
+{
+	link_url = link_url.trimmed();
+	if(link_url == defaultReceiptEventLinkUrl())
+		link_url.clear();
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptEventLinkUrl"), link_url);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+QString OFeedClient::eventConfigKey(const QString &suffix) const
 {
 	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	return serviceName().toLower() + "." + suffix + ".E" + QString::number(current_stage);
@@ -337,25 +408,25 @@ bool OFeedClient::hasCachedEventImage() const
 
 QString OFeedClient::cachedEventImageBase64() const
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageDataBase64")).toString();
+	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageDataBase64")).toString();
 }
 
 QString OFeedClient::cachedEventImageFormat() const
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageFormat"), "png").toString().toLower();
+	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageFormat"), "png").toString().toLower();
 }
 
 void OFeedClient::setCachedEventImage(const QByteArray &raw_data, const QString &format)
 {
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageDataBase64"), QString::fromLatin1(raw_data.toBase64()));
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageFormat"), format.toLower());
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageDataBase64"), QString::fromLatin1(raw_data.toBase64()));
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageFormat"), format.toLower());
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 
 void OFeedClient::clearCachedEventImage()
 {
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageDataBase64"), QString());
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageFormat"), QString());
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageDataBase64"), QString());
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageFormat"), QString());
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
 }
 

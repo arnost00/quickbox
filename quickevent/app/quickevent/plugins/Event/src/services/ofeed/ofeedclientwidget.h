@@ -27,6 +27,8 @@ private:
 	void onBtTestConnectionClicked();
 	void onBtRefreshEventImageClicked();
 	void updateTestConnectionState();
+	void syncReceiptEventLinkWithDefaults();
+	QString defaultReceiptEventLink() const;
 	OFeedClient* service();
 	bool saveSettings();
 private:
@@ -34,6 +36,7 @@ private:
 	bool acceptDialogDone(int result);
 	bool m_isTestConnectionRunning = false;
 	bool m_isImageRefreshRunning = false;
+	QString m_lastAutoReceiptEventLink;
 };
 
 }}

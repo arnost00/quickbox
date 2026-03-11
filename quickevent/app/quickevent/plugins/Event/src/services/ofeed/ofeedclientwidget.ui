@@ -406,25 +406,53 @@
         <widget class="QPushButton" name="btRefreshEventImage">
          <property name="toolTip">
           <string>Download event image from OFeed and update local cache</string>
-        </property>
-        <property name="text">
-         <string>Refresh event image cache</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="lbEventImageCacheStatus">
-        <property name="text">
-         <string>No cached image</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
+         </property>
+         <property name="text">
+          <string>Refresh event image cache</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbEventImageCacheStatus">
+         <property name="text">
+          <string>No cached image</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="additionalSettingsPrintEventQrCodeOnReceipt">
+         <property name="text">
+          <string>Print QR code with event link on receipts</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="receiptEventLinkLayout">
+         <item>
+          <widget class="QLabel" name="lbReceiptEventLink">
+           <property name="text">
+            <string>Receipt event link</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="edReceiptEventLink">
+           <property name="toolTip">
+            <string>Link encoded into the printed QR code on receipts</string>
+           </property>
+           <property name="placeholderText">
+            <string>https://orienteerfeed.com/events/&lt;eventId&gt;?tab=results</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
  </widget>
  <tabstops>
   <tabstop>btExportStartListXml30</tabstop>

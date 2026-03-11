@@ -69,6 +69,24 @@ QString userFacingHostUrl(const QString &host_url)
 	return base_url.toString();
 }
 
+QString receiptEventLinkUrl(const QString &host_url, const QString &event_id)
+{
+	QString base_host_url = userFacingHostUrl(host_url);
+	if(base_host_url.isEmpty())
+		base_host_url = QStringLiteral("https://orienteerfeed.com");
+
+	QUrl url(base_host_url);
+	const QString trimmed_event_id = event_id.trimmed();
+	if(trimmed_event_id.isEmpty())
+		return url.toString();
+
+	url.setPath(QStringLiteral("/events/%1").arg(trimmed_event_id));
+	QUrlQuery query(url);
+	query.addQueryItem(QStringLiteral("tab"), QStringLiteral("results"));
+	url.setQuery(query);
+	return url.toString();
+}
+
 ParsedOFeedSetupLink parseOFeedSetupLink(const QString &input)
 {
 	ParsedOFeedSetupLink result;
@@ -131,6 +149,10 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->edReceiptImageHeight->setValue(svc->receiptImageHeightMm());
 		ui->lbReceiptImageHeight->setEnabled(svc->printEventImageOnReceipt());
 		ui->edReceiptImageHeight->setEnabled(svc->printEventImageOnReceipt());
+		ui->additionalSettingsPrintEventQrCodeOnReceipt->setChecked(svc->printEventQrCodeOnReceipt());
+		ui->edReceiptEventLink->setText(svc->receiptEventLinkUrl());
+		ui->lbReceiptEventLink->setEnabled(svc->printEventQrCodeOnReceipt());
+		ui->edReceiptEventLink->setEnabled(svc->printEventQrCodeOnReceipt());
 		ui->lbEventImageCacheStatus->setText(svc->hasCachedEventImage() ? tr("Cached image is available") : tr("No cached image"));
 		ui->processChangesOnOffButton->setText(svc->runChangesProcessing() ? tr("ON") : tr("OFF"));
 		ui->processChangesOnOffButton->setChecked(svc->runChangesProcessing());
@@ -151,6 +173,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		);
 		ui->processChangesOnOffLabel->setText(svc->runChangesProcessing() ? tr("Changes are automatically processed") : tr("Processing changes is deactivated"));
 	}
+	syncReceiptEventLinkWithDefaults();
 
 	connect(ui->btExportResultsXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportResultsXml30Clicked);
 	connect(ui->btExportStartListXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportStartListXml30Clicked);
@@ -171,8 +194,18 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->lbReceiptImageHeight->setEnabled(on);
 		ui->edReceiptImageHeight->setEnabled(on);
 	});
-	connect(ui->edHostUrl, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
-	connect(ui->edEventId, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
+	connect(ui->additionalSettingsPrintEventQrCodeOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
+		ui->lbReceiptEventLink->setEnabled(on);
+		ui->edReceiptEventLink->setEnabled(on);
+	});
+	connect(ui->edHostUrl, &QLineEdit::textChanged, this, [this]() {
+		updateTestConnectionState();
+		syncReceiptEventLinkWithDefaults();
+	});
+	connect(ui->edEventId, &QLineEdit::textChanged, this, [this]() {
+		updateTestConnectionState();
+		syncReceiptEventLinkWithDefaults();
+	});
 	connect(ui->edEventPassword, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
 	updateTestConnectionState();
 }
@@ -212,6 +245,8 @@ bool OFeedClientWidget::saveSettings()
 		svc->setRunXmlValidation(ui->additionalSettingsRunXmlValidation->isChecked());
 		svc->setPrintEventImageOnReceipt(ui->additionalSettingsPrintEventImageOnReceipt->isChecked());
 		svc->setReceiptImageHeightMm(ui->edReceiptImageHeight->value());
+		svc->setPrintEventQrCodeOnReceipt(ui->additionalSettingsPrintEventQrCodeOnReceipt->isChecked());
+		svc->setReceiptEventLinkUrl(ui->edReceiptEventLink->text().trimmed());
 		svc->setSettings(ss);
 	}
 	return true;
@@ -323,6 +358,22 @@ void OFeedClientWidget::onBtRefreshEventImageClicked()
 		widget_guard->ui->lbEventImageCacheStatus->setText(message);
 		widget_guard->updateTestConnectionState();
 	});
+}
+
+QString OFeedClientWidget::defaultReceiptEventLink() const
+{
+	return receiptEventLinkUrl(ui->edHostUrl->text(), ui->edEventId->text());
+}
+
+void OFeedClientWidget::syncReceiptEventLinkWithDefaults()
+{
+	const QString current_link = ui->edReceiptEventLink->text().trimmed();
+	const QString default_link = defaultReceiptEventLink();
+	if(current_link.isEmpty() || current_link == m_lastAutoReceiptEventLink) {
+		ui->edReceiptEventLink->setText(default_link);
+	}
+	ui->edReceiptEventLink->setPlaceholderText(default_link);
+	m_lastAutoReceiptEventLink = default_link;
 }
 
 void OFeedClientWidget::updateTestConnectionState()

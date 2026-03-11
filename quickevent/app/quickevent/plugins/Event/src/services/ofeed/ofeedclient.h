@@ -57,8 +57,13 @@ public:
 	void setRunChangesProcessing(bool runChangesProcessing);
 	bool printEventImageOnReceipt() const;
 	void setPrintEventImageOnReceipt(bool on);
+	bool printEventQrCodeOnReceipt() const;
+	void setPrintEventQrCodeOnReceipt(bool on);
 	int receiptImageHeightMm() const;
 	void setReceiptImageHeightMm(int height_mm);
+	QString receiptEventLinkUrl() const;
+	QString defaultReceiptEventLinkUrl() const;
+	void setReceiptEventLinkUrl(QString link_url);
 	bool hasCachedEventImage() const;
 	QString cachedEventImageBase64() const;
 	QString cachedEventImageFormat() const;
@@ -79,7 +84,7 @@ private:
 	void onExportTimerTimeOut();
 	void init();
 	void ensureEventImageCachedAtStartup();
-	QString eventImageConfigKey(const QString &suffix) const;
+	QString eventConfigKey(const QString &suffix) const;
 	void setCachedEventImage(const QByteArray &raw_data, const QString &format);
 	void clearCachedEventImage();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);

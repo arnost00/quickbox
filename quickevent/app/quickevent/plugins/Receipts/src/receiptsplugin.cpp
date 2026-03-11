@@ -3,6 +3,7 @@
 #include "receiptsprinter.h"
 #include "receiptssettings.h"
 #include "receiptssettingspage.h"
+#include "thirdparty/qrcodegen.hpp"
 #include "../../Core/src/coreplugin.h"
 #include "../../Core/src/widgets/settingsdialog.h"
 
@@ -32,6 +33,9 @@
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
+#include <QBuffer>
+#include <QImage>
+#include <QPainter>
 #include <QSaveFile>
 #include <QSqlRecord>
 #include <QPrinterInfo>
@@ -51,6 +55,11 @@ using CardReader::CardReaderPlugin;
 namespace Receipts {
 
 namespace {
+QString receiptImageCacheDirPath()
+{
+	return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/receipt-image-cache");
+}
+
 QString ensureReceiptImageFile(const QString &image_base64, const QString &image_format)
 {
 	if(image_base64.isEmpty())
@@ -64,7 +73,7 @@ QString ensureReceiptImageFile(const QString &image_base64, const QString &image
 	if(file_ext != QLatin1String("svg"))
 		file_ext = QStringLiteral("png");
 
-	const QString cache_dir_path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/receipt-image-cache");
+	const QString cache_dir_path = receiptImageCacheDirPath();
 	QDir cache_dir(cache_dir_path);
 	if(!cache_dir.mkpath(QStringLiteral(".")))
 		return {};
@@ -92,6 +101,118 @@ QString ensureReceiptImageFile(const QString &image_base64, const QString &image
 	QFile stored_file(file_path);
 	qfInfo() << "receipt image cache file:" << file_path << "exists:" << stored_file.exists() << "bytes:" << stored_file.size();
 	return file_path;
+}
+
+QString ensureReceiptQrCodeFile(const QString &link_url)
+{
+	const QString trimmed_link_url = link_url.trimmed();
+	if(trimmed_link_url.isEmpty())
+		return {};
+
+	const QByteArray utf8_link = trimmed_link_url.toUtf8();
+	qrcodegen::QrCode qr = qrcodegen::QrCode::encodeText("", qrcodegen::QrCode::Ecc::LOW);
+	try {
+		qr = qrcodegen::QrCode::encodeText(utf8_link.constData(), qrcodegen::QrCode::Ecc::MEDIUM);
+	}
+	catch(const std::exception &e) {
+		qfWarning() << "QR code generation failed:" << e.what();
+		return {};
+	}
+	const int qr_size = qr.getSize();
+	if(qr_size <= 0)
+		return {};
+
+	constexpr int border_modules = 4;
+	constexpr int pixels_per_module = 8;
+	const int image_size = (qr_size + border_modules * 2) * pixels_per_module;
+
+	QImage qr_image(image_size, image_size, QImage::Format_RGB32);
+	qr_image.fill(Qt::white);
+	{
+		QPainter painter(&qr_image);
+		painter.setPen(Qt::NoPen);
+		painter.setBrush(Qt::black);
+		for(int y = 0; y < qr_size; ++y) {
+			for(int x = 0; x < qr_size; ++x) {
+				if(qr.getModule(x, y)) {
+					painter.drawRect(
+						(x + border_modules) * pixels_per_module,
+						(y + border_modules) * pixels_per_module,
+						pixels_per_module,
+						pixels_per_module);
+				}
+			}
+		}
+	}
+
+	QByteArray png_data;
+	{
+		QBuffer buffer(&png_data);
+		if(!buffer.open(QIODevice::WriteOnly))
+			return {};
+		if(!qr_image.save(&buffer, "PNG"))
+			return {};
+	}
+	if(png_data.isEmpty())
+		return {};
+
+	const QString cache_dir_path = receiptImageCacheDirPath();
+	QDir cache_dir(cache_dir_path);
+	if(!cache_dir.mkpath(QStringLiteral(".")))
+		return {};
+
+	const QByteArray hash = QCryptographicHash::hash(utf8_link, QCryptographicHash::Sha1).toHex().left(16);
+	const QString file_path = QDir::toNativeSeparators(cache_dir.filePath(QStringLiteral("ofeed-qr-%1.png").arg(QString::fromLatin1(hash))));
+	bool write_file = true;
+	{
+		QFile existing_file(file_path);
+		if(existing_file.exists() && existing_file.open(QIODevice::ReadOnly)) {
+			if(existing_file.readAll() == png_data)
+				write_file = false;
+			existing_file.close();
+		}
+	}
+	if(write_file) {
+		QSaveFile file(file_path);
+		if(!file.open(QIODevice::WriteOnly))
+			return {};
+		if(file.write(png_data) != png_data.size())
+			return {};
+		if(!file.commit())
+			return {};
+	}
+	QFile stored_file(file_path);
+	qfInfo() << "receipt QR cache file:" << file_path << "exists:" << stored_file.exists() << "bytes:" << stored_file.size();
+	return file_path;
+}
+
+void setReceiptMediaData(qf::core::utils::TreeTable &tt)
+{
+	auto *ofeed_svc = qobject_cast<Event::services::OFeedClient*>(
+		Event::services::Service::serviceByName(Event::services::OFeedClient::serviceName()));
+	tt.setValue("event.receiptImageHeightMm", ofeed_svc ? ofeed_svc->receiptImageHeightMm() : 18);
+	if(ofeed_svc && ofeed_svc->printEventImageOnReceipt()) {
+		const QString image_base64 = ofeed_svc->cachedEventImageBase64();
+		const QString image_format = ofeed_svc->cachedEventImageFormat();
+		tt.setValue("event.receiptImagePath", ensureReceiptImageFile(image_base64, image_format));
+		tt.setValue("event.receiptImageDataBase64", image_base64);
+		tt.setValue("event.receiptImageFormat", image_format);
+	}
+	else {
+		tt.setValue("event.receiptImagePath", QString());
+		tt.setValue("event.receiptImageDataBase64", QString());
+		tt.setValue("event.receiptImageFormat", QString());
+	}
+
+	if(ofeed_svc && ofeed_svc->printEventQrCodeOnReceipt()) {
+		const QString receipt_link = ofeed_svc->receiptEventLinkUrl().trimmed();
+		tt.setValue("event.receiptQrCodeUrl", receipt_link);
+		tt.setValue("event.receiptQrCodePath", ensureReceiptQrCodeFile(receipt_link));
+	}
+	else {
+		tt.setValue("event.receiptQrCodeUrl", QString());
+		tt.setValue("event.receiptQrCodePath", QString());
+	}
 }
 }
 
@@ -398,23 +519,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		tt.setValue("appVersion", QCoreApplication::applicationVersion());
 		tt.setValue("stageCount", getPlugin<EventPlugin>()->stageCount());
 		tt.setValue("currentStageId", stage_id);
-		{
-			auto *ofeed_svc = qobject_cast<Event::services::OFeedClient*>(
-				Event::services::Service::serviceByName(Event::services::OFeedClient::serviceName()));
-			tt.setValue("event.receiptImageHeightMm", ofeed_svc ? ofeed_svc->receiptImageHeightMm() : 18);
-			if(ofeed_svc && ofeed_svc->printEventImageOnReceipt()) {
-				const QString image_base64 = ofeed_svc->cachedEventImageBase64();
-				const QString image_format = ofeed_svc->cachedEventImageFormat();
-				tt.setValue("event.receiptImagePath", ensureReceiptImageFile(image_base64, image_format));
-				tt.setValue("event.receiptImageDataBase64", image_base64);
-				tt.setValue("event.receiptImageFormat", image_format);
-			}
-			else {
-				tt.setValue("event.receiptImagePath", QString());
-				tt.setValue("event.receiptImageDataBase64", QString());
-				tt.setValue("event.receiptImageFormat", QString());
-			}
-		}
+		setReceiptMediaData(tt);
 		qfDebug() << "competitor:\n" << tt.toString();
 		ret["competitor"] = tt.toVariant();
 	}
@@ -495,23 +600,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		tt.setValue("appVersion", QCoreApplication::applicationVersion());
 		tt.setValue("stageCount", getPlugin<EventPlugin>()->stageCount());
 		tt.setValue("currentStageId", stage_id);
-		{
-			auto *ofeed_svc = qobject_cast<Event::services::OFeedClient*>(
-				Event::services::Service::serviceByName(Event::services::OFeedClient::serviceName()));
-			tt.setValue("event.receiptImageHeightMm", ofeed_svc ? ofeed_svc->receiptImageHeightMm() : 18);
-			if(ofeed_svc && ofeed_svc->printEventImageOnReceipt()) {
-				const QString image_base64 = ofeed_svc->cachedEventImageBase64();
-				const QString image_format = ofeed_svc->cachedEventImageFormat();
-				tt.setValue("event.receiptImagePath", ensureReceiptImageFile(image_base64, image_format));
-				tt.setValue("event.receiptImageDataBase64", image_base64);
-				tt.setValue("event.receiptImageFormat", image_format);
-			}
-			else {
-				tt.setValue("event.receiptImagePath", QString());
-				tt.setValue("event.receiptImageDataBase64", QString());
-				tt.setValue("event.receiptImageFormat", QString());
-			}
-		}
+		setReceiptMediaData(tt);
 
 		qfDebug() << "card:\n" << tt.toString();
 		ret["card"] = tt.toVariant();

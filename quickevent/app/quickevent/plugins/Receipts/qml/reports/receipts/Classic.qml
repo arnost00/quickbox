@@ -424,6 +424,31 @@ Report {
 					}
 				}
 			}
+			Frame {
+				id: receiptQrCodeFrame
+				width: "%"
+				halign: Frame.AlignHCenter
+				hinset: 1
+				vinset: 2
+				Para {
+					omitEmptyText: true
+					textFn: function() {
+						var path = bandCard.data("event.receiptQrCodePath") || "";
+						receiptQrCodeImage.visible = !!path;
+						receiptQrCodeImage.width = path ? 24 : 0;
+						receiptQrCodeImage.height = path ? 24 : 0;
+						receiptQrCodeImage.dataSource = path;
+						return "";
+					}
+				}
+				Image {
+					id: receiptQrCodeImage
+					visible: false
+					width: 0
+					height: 0
+					dataSource: ""
+				}
+			}
 		}
 	}
 }
