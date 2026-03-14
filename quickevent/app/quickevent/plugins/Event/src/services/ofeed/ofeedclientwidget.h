@@ -26,6 +26,7 @@ private:
 	void onBtPasteSetupLinkClicked();
 	void onBtTestConnectionClicked();
 	void onBtRefreshEventImageClicked();
+	void onBtOpenEventWebsiteClicked();
 	void updateTestConnectionState();
 	void syncReceiptEventLinkWithDefaults();
 	QString defaultReceiptEventLink() const;

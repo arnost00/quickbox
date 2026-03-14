@@ -10,6 +10,7 @@
 #include <qf/core/log.h>
 
 #include <QClipboard>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QGuiApplication>
 #include <QPointer>
@@ -67,6 +68,18 @@ QString userFacingHostUrl(const QString &host_url)
 	if(parsed_url.port() > 0)
 		base_url.setPort(parsed_url.port());
 	return base_url.toString();
+}
+
+QString eventWebsiteUrl(const QString &host_url, const QString &event_id)
+{
+	const QString base_host_url = userFacingHostUrl(host_url);
+	const QString trimmed_event_id = event_id.trimmed();
+	if(base_host_url.isEmpty() || trimmed_event_id.isEmpty())
+		return {};
+
+	QUrl url(base_host_url);
+	url.setPath(QStringLiteral("/events/%1").arg(trimmed_event_id));
+	return url.toString();
 }
 
 QString receiptEventLinkUrl(const QString &host_url, const QString &event_id)
@@ -181,8 +194,11 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->btPasteSetupLink, &QPushButton::clicked, this, &OFeedClientWidget::onBtPasteSetupLinkClicked);
 	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
 	connect(ui->btRefreshEventImage, &QPushButton::clicked, this, &OFeedClientWidget::onBtRefreshEventImageClicked);
+	connect(ui->btOpenEventWebsite, &QToolButton::clicked, this, &OFeedClientWidget::onBtOpenEventWebsiteClicked);
 	const QIcon show_password_icon = qf::gui::Style::icon("eye");
 	const QIcon hide_password_icon = qf::gui::Style::icon("eye-off");
+	const QIcon open_event_website_icon = qf::gui::Style::icon("globe");
+	ui->btOpenEventWebsite->setIcon(open_event_website_icon);
 	const auto update_password_visibility = [this, show_password_icon, hide_password_icon](bool visible) {
 		ui->edEventPassword->setEchoMode(visible ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::Password);
 		ui->btToggleEventPasswordVisibility->setIcon(visible ? hide_password_icon : show_password_icon);
@@ -360,6 +376,14 @@ void OFeedClientWidget::onBtRefreshEventImageClicked()
 	});
 }
 
+void OFeedClientWidget::onBtOpenEventWebsiteClicked()
+{
+	const QString event_website_url = eventWebsiteUrl(ui->edHostUrl->text(), ui->edEventId->text());
+	if(event_website_url.isEmpty())
+		return;
+	QDesktopServices::openUrl(QUrl(event_website_url));
+}
+
 QString OFeedClientWidget::defaultReceiptEventLink() const
 {
 	return receiptEventLinkUrl(ui->edHostUrl->text(), ui->edEventId->text());
@@ -381,6 +405,10 @@ void OFeedClientWidget::updateTestConnectionState()
 	const bool has_required_credentials = !ui->edHostUrl->text().trimmed().isEmpty()
 		&& !ui->edEventId->text().trimmed().isEmpty()
 		&& !ui->edEventPassword->text().trimmed().isEmpty();
+	const QString event_website_url = eventWebsiteUrl(ui->edHostUrl->text(), ui->edEventId->text());
+	const bool has_event_website_url = !event_website_url.isEmpty();
+	ui->btOpenEventWebsite->setEnabled(has_event_website_url);
+	ui->btOpenEventWebsite->setToolTip(has_event_website_url ? tr("Open event page in browser") : tr("Fill Url and Event id to open event page"));
 	ui->btTestConnection->setEnabled(has_required_credentials && !m_isTestConnectionRunning);
 	ui->btRefreshEventImage->setEnabled(has_required_credentials && !m_isImageRefreshRunning);
 }
