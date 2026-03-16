@@ -8,11 +8,11 @@ on:
 
 jobs:
   macos:
-    name: Qt 6.8 / macOS 15
+    name: Qt 6.10 / macOS 15
     runs-on: macos-15
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
@@ -20,10 +20,10 @@ jobs:
         run: brew install ninja create-dmg
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@v5
         with:
           cache: true
-          version: 6.8.3
+          version: 6.10.2
           install-deps: false
           modules: qtserialport qtmultimedia
 
@@ -87,7 +87,7 @@ jobs:
             '${{ github.workspace }}/install/quickevent.app'
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: quickevent-${{ env.VERSION }}.dmg
           path: ${{ github.workspace }}/quickevent-*.dmg
