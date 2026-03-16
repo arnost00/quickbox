@@ -128,7 +128,7 @@ Lista de puertos disponibles:
     <message>
         <location filename="src/device/sidevicedriver.cpp" line="141"/>
         <source>NAK received</source>
-        <translation type="unfinished"></translation>
+        <translation>El dispositivo rechazó la solicitud</translation>
     </message>
     <message>
         <location filename="src/device/sidevicedriver.cpp" line="147"/>
@@ -138,12 +138,12 @@ Lista de puertos disponibles:
     <message>
         <location filename="src/device/sidevicedriver.cpp" line="154"/>
         <source>Valid message shall end with ETX or NAK, throwing data away</source>
-        <translation type="unfinished"></translation>
+        <translation>Un mensaje válido debe terminar con ETX o NAK; de lo contrario, se descartan los datos</translation>
     </message>
     <message>
         <location filename="src/device/sidevicedriver.cpp" line="170"/>
         <source>SIDeviceDriver::sendCommand() - ERROR Sending of EXT commands only is supported for sending.</source>
-        <translation type="unfinished"></translation>
+        <translation>SIDeviceDriver::sendCommand() - ERROR - El envío solo admite comandos EXT.</translation>
     </message>
 </context>
 <context>
@@ -151,7 +151,7 @@ Lista de puertos disponibles:
     <message>
         <location filename="src/device/sitask.cpp" line="24"/>
         <source>SiCommand timeout after %1 sec.</source>
-        <translation type="unfinished"></translation>
+        <translation>Se agotó el tiempo de espera del comando SportIdent después de %1 s.</translation>
     </message>
 </context>
 </TS>
