@@ -2,7 +2,7 @@ name: macOS
 
 on:
   push:
-    branches: [ "main", "qe3_wf_test" ]
+    branches: [ "main", "qe3_wf_test3" ]
   pull_request:
     branches: [ "main" ]
 
