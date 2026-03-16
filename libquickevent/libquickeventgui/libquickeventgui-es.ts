@@ -136,7 +136,7 @@
     <message>
         <location filename="src/reportoptionsdialog.ui" line="302"/>
         <source>Horizontal margin</source>
-        <translation type="unfinished"></translation>
+        <translation>Margen horizontal</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="309"/>
@@ -144,27 +144,27 @@
         <location filename="src/reportoptionsdialog.ui" line="378"/>
         <location filename="src/reportoptionsdialog.ui" line="404"/>
         <source> mm</source>
-        <translation type="unfinished"></translation>
+        <translation> mm</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="341"/>
         <source>Column count</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de columnas</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="348"/>
         <source>Vertical margin</source>
-        <translation type="unfinished"></translation>
+        <translation>Margen vertical</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="371"/>
         <source>Page width</source>
-        <translation type="unfinished"></translation>
+        <translation>Ancho de página</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="397"/>
         <source>Page height</source>
-        <translation type="unfinished"></translation>
+        <translation>Altura de página</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="423"/>
@@ -179,17 +179,17 @@
     <message>
         <location filename="src/reportoptionsdialog.ui" line="436"/>
         <source>Column</source>
-        <translation type="unfinished"></translation>
+        <translation>Columna</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="441"/>
         <source>Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Página</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="467"/>
         <source>Save as default</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar como valor por defecto</translation>
     </message>
 </context>
 </TS>
