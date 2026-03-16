@@ -131,17 +131,17 @@
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="67"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tiempo</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="68"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Estado</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="101"/>
         <source>Results %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Resultados %1</translation>
     </message>
 </context>
 <context>
@@ -149,32 +149,32 @@
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="19"/>
         <source>Start List</source>
-        <translation type="unfinished"></translation>
+        <translation>Listado de horas de salida</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="41"/>
         <source>E%1 %2 Start list</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2 listado de horas de salida</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="45"/>
         <source> length: </source>
-        <translation type="unfinished"></translation>
+        <translation> distancia </translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="45"/>
         <source>climb: </source>
-        <translation type="unfinished"></translation>
+        <translation>desnivel: </translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="63"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Salida</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="64"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="65"/>
@@ -184,12 +184,12 @@
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="66"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="src/exporters/stagestartlisthtmlexporter.cpp" line="89"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 </TS>
