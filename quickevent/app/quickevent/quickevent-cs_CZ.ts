@@ -382,7 +382,7 @@
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="14"/>
         <source>QR-O-Punch</source>
-        <translation></translation>
+        <translation>QR-O-Punch</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="20"/>
