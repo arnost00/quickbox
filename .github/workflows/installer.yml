@@ -8,11 +8,11 @@ on:
 
 jobs:
   windows:
-    name: Qt 6.8 / Windows
+    name: Qt 6.10 / Windows
     runs-on: windows-2025
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
@@ -31,7 +31,7 @@ jobs:
 #         key: ${{ runner.os }}-library-cache
 
       - name: Setup MinGW cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           key: x86_64-13.1.0-release-posix-seh-msvcrt-rt_v11-rev1.7z
           path: ${{github.workspace}}/x86_64-13.1.0-release-posix-seh-msvcrt-rt_v11-rev1.7z
@@ -62,7 +62,7 @@ jobs:
       - name: Setup CMake
         uses: ./.github/actions/cmake
         with:
-          qt_version: 6.8.3
+          qt_version: 6.10.2
           qt_arch: win64_mingw
           use_qt6: ON
           modules: qtserialport qtmultimedia
@@ -101,7 +101,7 @@ jobs:
         run: iscc "-DBUILD_DIR=${{ github.workspace }}/install" "-DVERSION=${{ env.VERSION }}" quickevent/quickevent.iss
 
       - name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: quickevent-${{ env.VERSION }}-setup.exe
           path: ${{ github.workspace }}/install/_inno/quickevent/quickevent-*-setup.exe
