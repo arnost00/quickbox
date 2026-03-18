@@ -1790,57 +1790,62 @@ Consider setting &quot;Interval&quot; column for all classes before continuing.<
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="120"/>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="121"/>
         <source>Ukrainian</source>
         <translation>Ukrainien</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="138"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="140"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="139"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="141"/>
         <source>Language change to &apos;%1&apos; will be applied after application restart.</source>
         <translation>Le changement de langue vers «&#xa0;%1&#xa0;» sera appliqué après le redémarrage de l&apos;application.</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="147"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="149"/>
         <source>&amp;View</source>
         <translation>&amp;Fenêtre</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="151"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="153"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Barre d&apos;outils</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="155"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="157"/>
         <source>&amp;Help</source>
         <translation>&amp;Aide</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="157"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="159"/>
         <source>&amp;About Quick Event</source>
         <oldsource>&amp;About Quick event</oldsource>
         <translation type="unfinished">&amp;À propos de Quick event</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="162"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="164"/>
         <source>About &amp;Qt</source>
         <translation>À propos de Qt</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="206"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="208"/>
         <source>About Quick Event</source>
         <translation>À propos de Quick Event</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="207"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="209"/>
         <source>The &lt;b&gt;Quick Event&lt;/b&gt; is an application which helps you to organize the orienteering events.&lt;br/&gt;&lt;br/&gt;version: %1&lt;br/&gt;commit: %7&lt;br/&gt;min. db version: %2&lt;br/&gt;build: %3 %4&lt;br/&gt;SSL build: %5&lt;br/&gt;SSL run: %6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="228"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="230"/>
         <source>About Qt</source>
         <translation>À propos de Qt</translation>
     </message>

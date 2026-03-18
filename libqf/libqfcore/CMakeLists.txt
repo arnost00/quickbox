@@ -33,6 +33,7 @@ qt6_add_translation(QM_FILES
 	libqfcore-nl_BE.ts
 	libqfcore-pl_PL.ts
 	libqfcore-ru_RU.ts
+	libqfcore-es.ts
 	libqfcore-uk_UA.ts
 	)
 
@@ -43,6 +44,7 @@ qt6_add_lupdate(libqfcore TS_FILES
 	libqfcore-nl_BE.ts
 	libqfcore-pl_PL.ts
 	libqfcore-ru_RU.ts
+	libqfcore-es.ts
 	libqfcore-uk_UA.ts
 	)
 

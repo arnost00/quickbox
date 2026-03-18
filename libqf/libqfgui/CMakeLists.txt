@@ -119,6 +119,7 @@ qt6_add_translation(QM_FILES
 	libqfgui-nl_BE.ts
 	libqfgui-pl_PL.ts
 	libqfgui-ru_RU.ts
+	libqfgui-es.ts
 	libqfgui-uk_UA.ts
 	)
 
@@ -129,6 +130,7 @@ qt6_add_lupdate(libqfgui TS_FILES
 	libqfgui-nl_BE.ts
 	libqfgui-pl_PL.ts
 	libqfgui-ru_RU.ts
+	libqfgui-es.ts
 	libqfgui-uk_UA.ts
 	)
 

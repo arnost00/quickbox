@@ -24,6 +24,7 @@ qt6_add_translation(QM_FILES
 	libquickeventcore-nl_BE.ts
 	libquickeventcore-pl_PL.ts
 	libquickeventcore-ru_RU.ts
+	libquickeventcore-es.ts
 	libquickeventcore-uk_UA.ts
 	)
 
@@ -34,6 +35,7 @@ qt6_add_lupdate(libquickeventcore TS_FILES
 	libquickeventcore-nl_BE.ts
 	libquickeventcore-pl_PL.ts
 	libquickeventcore-ru_RU.ts
+	libquickeventcore-es.ts
 	libquickeventcore-uk_UA.ts
 	)
 

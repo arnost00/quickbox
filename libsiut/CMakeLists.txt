@@ -15,6 +15,7 @@ qt6_add_translation(QM_FILES
 	libsiut-nl_BE.ts
 	libsiut-pl_PL.ts
 	libsiut-ru_RU.ts
+	libsiut-es.ts
 	libsiut-uk_UA.ts
 	)
 
@@ -25,6 +26,7 @@ qt6_add_lupdate(libsiut TS_FILES
 	libsiut-nl_BE.ts
 	libsiut-pl_PL.ts
 	libsiut-ru_RU.ts
+	libsiut-es.ts
 	libsiut-uk_UA.ts
 	)
 
