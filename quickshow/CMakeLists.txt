@@ -17,6 +17,7 @@ qt6_add_translation(QM_FILES
 	quickshow-nl_BE.ts
 	quickshow-pl_PL.ts
 	quickshow-ru_RU.ts
+	quickshow-es.ts
 	quickshow-uk_UA.ts
 	)
 
@@ -27,6 +28,7 @@ qt6_add_lupdate(quickshow TS_FILES
 	quickshow-nl_BE.ts
 	quickshow-pl_PL.ts
 	quickshow-ru_RU.ts
+	quickshow-es.ts
 	quickshow-uk_UA.ts
 	)
 

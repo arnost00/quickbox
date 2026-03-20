@@ -17,6 +17,7 @@ qt6_add_translation(QM_FILES
 	libquickeventgui-nl_BE.ts
 	libquickeventgui-pl_PL.ts
 	libquickeventgui-ru_RU.ts
+	libquickeventgui-es.ts
 	libquickeventgui-uk_UA.ts
 	)
 
@@ -27,6 +28,7 @@ qt6_add_lupdate(libquickeventgui TS_FILES
 	libquickeventgui-nl_BE.ts
 	libquickeventgui-pl_PL.ts
 	libquickeventgui-ru_RU.ts
+	libquickeventgui-es.ts
 	libquickeventgui-uk_UA.ts
 	)
 

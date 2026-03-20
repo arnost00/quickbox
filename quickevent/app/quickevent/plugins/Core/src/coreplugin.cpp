@@ -117,6 +117,7 @@ void CorePlugin::onInstalled()
 				{tr("Norwegian"), "nb_NO"},
 				{tr("Polish"), "pl_PL"},
 				{tr("Russian"), "ru_RU"},
+				{tr("Spanish"), "es"},
 				{tr("Ukrainian"), "uk_UA"},
 			};
 			auto *ag = new QActionGroup(m2);
@@ -127,8 +128,9 @@ void CorePlugin::onInstalled()
 				ag->addAction(a);
 				a->setOid(i.second);
 				a->setCheckable(true);
-				if(a->oid() == curr_lang)
+				if(a->oid() == curr_lang) {
 					a->setChecked(true);
+				}
 				m2->addActionInto(a);
 				connect(a, &QAction::triggered, a, [a](bool checked) {
 					if(checked) {

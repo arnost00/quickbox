@@ -38,6 +38,7 @@ qt6_add_translation(QM_FILES
 	qsqlmon-nl_BE.ts
 	qsqlmon-pl_PL.ts
 	qsqlmon-ru_RU.ts
+	qsqlmon-es.ts
 	qsqlmon-uk_UA.ts
 	)
 
@@ -48,6 +49,7 @@ qt6_add_lupdate(qsqlmon TS_FILES
 	qsqlmon-nl_BE.ts
 	qsqlmon-pl_PL.ts
 	qsqlmon-ru_RU.ts
+	qsqlmon-es.ts
 	qsqlmon-uk_UA.ts
 	)
 

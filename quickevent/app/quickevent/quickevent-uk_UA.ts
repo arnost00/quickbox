@@ -1837,52 +1837,57 @@ Consider setting &quot;Interval&quot; column for all classes before continuing.<
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="120"/>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="121"/>
         <source>Ukrainian</source>
         <translation>Українська</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="138"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="140"/>
         <source>Information</source>
         <translation>Інформація</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="139"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="141"/>
         <source>Language change to &apos;%1&apos; will be applied after application restart.</source>
         <translation>Зміна мови на «%1» відбудеться після перезапуску.</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="147"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="149"/>
         <source>&amp;View</source>
         <translation>Пе&amp;регляд</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="151"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="153"/>
         <source>&amp;Toolbar</source>
         <translation>П&amp;анель інстр</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="155"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="157"/>
         <source>&amp;Help</source>
         <translation>&amp;Допомога</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="157"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="159"/>
         <source>&amp;About Quick Event</source>
         <oldsource>&amp;About Quick event</oldsource>
         <translation type="unfinished">&amp;Про Quick event</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="162"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="164"/>
         <source>About &amp;Qt</source>
         <translation>Про &amp;Qt</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="206"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="208"/>
         <source>About Quick Event</source>
         <translation>Про Quick Event</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="207"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="209"/>
         <source>The &lt;b&gt;Quick Event&lt;/b&gt; is an application which helps you to organize the orienteering events.&lt;br/&gt;&lt;br/&gt;version: %1&lt;br/&gt;commit: %7&lt;br/&gt;min. db version: %2&lt;br/&gt;build: %3 %4&lt;br/&gt;SSL build: %5&lt;br/&gt;SSL run: %6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1891,7 +1896,7 @@ Consider setting &quot;Interval&quot; column for all classes before continuing.<
         <translation type="vanished">&lt;b&gt;Quick Event&lt;/b&gt; — це додаток, який допомагає в організації тренувань і змагань зі спортивного оруєнтування.&lt;br/&gt;&lt;br/&gt;версія: %1&lt;br/&gt;min. верся db: %2&lt;br/&gt;складання: %3 %4&lt;br/&gt;збірка SSL: %5&lt;br/&gt;запуск SSL: %6</translation>
     </message>
     <message>
-        <location filename="plugins/Core/src/coreplugin.cpp" line="228"/>
+        <location filename="plugins/Core/src/coreplugin.cpp" line="230"/>
         <source>About Qt</source>
         <translation>Про Qt</translation>
     </message>
