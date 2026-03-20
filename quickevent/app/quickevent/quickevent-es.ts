@@ -2146,7 +2146,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Receipts/qml/reports/receipts/Default.qml" line="494"/>
         <source>!!! RENTED CARD !!!</source>
-        <translation>!!! Tarjeta alquilada !!!</translation>
+        <translation>!!! Chip alquilado !!!</translation>
     </message>
     <message>
         <location filename="plugins/Receipts/qml/reports/receipts/Default.qml" line="510"/>
@@ -3834,7 +3834,7 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
     <message>
         <location filename="plugins/Event/src/lentcardssettingspage.cpp" line="13"/>
         <source>Cards to rent</source>
-        <translation>Tarjetas de alquiler</translation>
+        <translation>Chips de alquiler</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/lentcardssettingspage.cpp" line="19"/>
@@ -3956,7 +3956,7 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="127"/>
         <source>Card in rent table</source>
-        <translation>Tarjeta en la tabla de alquiler</translation>
+        <translation>Chip en la tabla de alquiler</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="128"/>
@@ -3965,8 +3965,8 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="128"/>
-        <source>CRET</source>
-        <translation type="unfinished"></translation>
+        <source>Card returned</source>
+        <translation>Chip devuelta</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="129"/>
@@ -4233,22 +4233,22 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
     <message>
         <location filename="plugins/Runs/src/printawardsoptionsdialogwidget.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Opciones</translation>
+        <translation>Generador de diplomas después de n etapas</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/printawardsoptionsdialogwidget.ui" line="20"/>
         <source>Number of places in each class</source>
-        <translation>Número de premios en cada categoría</translation>
+        <translation>Diplomas por categoría</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/printawardsoptionsdialogwidget.ui" line="40"/>
         <source>Awards report</source>
-        <translation>Informe de ganadores</translation>
+        <translation>Plantilla</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/printawardsoptionsdialogwidget.ui" line="50"/>
         <source>Stage number</source>
-        <translation>Número de etapa</translation>
+        <translation>Hasta etapa número (inclusive)</translation>
     </message>
 </context>
 <context>
@@ -4261,7 +4261,7 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
     <message>
         <location filename="plugins/Receipts/src/receiptsplugin.cpp" line="427"/>
         <source>Card</source>
-        <translation>Tarjeta</translation>
+        <translation>Chip</translation>
     </message>
     <message>
         <location filename="plugins/Receipts/src/receiptsplugin.cpp" line="458"/>
@@ -4297,7 +4297,7 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Receipts/src/receiptssettingspage.ui" line="20"/>
         <source>Print receipt automatically, when SI card is read.</source>
-        <translation>Imprimir el ticket automáticamente cuando la tarjeta es leída.</translation>
+        <translation>Imprimir el ticket automáticamente cuando el chip es leído.</translation>
     </message>
     <message>
         <location filename="plugins/Receipts/src/receiptssettingspage.ui" line="23"/>
@@ -4612,7 +4612,7 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relaywidget.ui" line="159"/>
         <source>Legs</source>
-        <translation type="unfinished">Relevistas</translation>
+        <translation>Relevistas</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaywidget.ui" line="179"/>
@@ -4671,17 +4671,17 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relaywidget.cpp" line="155"/>
         <source>Class should be entered.</source>
-        <translation type="unfinished">Debe introducir la categoría.</translation>
+        <translation>Se debe introducir la categoría.</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaywidget.cpp" line="159"/>
         <source>Relay ID invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>ID de relevo inválido.</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaywidget.cpp" line="202"/>
         <source>Add leg</source>
-        <translation type="unfinished"></translation>
+        <translation>Añadir relevista</translation>
     </message>
 </context>
 <context>
@@ -4690,22 +4690,22 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
         <location filename="plugins/Relays/src/relaysplugin.cpp" line="59"/>
         <source>Edit Relay</source>
         <oldsource>Edit  Relay</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Editar equipo</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaysplugin.cpp" line="69"/>
         <source>&amp;Relays</source>
-        <translation type="unfinished">&amp;Relevos</translation>
+        <translation>&amp;Equipos</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaysplugin.cpp" line="840"/>
         <source>Relays IOF-XML 3.0 results</source>
-        <translation type="unfinished"></translation>
+        <translation>Relevos - resultados - IOF XML 3.0</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relaysplugin.cpp" line="989"/>
         <source>Relays IOF-XML 3.0 startlist</source>
-        <translation type="unfinished"></translation>
+        <translation>Relevos - listado de horas de salida - IOF XML 3.0</translation>
     </message>
 </context>
 <context>
@@ -4713,22 +4713,22 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.ui" line="20"/>
         <source>Form</source>
-        <translation type="unfinished">Formulario</translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="91"/>
         <source>Class</source>
-        <translation type="unfinished"></translation>
+        <translation>Categoría</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="92"/>
         <source>Club</source>
-        <translation type="unfinished">Club</translation>
+        <translation>Club</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="93"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="94"/>
@@ -4738,7 +4738,7 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="95"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Notas</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="127"/>
@@ -4758,135 +4758,92 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="156"/>
         <source>&amp;Import bibs from CSV</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Importar dorsales desde CSV</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="167"/>
         <source>&amp;Print</source>
-        <translation type="unfinished">&amp;Imprimir</translation>
+        <translation>&amp;Imprimir</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="169"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="196"/>
         <source>&amp;Start list</source>
-        <translation type="unfinished">Listado de horas de &amp;salida</translation>
+        <translation>&amp;Listado de horas de salida</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="170"/>
         <source>&amp;Classes</source>
-        <translation type="unfinished">&amp;Categorías</translation>
+        <translation>&amp;Categorías</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="173"/>
         <source>C&amp;lubs</source>
-        <translation type="unfinished">C&amp;lubs</translation>
+        <translation>C&amp;lubs</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="177"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="202"/>
         <source>&amp;Results</source>
-        <translation type="unfinished">&amp;Resultados</translation>
+        <translation>&amp;Resultados</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="179"/>
         <source>&amp;After n legs</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Después de n relevistas</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="184"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="174"/>
         <source>&amp;Overall</source>
         <oldsource>&amp;Overal</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Globales</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="189"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="179"/>
         <source>Overall condensed</source>
-        <translation type="unfinished"></translation>
+        <translation>Globales (sin relevistas)</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="195"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="185"/>
         <source>E&amp;xport</source>
-        <translation type="unfinished">E&amp;portar</translation>
+        <translation>E&amp;xportar</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="198"/>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="204"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="188"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="194"/>
         <source>IOF-XML 3.0</source>
-        <translation type="unfinished">IOF XML 3.0</translation>
+        <translation>IOF XML 3.0</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="736"/>
-        <source>vac</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="738"/>
-        <source>Enter number of new vacants</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="738"/>
-        <source>Vacants count for class %1 :</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="763"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="213"/>
         <source>--- all ---</source>
-        <translation type="unfinished">--- todos ---</translation>
+        <translation>--- todos ---</translation>
     </message>
     <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="265"/>
+        <location filename="plugins/Relays/src/relayswidget.cpp" line="242"/>
         <source>Edit Relay</source>
         <oldsource>Edit  Relay</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="90"/>
-        <source>Id</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="96"/>
-        <source>Is Running</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
-        <source>Legs</source>
-        <translation type="unfinished">Relevistas</translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="97"/>
-        <source>Color indication :
- * red - relay has no leg
- * magenta - one or more legs are missing
- * yellow - too many legs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="plugins/Relays/src/relayswidget.cpp" line="161"/>
-        <source>Add new &amp;vacants</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar equipo</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="268"/>
         <source>Save and &amp;next</source>
-        <translation type="unfinished">Guardar y &amp;continuar</translation>
+        <translation>Guardar y &amp;continuar</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="300"/>
         <source>Really delete all the selected relays? This action cannot be reverted.</source>
-        <translation type="unfinished"></translation>
+        <translation>Desea borrar todos los equipos seleccionados? Esta acción no puede deshacerse.</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="313"/>
         <source>Confirm deletion of %1 relays.</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmar el borrado de %1 equipos.</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="333"/>
         <source>Dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="333"/>
@@ -4896,41 +4853,41 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="334"/>
         <source>Random number</source>
-        <translation type="unfinished"></translation>
+        <translation>Número aleatorio</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="334"/>
         <source>In alphabetical order</source>
-        <translation type="unfinished"></translation>
+        <translation>Orden alfabético</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="463"/>
         <source>Start list by classes</source>
-        <translation type="unfinished"></translation>
+        <translation>Listado de horas de salida por categorías</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="486"/>
         <source>Start list by clubs</source>
-        <translation type="unfinished"></translation>
+        <translation>Listado de horas de salida por clubes</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="514"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="538"/>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="562"/>
         <source>Results</source>
-        <translation type="unfinished">Resultados</translation>
+        <translation>Resultados</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="572"/>
         <source>Save as %1</source>
-        <translation type="unfinished">Guardar como %1</translation>
+        <translation>Guardar como %1</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="604"/>
         <source>Import UTF8 text file with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing relays (key is Club, Relay Name &amp; Class).</source>
         <oldsource>Import UTF8 text files with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing relays (key is Club, Relay Name &amp; Class).</oldsource>
         <translatorcomment>Importovat soubor s hodnotami oddělenými čárkou (CSV), včetně záhlaví, v kódování UTF-8.</translatorcomment>
-        <translation type="unfinished"></translation>
+        <translation>Importar archivo CSV UTF8 con la primera fila como cabecera.&lt;br/&gt;El separador es el punto y coma (;).&lt;br/&gt;Actualizar únicamente equipos existentes (identificar por: Club, Nombre del equipo y categoría).</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="605"/>
@@ -4941,49 +4898,51 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="617"/>
         <source>Open file</source>
-        <translation type="unfinished">Abrir archivo</translation>
+        <translation>Abrir archivo</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="617"/>
         <source>CSV files (*.csv *.txt)</source>
-        <translation type="unfinished">Archivos CSV (*.csv, *.txt)</translation>
+        <translation>Archivos CSV (*.csv, *.txt)</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="633"/>
         <source>Cannot open file &apos;%1&apos; for reading.</source>
-        <translation type="unfinished"></translation>
+        <translation>No se puede abrir el archivo «%1» para su lectura.</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="652"/>
         <source>Fields separation error, invalid CSV format, Error reading CSV line: [%1]</source>
-        <translation type="unfinished"></translation>
+        <translation>Error en la separación de los campos, formato CSV invalido. Error leyendo la línea: [%1]</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="662"/>
         <source>Error reading CSV line: [%1]</source>
-        <translation type="unfinished">Error leyendo la línea del CSV: [%1]</translation>
+        <translation>Error leyendo la línea: [%1]</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="673"/>
         <source>Cannot guess class name from bib: &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>No se puede saber el nombre de categoría del dorsal: «%1»</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="678"/>
         <source>Undefined class name: &apos;%1&apos;</source>
-        <translation type="unfinished">Nombre de categoría sin definir: %1</translation>
+        <translation>Nombre de cateogoría sin definir: «%1»</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="715"/>
         <source>Information</source>
-        <translation type="unfinished">Información</translation>
+        <translation>Información</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="715"/>
         <source>Import file finished. Imported %1 of %2 lines
 
 Press refresh button to show imported data.</source>
-        <translation type="unfinished"></translation>
+        <translation>Importación del archivo finalizada. Se importaron %1 de %2 filas
+
+Pulsa el botón de actualizar para mostrar los datos importados.</translation>
     </message>
 </context>
 <context>
@@ -4992,7 +4951,7 @@ Press refresh button to show imported data.</source>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="14"/>
         <source>Card flags</source>
         <oldsource>Card flags dialog</oldsource>
-        <translation>Estados de la tarjeta</translation>
+        <translation>Estados chip</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="22"/>
@@ -5003,29 +4962,29 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="29"/>
         <source>Not a rented card</source>
-        <translation>Tarjeta no alquilada</translation>
+        <translation>Este chip no es alquilado</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="45"/>
         <source>Card rented (or rent requested)</source>
         <oldsource>Card rented ( or rent requested )</oldsource>
-        <translation>Tarjeta alquilada (o alquiler solicitado)</translation>
+        <translation>Chip alquilado (o alquiler solicitado)</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="52"/>
         <source>Card exists in cards to rent table, File-&gt;Settings-&gt;Cards to rent</source>
-        <translation>La tarjeta existe en la tabla de tarjetas para alquilar, Archivo-&gt;Ajustes-&gt;Tarjetas para alquilar</translation>
+        <translation>Este chip está en la tabla de chips de alquiler, Archivo-&gt;Ajustes-&gt;Chips de alquiler</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="55"/>
         <source>Card rented (from rent table)</source>
         <oldsource>Card rented ( from rent table )</oldsource>
-        <translation>Tarjeta alquilada (tabla de tarjetas de alquiler)</translation>
+        <translation>Chip alquilado (tabla de chips de alquiler)</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/cardflagsdialog.ui" line="62"/>
         <source>Card returned</source>
-        <translation>Tarjeta devuelta</translation>
+        <translation>Chip devuelto</translation>
     </message>
 </context>
 <context>
@@ -5044,7 +5003,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/findrunnerwidget.ui" line="30"/>
         <source>Use this SI card also in next stages</source>
-        <translation>Usar esta tarjeta también en las demás etapas</translation>
+        <translation>Usar este chip en futuras etapas</translation>
     </message>
 </context>
 <context>
@@ -5102,7 +5061,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runflagsdialog.ui" line="52"/>
         <source>Check time on SI card is to early</source>
-        <translation>La hora de la estación comprobar en la tarjeta es demasiado temprana</translation>
+        <translation>La hora de la estación comprobar en el chip es demasiado temprana</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runflagsdialog.ui" line="55"/>
@@ -5204,7 +5163,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runsplugin.cpp" line="1972"/>
         <source>Stage awards</source>
-        <translation type="unfinished"></translation>
+        <translation>Diplomas etapa</translation>
     </message>
     <message numerus="yes">
         <location filename="plugins/Runs/src/runsplugin.cpp" line="1999"/>
@@ -5219,7 +5178,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runsplugin.cpp" line="2048"/>
         <source>Awards after %1 stages</source>
-        <translation>Premios después de %1 etapas</translation>
+        <translation>Diplomas después de %1 etapas</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runsplugin.cpp" line="2099"/>
@@ -5624,7 +5583,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runstablemodel.cpp" line="33"/>
         <source>Registered SI</source>
-        <translation>Tarjeta registrada</translation>
+        <translation>Chip registrado</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runstablemodel.cpp" line="34"/>
@@ -5657,7 +5616,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runstablemodel.cpp" line="37"/>
         <source>Actual SI</source>
-        <translation>Tarjeta SI real</translation>
+        <translation>Chip utilizado</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runstablemodel.cpp" line="38"/>
@@ -5910,7 +5869,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runstablewidget.cpp" line="423"/>
         <source>Duplicate SI inserted.</source>
-        <translation>Tarjeta duplicada insertada.</translation>
+        <translation>Chip duplicado insertado.</translation>
     </message>
 </context>
 <context>
@@ -5949,7 +5908,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="77"/>
         <source>Relays first leg</source>
-        <translation type="unfinished"></translation>
+        <translation>Primeros relevistas del equipo</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="80"/>
@@ -6064,7 +6023,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="200"/>
         <source>Current stage awards</source>
-        <translation>Premios de la etapa actual</translation>
+        <translation>Diplomas de la etapa actual</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="206"/>
@@ -6079,7 +6038,7 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="216"/>
         <source>N stages awards</source>
-        <translation type="unfinished"></translation>
+        <translation>Diplomas para N etapas</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="224"/>
@@ -6090,12 +6049,12 @@ Press refresh button to show imported data.</source>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="230"/>
         <source>&amp;Competitors with rented cards</source>
-        <translation>&amp;Competidores con tarjetas alquiladas</translation>
+        <translation>&amp;Competidores con chips alquilados</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="251"/>
         <source>Competitors with rented cards</source>
-        <translation>Competidores con tarjetas alquiladas</translation>
+        <translation>Competidores con chips alquilados</translation>
     </message>
     <message>
         <location filename="plugins/Runs/src/runswidget.cpp" line="260"/>
@@ -6531,7 +6490,7 @@ Press refresh button to show imported data.</source>
         <location filename="plugins/Runs/qml/reports/competitorsWithCardRent.qml" line="12"/>
         <source>Competitors with rented cards in stage %1</source>
         <oldsource>Competitors with card lent in stage %1</oldsource>
-        <translation>Competidores con tarjetas alquiladas en etapa %1</translation>
+        <translation>Competidores con chips alquilados en la etapa %1</translation>
     </message>
     <message>
         <location filename="plugins/Runs/qml/reports/competitorsWithCardRent.qml" line="79"/>
