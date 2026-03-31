@@ -55,19 +55,33 @@ public:
 	void setRunXmlValidation(bool runXmlValidation);
 	bool runChangesProcessing();
 	void setRunChangesProcessing(bool runChangesProcessing);
+	bool printEventImageOnReceipt() const;
+	void setPrintEventImageOnReceipt(bool on);
+	int receiptImageHeightMm() const;
+	void setReceiptImageHeightMm(int height_mm);
+	bool hasCachedEventImage() const;
+	QString cachedEventImageBase64() const;
+	QString cachedEventImageFormat() const;
+	void refreshEventImageCache(std::function<void(bool success, const QString &message)> callback = nullptr);
 	void testConnection(const QString &hostUrl,
 						const QString &eventId,
 						const QString &eventPassword,
 						std::function<void(bool success, const QString &message)> callback);
 
-	private:
+private:
 	QTimer *m_exportTimer = nullptr;
 	QNetworkAccessManager *m_networkManager = nullptr;
 	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
-	private:
+	bool m_eventImageStartupAttempted = false;
+
+private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
 	void onExportTimerTimeOut();
 	void init();
+	void ensureEventImageCachedAtStartup();
+	QString eventImageConfigKey(const QString &suffix) const;
+	void setCachedEventImage(const QByteArray &raw_data, const QString &format);
+	void clearCachedEventImage();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
 	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
 	void sendCompetitorAdded(QString json_body);

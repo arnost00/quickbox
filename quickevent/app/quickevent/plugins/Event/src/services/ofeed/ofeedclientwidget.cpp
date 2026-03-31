@@ -31,6 +31,11 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->edEventPassword->setText(svc->eventPassword());
 		ui->edChangelogOrigin->setText(svc->changelogOrigin());
 		ui->additionalSettingsRunXmlValidation->setChecked(svc->runXmlValidation());
+		ui->additionalSettingsPrintEventImageOnReceipt->setChecked(svc->printEventImageOnReceipt());
+		ui->edReceiptImageHeight->setValue(svc->receiptImageHeightMm());
+		ui->lbReceiptImageHeight->setEnabled(svc->printEventImageOnReceipt());
+		ui->edReceiptImageHeight->setEnabled(svc->printEventImageOnReceipt());
+		ui->lbEventImageCacheStatus->setText(svc->hasCachedEventImage() ? tr("Cached image is available") : tr("No cached image"));
 		ui->processChangesOnOffButton->setText(svc->runChangesProcessing() ? tr("ON") : tr("OFF"));
 		ui->processChangesOnOffButton->setChecked(svc->runChangesProcessing());
 		ui->processChangesOnOffButton->setStyleSheet(
@@ -55,6 +60,11 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->btExportStartListXml30, &QPushButton::clicked, this, &OFeedClientWidget::onBtExportStartListXml30Clicked);
 	connect(ui->processChangesOnOffButton, &QPushButton::clicked,this, &OFeedClientWidget::onProcessChangesOnOffButtonClicked);
 	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
+	connect(ui->btRefreshEventImage, &QPushButton::clicked, this, &OFeedClientWidget::onBtRefreshEventImageClicked);
+	connect(ui->additionalSettingsPrintEventImageOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
+		ui->lbReceiptImageHeight->setEnabled(on);
+		ui->edReceiptImageHeight->setEnabled(on);
+	});
 	connect(ui->edHostUrl, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
 	connect(ui->edEventId, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
 	connect(ui->edEventPassword, &QLineEdit::textChanged, this, &OFeedClientWidget::updateTestConnectionState);
@@ -94,6 +104,8 @@ bool OFeedClientWidget::saveSettings()
 		svc->setEventPassword(ui->edEventPassword->text().trimmed());
 		svc->setChangelogOrigin(ui->edChangelogOrigin->text().trimmed());
 		svc->setRunXmlValidation(ui->additionalSettingsRunXmlValidation->isChecked());
+		svc->setPrintEventImageOnReceipt(ui->additionalSettingsPrintEventImageOnReceipt->isChecked());
+		svc->setReceiptImageHeightMm(ui->edReceiptImageHeight->value());
 		svc->setSettings(ss);
 	}
 	return true;
@@ -164,11 +176,35 @@ void OFeedClientWidget::onBtTestConnectionClicked()
 	});
 }
 
+void OFeedClientWidget::onBtRefreshEventImageClicked()
+{
+	OFeedClient *svc = service();
+	if(!svc)
+		return;
+
+	saveSettings();
+	m_isImageRefreshRunning = true;
+	ui->lbEventImageCacheStatus->setStyleSheet("color:#666;");
+	ui->lbEventImageCacheStatus->setText(tr("Refreshing image cache..."));
+	updateTestConnectionState();
+
+	QPointer<OFeedClientWidget> widget_guard(this);
+	svc->refreshEventImageCache([widget_guard](bool success, const QString &message) {
+		if(!widget_guard)
+			return;
+		widget_guard->m_isImageRefreshRunning = false;
+		widget_guard->ui->lbEventImageCacheStatus->setStyleSheet(success ? "color:#0a7a2f;" : "color:#b00020;");
+		widget_guard->ui->lbEventImageCacheStatus->setText(message);
+		widget_guard->updateTestConnectionState();
+	});
+}
+
 void OFeedClientWidget::updateTestConnectionState()
 {
 	const bool has_required_credentials = !ui->edHostUrl->text().trimmed().isEmpty()
 		&& !ui->edEventId->text().trimmed().isEmpty()
 		&& !ui->edEventPassword->text().trimmed().isEmpty();
 	ui->btTestConnection->setEnabled(has_required_credentials && !m_isTestConnectionRunning);
+	ui->btRefreshEventImage->setEnabled(has_required_credentials && !m_isImageRefreshRunning);
 }
 }

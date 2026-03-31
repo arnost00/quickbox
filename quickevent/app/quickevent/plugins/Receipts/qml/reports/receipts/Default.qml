@@ -37,7 +37,7 @@ Report {
 	Para {
 		omitEmptyText: true
 		textFn: function() {
-			relayInfoFrame.visible = bandCard.data("isRelay");
+			relayInfoFrame.visible = !!bandCard.data("isRelay");
 			return ""
 		}
 	}
@@ -58,36 +58,31 @@ Report {
 					visible: printLotteryTicket
 				}
 				Frame {
-					htmlExportAttributes: {"lpt_textAlign": "center", "lpt_textWidth": "%"}
-					vinset: 1
+					id: receiptImageFrame
 					width: "%"
 					halign: Frame.AlignHCenter
-					Para {
-						textFn: function() { return "Quick Event - ver. " + bandCompetitor.data("appVersion"); }
-					}
-				}
-				Frame {
-					htmlExportAttributes: {"lpt_textAlign": "left", "lpt_borderTop": "=", "lpt_borderBottom": "-"}
-					width: "%"
-					fill: Brush { color: Color { def: "powderblue" } }
-					topBorder: Pen { basedOn: "black2" }
-					bottomBorder: Pen { basedOn: "black1" }
+					hinset: 4
 					vinset: 1
-					hinset: 2
 					Para {
+						omitEmptyText: true
 						textFn: function() {
-							var s = "";
-							var stage_cnt = bandCompetitor.data("stageCount")
-							if(stage_cnt > 1)
-								s = qsTr("E") + bandCompetitor.data("currentStageId") + " - ";
-							s += bandCompetitor.data("event.name")
-							return s;
+							var path = bandCompetitor.data("event.receiptImagePath") || "";
+							var image_height = bandCompetitor.data("event.receiptImageHeightMm") || 18;
+							if(image_height < 10)
+								image_height = 10;
+							else if(image_height > 60)
+								image_height = 60;
+							receiptImage.visible = !!path;
+							receiptImage.height = path ? image_height : 0;
+							receiptImage.dataSource = path;
+							return "";
 						}
 					}
-					Para {
-						textFn: function() {
-							return TimeExt.dateToISOString(bandCompetitor.data("event.date")) + " " + bandCompetitor.data("event.place")
-						}
+					Image {
+						id: receiptImage
+						visible: false
+						height: 0
+						dataSource: ""
 					}
 				}
 				Frame {
@@ -101,7 +96,10 @@ Report {
 						layout: Frame.LayoutHorizontal
 						Para {
 							width: "%"
-							text: detailCompetitor.data(detailCompetitor.currentIndex, "competitorName")
+							textFn: function() {
+								var name = detailCompetitor.data(detailCompetitor.currentIndex, "competitorName");
+								return name ? name : "";
+							}
 						}
 						Para {
 							htmlExportAttributes: {"lpt_textWidth": "%", "lpt_textAlign": "right"}
@@ -119,7 +117,10 @@ Report {
 							htmlExportAttributes: {"lpt_textWidth": "%"}
 							width: "%"
 							//textHAlign: Frame.AlignLeft
-							text: detailCompetitor.data(detailCompetitor.currentIndex, "classes.name")
+							textFn: function() {
+								var class_name = detailCompetitor.data(detailCompetitor.currentIndex, "classes.name");
+								return class_name ? class_name : "";
+							}
 						}
 						Para {
 							textFn: function() {
@@ -473,9 +474,9 @@ Report {
 					omitEmptyText: true
 					textFn: function() {
 						var card_lent = bandCard.data("isCardLent");
-						cardLentFrame.visible = card_lent
+						cardLentFrame.visible = !!card_lent
 						var is_ok = bandCard.data("isOk");
-						performanceInfoFrame.visible = is_ok;
+						performanceInfoFrame.visible = !!is_ok;
 						return "";
 					}
 				}

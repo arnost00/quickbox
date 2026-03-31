@@ -24,6 +24,7 @@ private:
 	void onBtExportStartListXml30Clicked();
 	void onProcessChangesOnOffButtonClicked();
 	void onBtTestConnectionClicked();
+	void onBtRefreshEventImageClicked();
 	void updateTestConnectionState();
 	OFeedClient* service();
 	bool saveSettings();
@@ -31,6 +32,7 @@ private:
 	Ui::OFeedClientWidget *ui;
 	bool acceptDialogDone(int result);
 	bool m_isTestConnectionRunning = false;
+	bool m_isImageRefreshRunning = false;
 };
 
 }}

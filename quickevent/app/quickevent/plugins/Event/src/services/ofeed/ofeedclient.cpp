@@ -20,9 +20,9 @@
 #include <quickevent/core/utils.h>
 
 #include <QCoreApplication>
-#include <QDir>
-#include <QFile>
+#include <QBuffer>
 #include <QHttpPart>
+#include <QImageReader>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
@@ -99,6 +99,7 @@ QString OFeedClient::serviceName()
 void OFeedClient::run()
 {
 	Super::run();
+	ensureEventImageCachedAtStartup();
 	exportStartListIofXml3([this]()
 						   { exportResultsIofXml3(); });
 	m_exportTimer->start();
@@ -144,6 +145,7 @@ void OFeedClient::init()
 {
 	OFeedClientSettings ss = settings();
 	m_exportTimer->setInterval(ss.exportIntervalSec() * 1000);
+	ensureEventImageCachedAtStartup();
 }
 
 void OFeedClient::onExportTimerTimeOut()
@@ -285,11 +287,194 @@ bool OFeedClient::runChangesProcessing ()
 	return getPlugin<EventPlugin>()->eventConfig()->value(key, "false").toBool();
 };
 
+bool OFeedClient::printEventImageOnReceipt() const
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	QString key = serviceName().toLower() + ".printEventImageOnReceipt.E" + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->eventConfig()->value(key, false).toBool();
+}
+
+void OFeedClient::setPrintEventImageOnReceipt(bool on)
+{
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".printEventImageOnReceipt.E" + QString::number(current_stage), on);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+int OFeedClient::receiptImageHeightMm() const
+{
+	bool ok = false;
+	int height_mm = getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageHeightMm"), 18).toInt(&ok);
+	if(!ok)
+		return 18;
+	if(height_mm < 10)
+		return 10;
+	if(height_mm > 60)
+		return 60;
+	return height_mm;
+}
+
+void OFeedClient::setReceiptImageHeightMm(int height_mm)
+{
+	if(height_mm < 10)
+		height_mm = 10;
+	else if(height_mm > 60)
+		height_mm = 60;
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageHeightMm"), height_mm);
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+QString OFeedClient::eventImageConfigKey(const QString &suffix) const
+{
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	return serviceName().toLower() + "." + suffix + ".E" + QString::number(current_stage);
+}
+
+bool OFeedClient::hasCachedEventImage() const
+{
+	return !cachedEventImageBase64().isEmpty();
+}
+
+QString OFeedClient::cachedEventImageBase64() const
+{
+	return getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageDataBase64")).toString();
+}
+
+QString OFeedClient::cachedEventImageFormat() const
+{
+	return getPlugin<EventPlugin>()->eventConfig()->value(eventImageConfigKey("receiptImageFormat"), "png").toString().toLower();
+}
+
+void OFeedClient::setCachedEventImage(const QByteArray &raw_data, const QString &format)
+{
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageDataBase64"), QString::fromLatin1(raw_data.toBase64()));
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageFormat"), format.toLower());
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+void OFeedClient::clearCachedEventImage()
+{
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageDataBase64"), QString());
+	getPlugin<EventPlugin>()->eventConfig()->setValue(eventImageConfigKey("receiptImageFormat"), QString());
+	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+}
+
+void OFeedClient::ensureEventImageCachedAtStartup()
+{
+	if(m_eventImageStartupAttempted)
+		return;
+	if(!printEventImageOnReceipt())
+		return;
+	m_eventImageStartupAttempted = true;
+	refreshEventImageCache();
+}
+
+void OFeedClient::refreshEventImageCache(std::function<void(bool, const QString &)> callback)
+{
+	const QString trimmed_event_id = eventId().trimmed();
+	const QString trimmed_event_password = eventPassword().trimmed();
+	if(trimmed_event_id.isEmpty() || trimmed_event_password.isEmpty()) {
+		if(callback)
+			callback(false, tr("Missing OFeed event credentials."));
+		return;
+	}
+
+	QUrl base_url(hostUrl());
+	if(!base_url.isValid() || base_url.host().isEmpty()) {
+		if(callback)
+			callback(false, tr("Invalid OFeed URL."));
+		return;
+	}
+	base_url.setPath(QStringLiteral("/rest/v1/events/%1/image").arg(trimmed_event_id));
+
+	QNetworkRequest request(base_url);
+	const QString combined = trimmed_event_id + ":" + trimmed_event_password;
+	const QByteArray auth = "Basic " + combined.toUtf8().toBase64();
+	request.setRawHeader("Authorization", auth);
+
+	QNetworkReply *reply = m_networkManager->get(request);
+	connect(reply, &QNetworkReply::finished, this, [this, reply, callback]() {
+		const int http_status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+		const QByteArray payload = reply->readAll();
+		const QString content_type = reply->header(QNetworkRequest::ContentTypeHeader).toString().toLower();
+
+		auto callback_result = [&](bool success, const QString &message) {
+			if(callback)
+				callback(success, message);
+		};
+
+		if(reply->error() != QNetworkReply::NoError) {
+			if(http_status == 404 || http_status == 204)
+				callback_result(false, tr("No event image is available in OFeed."));
+			else
+				callback_result(false, tr("Event image download failed: %1").arg(reply->errorString()));
+			reply->deleteLater();
+			return;
+		}
+		if(http_status != 200 || payload.isEmpty()) {
+			callback_result(false, tr("No event image payload received from OFeed."));
+			reply->deleteLater();
+			return;
+		}
+
+		const bool is_svg = content_type.contains("image/svg")
+			|| payload.startsWith("<svg")
+			|| payload.contains("<svg");
+		if(is_svg) {
+			setCachedEventImage(payload, "svg");
+			callback_result(true, tr("Event image cached as SVG."));
+			reply->deleteLater();
+			return;
+		}
+
+		QBuffer buffer;
+		buffer.setData(payload);
+		buffer.open(QIODevice::ReadOnly);
+		QImageReader reader(&buffer);
+		reader.setAutoTransform(true);
+		const QSize original_size = reader.size();
+		const int max_dimension = 1400;
+		if(original_size.isValid() && (original_size.width() > max_dimension || original_size.height() > max_dimension)) {
+			QSize scaled = original_size;
+			scaled.scale(max_dimension, max_dimension, Qt::KeepAspectRatio);
+			reader.setScaledSize(scaled);
+		}
+		QImage image = reader.read();
+		if(image.isNull()) {
+			callback_result(false, tr("Unsupported image format received from OFeed."));
+			reply->deleteLater();
+			return;
+		}
+		if(image.width() > max_dimension || image.height() > max_dimension) {
+			image = image.scaled(max_dimension, max_dimension, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		}
+		QByteArray png_data;
+		{
+			QBuffer out_buffer(&png_data);
+			out_buffer.open(QIODevice::WriteOnly);
+			if(!image.save(&out_buffer, "PNG")) {
+				callback_result(false, tr("Cannot encode cached event image."));
+				reply->deleteLater();
+				return;
+			}
+		}
+		if(png_data.isEmpty()) {
+			callback_result(false, tr("Cached image encoding produced empty payload."));
+			reply->deleteLater();
+			return;
+		}
+		setCachedEventImage(png_data, "png");
+		callback_result(true, tr("Event image cached (%1x%2).").arg(image.width()).arg(image.height()));
+		reply->deleteLater();
+	});
+}
+
 void OFeedClient::setHostUrl(QString hostUrl)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".hostUrl.E" + QString::number(current_stage), hostUrl);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	m_eventImageStartupAttempted = false;
 }
 
 void OFeedClient::setEventId(QString eventId)
@@ -297,6 +482,7 @@ void OFeedClient::setEventId(QString eventId)
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".eventId.E" + QString::number(current_stage), eventId);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	m_eventImageStartupAttempted = false;
 }
 
 void OFeedClient::setEventPassword(QString eventPassword)
@@ -304,6 +490,7 @@ void OFeedClient::setEventPassword(QString eventPassword)
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".eventPassword.E" + QString::number(current_stage), eventPassword);
 	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	m_eventImageStartupAttempted = false;
 }
 
 void OFeedClient::setChangelogOrigin(QString changelogOrigin)
