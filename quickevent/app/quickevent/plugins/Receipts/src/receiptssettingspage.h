@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Core/src/widgets/settingspage.h"
+#include <QString>
 
 namespace Receipts {
 
@@ -20,9 +21,16 @@ protected:
 private:
 	void loadReceptList();
 	void updateReceiptsPrinterLabel();
+	void updateReceiptMediaControls();
 	void onPrinterOptionsClicked();
+	void onSelectReceiptImageClicked();
+	void onClearReceiptImageClicked();
+	QString eventConfigKey(const QString &suffix) const;
 private:
 	Ui::ReceiptsSettingsPage *ui;
+	int m_stageId = 1;
+	QString m_receiptImageBase64;
+	QString m_receiptImageFormat;
 };
 
 }
