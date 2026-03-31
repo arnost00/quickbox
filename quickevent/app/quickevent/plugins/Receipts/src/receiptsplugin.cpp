@@ -231,6 +231,7 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &class_na
 	if(ofeed_svc && ofeed_svc->printEventImageOnReceipt()) {
 		const QString image_base64 = ofeed_svc->cachedEventImageBase64();
 		const QString image_format = ofeed_svc->cachedEventImageFormat();
+		// Reports consume a temporary file path, while the service persists the cached image payload in config.
 		tt.setValue("event.receiptImagePath", ensureReceiptImageFile(image_base64, image_format));
 		tt.setValue("event.receiptImageDataBase64", image_base64);
 		tt.setValue("event.receiptImageFormat", image_format);

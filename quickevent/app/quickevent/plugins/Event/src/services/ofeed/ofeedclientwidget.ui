@@ -385,7 +385,7 @@
       <item>
        <widget class="QCheckBox" name="additionalSettingsPrintEventImageOnReceipt">
          <property name="text">
-          <string>Print OFeed event image on receipts</string>
+          <string>Print the OFeed event image on receipts</string>
          </property>
         </widget>
        </item>

@@ -52,6 +52,7 @@ namespace Event::services {
 	namespace
 	{
 		const QString k_default_host_url = QStringLiteral("https://api.orienteerfeed.com");
+		const QString k_event_config_prefix = QStringLiteral("event");
 
 		QString normalized_base_host_url(QString host_url)
 		{
@@ -105,6 +106,41 @@ namespace Event::services {
 			if (parsed_url.port() > 0)
 				base_url.setPort(parsed_url.port());
 			return base_url.toString();
+		}
+
+		QString stageConfigKey(const QString &prefix, const QString &suffix, int stage)
+		{
+			return prefix + QLatin1Char('.') + suffix + QStringLiteral(".E") + QString::number(stage);
+		}
+
+		struct ReceiptConfigKeyMigration {
+			const char *legacySuffix;
+			const char *sharedSuffix;
+		};
+
+		const ReceiptConfigKeyMigration k_receipt_config_key_migrations[] = {
+			{"printEventImageOnReceipt", "receiptPrintEventImage"},
+			{"printEventQrCodeOnReceipt", "receiptPrintEventQrCode"},
+			{"receiptEventLinkUrl", "receiptEventLinkUrl"},
+			{"receiptImageHeightMm", "receiptImageHeightMm"},
+			{"receiptImagePath", nullptr},
+			{"receiptImageDataBase64", "receiptImageDataBase64"},
+			{"receiptImageFormat", "receiptImageFormat"},
+		};
+
+		void upsertConfigValue(const QString &key, const QVariant &value, qf::core::sql::Query &update_query, qf::core::sql::Query &insert_query)
+		{
+			const QString type_name = QString::fromLatin1(value.typeName());
+			update_query.bindValue(":key", key);
+			update_query.bindValue(":val", value);
+			update_query.bindValue(":type", type_name);
+			update_query.exec(qf::core::Exception::Throw);
+			if(update_query.numRowsAffected() < 1) {
+				insert_query.bindValue(":key", key);
+				insert_query.bindValue(":val", value);
+				insert_query.bindValue(":type", type_name);
+				insert_query.exec(qf::core::Exception::Throw);
+			}
 		}
 	}
 
@@ -186,6 +222,7 @@ void OFeedClient::onExportTimerTimeOut()
 
 void OFeedClient::loadSettings()
 {
+	migrateLegacyReceiptConfigKeys();
 	Super::loadSettings();
 	init();
 }
@@ -314,38 +351,117 @@ bool OFeedClient::runChangesProcessing ()
 	return getPlugin<EventPlugin>()->eventConfig()->value(key, "false").toBool();
 };
 
+void OFeedClient::migrateLegacyReceiptConfigKeys()
+{
+	auto *event_config = getPlugin<EventPlugin>()->eventConfig();
+	int stage_count = event_config->stageCount();
+	if(stage_count < event_config->currentStageId())
+		stage_count = event_config->currentStageId();
+	if(stage_count < 1)
+		stage_count = 1;
+
+	try {
+		qf::core::sql::Connection conn = qf::core::sql::Connection::forName();
+		qf::core::sql::Transaction transaction(conn);
+		qf::core::sql::Query update_query(conn);
+		update_query.prepare("UPDATE config SET cvalue=:val, ctype=:type WHERE ckey=:key", qf::core::Exception::Throw);
+		qf::core::sql::Query insert_query(conn);
+		insert_query.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :val, :type)", qf::core::Exception::Throw);
+		qf::core::sql::Query delete_query(conn);
+		delete_query.prepare("DELETE FROM config WHERE ckey=:key", qf::core::Exception::Throw);
+
+		bool has_changes = false;
+		for(int stage = 1; stage <= stage_count; ++stage) {
+			for(const ReceiptConfigKeyMigration &mapping : k_receipt_config_key_migrations) {
+				const QString legacy_key = stageConfigKey(serviceName().toLower(), QString::fromLatin1(mapping.legacySuffix), stage);
+				const QVariant legacy_value = event_config->value(legacy_key);
+				if(!legacy_value.isValid())
+					continue;
+
+				if(mapping.sharedSuffix != nullptr) {
+					const QString shared_key = stageConfigKey(k_event_config_prefix, QString::fromLatin1(mapping.sharedSuffix), stage);
+					if(!event_config->value(shared_key).isValid()) {
+						upsertConfigValue(shared_key, legacy_value, update_query, insert_query);
+						event_config->setValue(shared_key, legacy_value);
+					}
+				}
+
+				delete_query.bindValue(":key", legacy_key);
+				delete_query.exec(qf::core::Exception::Throw);
+				has_changes = true;
+			}
+		}
+
+		if(has_changes)
+			transaction.commit();
+	}
+	catch(const std::exception &e) {
+		qfWarning() << serviceName().toStdString() + " receipt config key migration failed: " << e.what();
+	}
+}
+
+QString OFeedClient::receiptConfigKey(const QString &suffix) const
+{
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	return stageConfigKey(k_event_config_prefix, suffix, current_stage);
+}
+
+QString OFeedClient::legacyReceiptConfigKey(const QString &suffix) const
+{
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	return stageConfigKey(serviceName().toLower(), suffix, current_stage);
+}
+
+QVariant OFeedClient::receiptConfigValue(const QString &suffix, const QVariant &default_value) const
+{
+	auto *event_config = getPlugin<EventPlugin>()->eventConfig();
+	const QVariant shared_value = event_config->value(receiptConfigKey(suffix));
+	if(shared_value.isValid())
+		return shared_value;
+
+	const QVariant legacy_value = event_config->value(legacyReceiptConfigKey(suffix));
+	if(legacy_value.isValid())
+		return legacy_value;
+
+	return default_value;
+}
+
+void OFeedClient::setReceiptConfigValue(const QString &suffix, const QVariant &value)
+{
+	auto *event_config = getPlugin<EventPlugin>()->eventConfig();
+	event_config->setValue(receiptConfigKey(suffix), value);
+	saveReceiptConfig();
+}
+
+void OFeedClient::saveReceiptConfig() const
+{
+	getPlugin<EventPlugin>()->eventConfig()->save(k_event_config_prefix);
+}
+
 bool OFeedClient::printEventImageOnReceipt() const
 {
-	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	QString key = serviceName().toLower() + ".printEventImageOnReceipt.E" + QString::number(current_stage);
-	return getPlugin<EventPlugin>()->eventConfig()->value(key, false).toBool();
+	return receiptConfigValue(QStringLiteral("receiptPrintEventImage"), false).toBool();
 }
 
 void OFeedClient::setPrintEventImageOnReceipt(bool on)
 {
-	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".printEventImageOnReceipt.E" + QString::number(current_stage), on);
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	setReceiptConfigValue(QStringLiteral("receiptPrintEventImage"), on);
 }
 
 bool OFeedClient::printEventQrCodeOnReceipt() const
 {
-	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	QString key = serviceName().toLower() + ".printEventQrCodeOnReceipt.E" + QString::number(current_stage);
-	return getPlugin<EventPlugin>()->eventConfig()->value(key, false).toBool();
+	return receiptConfigValue(QStringLiteral("receiptPrintEventQrCode"), false).toBool();
 }
 
 void OFeedClient::setPrintEventQrCodeOnReceipt(bool on)
 {
-	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	getPlugin<EventPlugin>()->eventConfig()->setValue(serviceName().toLower() + ".printEventQrCodeOnReceipt.E" + QString::number(current_stage), on);
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	setReceiptConfigValue(QStringLiteral("receiptPrintEventQrCode"), on);
 }
 
 int OFeedClient::receiptImageHeightMm() const
 {
 	bool ok = false;
-	int height_mm = getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageHeightMm"), 18).toInt(&ok);
+	int height_mm = receiptConfigValue(QStringLiteral("receiptImageHeightMm"), 18).toInt(&ok);
 	if(!ok)
 		return 18;
 	if(height_mm < 10)
@@ -361,13 +477,12 @@ void OFeedClient::setReceiptImageHeightMm(int height_mm)
 		height_mm = 10;
 	else if(height_mm > 60)
 		height_mm = 60;
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageHeightMm"), height_mm);
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	setReceiptConfigValue(QStringLiteral("receiptImageHeightMm"), height_mm);
 }
 
 QString OFeedClient::receiptEventLinkUrl() const
 {
-	const QString custom_url = getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptEventLinkUrl")).toString().trimmed();
+	const QString custom_url = receiptConfigValue(QStringLiteral("receiptEventLinkUrl")).toString().trimmed();
 	if(!custom_url.isEmpty())
 		return custom_url;
 	return defaultReceiptEventLinkUrl();
@@ -391,14 +506,7 @@ void OFeedClient::setReceiptEventLinkUrl(QString link_url)
 	link_url = link_url.trimmed();
 	if(link_url == defaultReceiptEventLinkUrl())
 		link_url.clear();
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptEventLinkUrl"), link_url);
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
-}
-
-QString OFeedClient::eventConfigKey(const QString &suffix) const
-{
-	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	return serviceName().toLower() + "." + suffix + ".E" + QString::number(current_stage);
+	setReceiptConfigValue(QStringLiteral("receiptEventLinkUrl"), link_url);
 }
 
 bool OFeedClient::hasCachedEventImage() const
@@ -408,26 +516,28 @@ bool OFeedClient::hasCachedEventImage() const
 
 QString OFeedClient::cachedEventImageBase64() const
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageDataBase64")).toString();
+	return receiptConfigValue(QStringLiteral("receiptImageDataBase64")).toString();
 }
 
 QString OFeedClient::cachedEventImageFormat() const
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey("receiptImageFormat"), "png").toString().toLower();
+	return receiptConfigValue(QStringLiteral("receiptImageFormat"), QStringLiteral("png")).toString().toLower();
 }
 
 void OFeedClient::setCachedEventImage(const QByteArray &raw_data, const QString &format)
 {
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageDataBase64"), QString::fromLatin1(raw_data.toBase64()));
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageFormat"), format.toLower());
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	auto *event_config = getPlugin<EventPlugin>()->eventConfig();
+	event_config->setValue(receiptConfigKey(QStringLiteral("receiptImageDataBase64")), QString::fromLatin1(raw_data.toBase64()));
+	event_config->setValue(receiptConfigKey(QStringLiteral("receiptImageFormat")), format.toLower());
+	saveReceiptConfig();
 }
 
 void OFeedClient::clearCachedEventImage()
 {
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageDataBase64"), QString());
-	getPlugin<EventPlugin>()->eventConfig()->setValue(eventConfigKey("receiptImageFormat"), QString());
-	getPlugin<EventPlugin>()->eventConfig()->save(serviceName().toLower());
+	auto *event_config = getPlugin<EventPlugin>()->eventConfig();
+	event_config->setValue(receiptConfigKey(QStringLiteral("receiptImageDataBase64")), QString());
+	event_config->setValue(receiptConfigKey(QStringLiteral("receiptImageFormat")), QString());
+	saveReceiptConfig();
 }
 
 void OFeedClient::ensureEventImageCachedAtStartup()

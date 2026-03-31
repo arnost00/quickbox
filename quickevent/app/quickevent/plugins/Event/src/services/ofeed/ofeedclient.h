@@ -84,7 +84,12 @@ private:
 	void onExportTimerTimeOut();
 	void init();
 	void ensureEventImageCachedAtStartup();
-	QString eventConfigKey(const QString &suffix) const;
+	void migrateLegacyReceiptConfigKeys();
+	QString receiptConfigKey(const QString &suffix) const;
+	QString legacyReceiptConfigKey(const QString &suffix) const;
+	QVariant receiptConfigValue(const QString &suffix, const QVariant &default_value = QVariant()) const;
+	void setReceiptConfigValue(const QString &suffix, const QVariant &value);
+	void saveReceiptConfig() const;
 	void setCachedEventImage(const QByteArray &raw_data, const QString &format);
 	void clearCachedEventImage();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr);
