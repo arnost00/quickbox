@@ -209,6 +209,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->additionalSettingsPrintEventImageOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
 		ui->lbReceiptImageHeight->setEnabled(on);
 		ui->edReceiptImageHeight->setEnabled(on);
+		updateTestConnectionState();
 	});
 	connect(ui->additionalSettingsPrintEventQrCodeOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
 		ui->lbReceiptEventLink->setEnabled(on);
@@ -405,11 +406,14 @@ void OFeedClientWidget::updateTestConnectionState()
 	const bool has_required_credentials = !ui->edHostUrl->text().trimmed().isEmpty()
 		&& !ui->edEventId->text().trimmed().isEmpty()
 		&& !ui->edEventPassword->text().trimmed().isEmpty();
+	const bool can_refresh_event_image = has_required_credentials
+		&& ui->additionalSettingsPrintEventImageOnReceipt->isChecked()
+		&& !m_isImageRefreshRunning;
 	const QString event_website_url = eventWebsiteUrl(ui->edHostUrl->text(), ui->edEventId->text());
 	const bool has_event_website_url = !event_website_url.isEmpty();
 	ui->btOpenEventWebsite->setEnabled(has_event_website_url);
 	ui->btOpenEventWebsite->setToolTip(has_event_website_url ? tr("Open event page in browser") : tr("Fill Url and Event id to open event page"));
 	ui->btTestConnection->setEnabled(has_required_credentials && !m_isTestConnectionRunning);
-	ui->btRefreshEventImage->setEnabled(has_required_credentials && !m_isImageRefreshRunning);
+	ui->btRefreshEventImage->setEnabled(can_refresh_event_image);
 }
 }

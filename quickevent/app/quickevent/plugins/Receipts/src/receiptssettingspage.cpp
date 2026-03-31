@@ -141,6 +141,12 @@ void ReceiptsSettingsPage::load()
 	ui->chkPrintReceiptQrCode->setChecked(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool() : false);
 	ui->edReceiptQrCodeBaseUrl->setText(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed() : QString());
 	ui->chkPrintReceiptImage->setChecked(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool() : false);
+	int image_height_mm = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt() : 18;
+	if(image_height_mm < 10)
+		image_height_mm = 10;
+	else if(image_height_mm > 60)
+		image_height_mm = 60;
+	ui->edReceiptImageHeight->setValue(image_height_mm);
 	m_receiptImageBase64 = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString() : QString();
 	m_receiptImageFormat = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageFormat"))).toString().trimmed().toLower() : QString();
 	if(m_receiptImageBase64.isEmpty()) {
@@ -170,6 +176,7 @@ void ReceiptsSettingsPage::save()
 		event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), ui->chkPrintReceiptQrCode->isChecked());
 		event_config->setValue(eventConfigKey(QStringLiteral("receiptEventLinkUrl")), ui->edReceiptQrCodeBaseUrl->text().trimmed());
 		event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventImage")), ui->chkPrintReceiptImage->isChecked());
+		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageHeightMm")), ui->edReceiptImageHeight->value());
 		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageDataBase64")), m_receiptImageBase64);
 		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageFormat")), m_receiptImageFormat);
 		event_config->save(QStringLiteral("event"));
@@ -204,6 +211,8 @@ void ReceiptsSettingsPage::updateReceiptMediaControls()
 	ui->edReceiptQrCodeBaseUrl->setEnabled(qr_code_enabled);
 
 	const bool image_enabled = ui->chkPrintReceiptImage->isChecked();
+	ui->lbReceiptImageHeight->setEnabled(image_enabled);
+	ui->edReceiptImageHeight->setEnabled(image_enabled);
 	ui->edReceiptImageFile->setEnabled(image_enabled);
 	ui->btSelectReceiptImage->setEnabled(image_enabled);
 	ui->btClearReceiptImage->setEnabled(image_enabled && !m_receiptImageBase64.isEmpty());
