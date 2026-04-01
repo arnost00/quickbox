@@ -1059,7 +1059,7 @@ Si continúas, se eliminará esta distinción</translation>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="193"/>
         <source>Classes &amp;layout</source>
-        <translation>Categoría &amp;organización</translation>
+        <translation>&amp;Organización por categorias</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="194"/>
@@ -1744,7 +1744,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="75"/>
         <source>&amp;File</source>
-        <translation>%Archivo</translation>
+        <translation>&amp;Archivo</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="77"/>
