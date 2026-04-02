@@ -64,6 +64,9 @@ public:
 	QString receiptEventLinkUrl() const;
 	QString defaultReceiptEventLinkUrl() const;
 	void setReceiptEventLinkUrl(QString link_url);
+	QString receiptEventQrCodeCaption() const;
+	QString defaultReceiptEventQrCodeCaption() const;
+	void setReceiptEventQrCodeCaption(QString caption);
 	bool hasCachedEventImage() const;
 	QString cachedEventImageBase64() const;
 	QString cachedEventImageFormat() const;

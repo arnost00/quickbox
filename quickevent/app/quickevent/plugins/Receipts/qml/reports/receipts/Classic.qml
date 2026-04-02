@@ -449,6 +449,18 @@ Report {
 					height: 0
 					dataSource: ""
 				}
+				Para {
+					omitEmptyText: true
+					width: "%"
+					htmlExportAttributes: {"lpt_textAlign": "center", "lpt_textWidth": "%"}
+					textHAlign: Frame.AlignHCenter
+					textFn: function() {
+						var path = bandCard.data("event.receiptQrCodePath") || "";
+						if(!path)
+							return "";
+						return bandCard.data("event.receiptQrCodeCaption") || "";
+					}
+				}
 			}
 		}
 	}

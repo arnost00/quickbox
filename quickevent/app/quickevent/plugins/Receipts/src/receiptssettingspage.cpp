@@ -24,6 +24,11 @@ QString storedReceiptImageLabel(const QString &format)
 	return QObject::tr("Stored image (%1)").arg(normalized_format);
 }
 
+QString defaultReceiptQrCodeCaption()
+{
+	return QStringLiteral("Live Results");
+}
+
 bool loadReceiptImagePayload(const QString &file_path, QString &image_base64, QString &image_format, QString &error_message)
 {
 	QFile file(file_path);
@@ -86,6 +91,7 @@ ReceiptsSettingsPage::ReceiptsSettingsPage(QWidget *parent)
 	connect(ui->chkPrintReceiptImage, &QCheckBox::toggled, this, &ReceiptsSettingsPage::updateReceiptMediaControls);
 	connect(ui->btSelectReceiptImage, &QAbstractButton::clicked, this, &ReceiptsSettingsPage::onSelectReceiptImageClicked);
 	connect(ui->btClearReceiptImage, &QAbstractButton::clicked, this, &ReceiptsSettingsPage::onClearReceiptImageClicked);
+	ui->edReceiptQrCodeCaption->setPlaceholderText(defaultReceiptQrCodeCaption());
 }
 
 ReceiptsSettingsPage::~ReceiptsSettingsPage()
@@ -134,6 +140,7 @@ void ReceiptsSettingsPage::load()
 	m_stageId = qMax(event_config->currentStageId(), 1);
 	ui->chkPrintReceiptQrCode->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool());
 	ui->edReceiptQrCodeBaseUrl->setText(event_config->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed());
+	ui->edReceiptQrCodeCaption->setText(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed());
 	ui->chkPrintReceiptImage->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool());
 	int image_height_mm = event_config->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt();
 	if(image_height_mm < 10)
@@ -170,6 +177,7 @@ void ReceiptsSettingsPage::save()
 	Q_ASSERT(event_config);
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), ui->chkPrintReceiptQrCode->isChecked());
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptEventLinkUrl")), ui->edReceiptQrCodeBaseUrl->text().trimmed());
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), ui->edReceiptQrCodeCaption->text().trimmed());
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventImage")), ui->chkPrintReceiptImage->isChecked());
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptImageHeightMm")), ui->edReceiptImageHeight->value());
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptImageDataBase64")), m_receiptImageBase64);
@@ -203,6 +211,8 @@ void ReceiptsSettingsPage::updateReceiptMediaControls()
 {
 	const bool qr_code_enabled = ui->chkPrintReceiptQrCode->isChecked();
 	ui->edReceiptQrCodeBaseUrl->setEnabled(qr_code_enabled);
+	ui->lbReceiptQrCodeCaption->setEnabled(qr_code_enabled);
+	ui->edReceiptQrCodeCaption->setEnabled(qr_code_enabled);
 
 	const bool image_enabled = ui->chkPrintReceiptImage->isChecked();
 	ui->lbReceiptImageHeight->setEnabled(image_enabled);

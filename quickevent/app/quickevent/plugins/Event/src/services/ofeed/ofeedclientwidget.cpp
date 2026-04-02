@@ -164,8 +164,12 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		ui->edReceiptImageHeight->setEnabled(svc->printEventImageOnReceipt());
 		ui->additionalSettingsPrintEventQrCodeOnReceipt->setChecked(svc->printEventQrCodeOnReceipt());
 		ui->edReceiptEventLink->setText(svc->receiptEventLinkUrl());
+		ui->edReceiptEventQrCodeCaption->setText(svc->receiptEventQrCodeCaption());
+		ui->edReceiptEventQrCodeCaption->setPlaceholderText(svc->defaultReceiptEventQrCodeCaption());
 		ui->lbReceiptEventLink->setEnabled(svc->printEventQrCodeOnReceipt());
 		ui->edReceiptEventLink->setEnabled(svc->printEventQrCodeOnReceipt());
+		ui->lbReceiptEventQrCodeCaption->setEnabled(svc->printEventQrCodeOnReceipt());
+		ui->edReceiptEventQrCodeCaption->setEnabled(svc->printEventQrCodeOnReceipt());
 		ui->lbEventImageCacheStatus->setText(svc->hasCachedEventImage() ? tr("Cached image is available") : tr("No cached image"));
 		ui->processChangesOnOffButton->setText(svc->runChangesProcessing() ? tr("ON") : tr("OFF"));
 		ui->processChangesOnOffButton->setChecked(svc->runChangesProcessing());
@@ -214,6 +218,8 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	connect(ui->additionalSettingsPrintEventQrCodeOnReceipt, &QCheckBox::toggled, this, [this](bool on) {
 		ui->lbReceiptEventLink->setEnabled(on);
 		ui->edReceiptEventLink->setEnabled(on);
+		ui->lbReceiptEventQrCodeCaption->setEnabled(on);
+		ui->edReceiptEventQrCodeCaption->setEnabled(on);
 	});
 	connect(ui->edHostUrl, &QLineEdit::textChanged, this, [this]() {
 		updateTestConnectionState();
@@ -264,6 +270,7 @@ bool OFeedClientWidget::saveSettings()
 		svc->setReceiptImageHeightMm(ui->edReceiptImageHeight->value());
 		svc->setPrintEventQrCodeOnReceipt(ui->additionalSettingsPrintEventQrCodeOnReceipt->isChecked());
 		svc->setReceiptEventLinkUrl(ui->edReceiptEventLink->text().trimmed());
+		svc->setReceiptEventQrCodeCaption(ui->edReceiptEventQrCodeCaption->text().trimmed());
 		svc->setSettings(ss);
 	}
 	return true;

@@ -66,6 +66,16 @@ QString configuredReceiptEventLinkUrl()
 	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed();
 }
 
+QString defaultReceiptQrCodeCaption()
+{
+	return QStringLiteral("Live Results");
+}
+
+QString configuredReceiptQrCodeCaption()
+{
+	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed();
+}
+
 QString receiptLinkWithCompetitorClass(const QString &base_url, const QString &class_name)
 {
 	const QString trimmed_base_url = base_url.trimmed();
@@ -273,10 +283,12 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &competit
 		const QString receipt_link = receiptLinkWithCompetitorClass(configuredReceiptEventLinkUrl(), competitor_class_name);
 		tt.setValue("event.receiptQrCodeUrl", receipt_link);
 		tt.setValue("event.receiptQrCodePath", ensureReceiptQrCodeFile(receipt_link));
+		tt.setValue("event.receiptQrCodeCaption", configuredReceiptQrCodeCaption());
 	}
 	else {
 		tt.setValue("event.receiptQrCodeUrl", QString());
 		tt.setValue("event.receiptQrCodePath", QString());
+		tt.setValue("event.receiptQrCodeCaption", QString());
 	}
 }
 }

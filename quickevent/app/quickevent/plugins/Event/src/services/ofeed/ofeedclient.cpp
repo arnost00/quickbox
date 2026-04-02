@@ -407,6 +407,22 @@ void OFeedClient::setReceiptEventLinkUrl(QString link_url)
 	setReceiptConfigValue(QStringLiteral("receiptEventLinkUrl"), link_url);
 }
 
+QString OFeedClient::receiptEventQrCodeCaption() const
+{
+	return receiptConfigValue(QStringLiteral("receiptPrintEventQrCodeCaption"), defaultReceiptEventQrCodeCaption()).toString().trimmed();
+}
+
+QString OFeedClient::defaultReceiptEventQrCodeCaption() const
+{
+	return QStringLiteral("Live Results");
+}
+
+void OFeedClient::setReceiptEventQrCodeCaption(QString caption)
+{
+	caption = caption.trimmed();
+	setReceiptConfigValue(QStringLiteral("receiptPrintEventQrCodeCaption"), caption);
+}
+
 bool OFeedClient::hasCachedEventImage() const
 {
 	return !cachedEventImageBase64().isEmpty();
