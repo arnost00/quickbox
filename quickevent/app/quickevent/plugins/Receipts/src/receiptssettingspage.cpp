@@ -24,28 +24,24 @@ QString storedReceiptImageLabel(const QString &format)
 	return QObject::tr("Stored image (%1)").arg(normalized_format);
 }
 
-bool loadReceiptImagePayload(const QString &file_path, QString *image_base64, QString *image_format, QString *error_message)
+bool loadReceiptImagePayload(const QString &file_path, QString &image_base64, QString &image_format, QString &error_message)
 {
 	QFile file(file_path);
 	if(!file.open(QIODevice::ReadOnly)) {
-		if(error_message)
-			*error_message = QObject::tr("Cannot open image file '%1'.").arg(QDir::toNativeSeparators(file_path));
+		error_message = QObject::tr("Cannot open image file '%1'.").arg(QDir::toNativeSeparators(file_path));
 		return false;
 	}
 
 	const QByteArray file_data = file.readAll();
 	if(file_data.isEmpty()) {
-		if(error_message)
-			*error_message = QObject::tr("Selected image file is empty.");
+		error_message = QObject::tr("Selected image file is empty.");
 		return false;
 	}
 
 	const bool is_svg = file_data.startsWith("<svg") || file_data.contains("<svg");
 	if(is_svg) {
-		if(image_base64)
-			*image_base64 = QString::fromLatin1(file_data.toBase64());
-		if(image_format)
-			*image_format = QStringLiteral("svg");
+		image_base64 = QString::fromLatin1(file_data.toBase64());
+		image_format = QStringLiteral("svg");
 		return true;
 	}
 
@@ -56,23 +52,19 @@ bool loadReceiptImagePayload(const QString &file_path, QString *image_base64, QS
 	reader.setAutoTransform(true);
 	QImage image = reader.read();
 	if(image.isNull()) {
-		if(error_message)
-			*error_message = QObject::tr("Selected file is not a supported image.");
+		error_message = QObject::tr("Selected file is not a supported image.");
 		return false;
 	}
 
 	QByteArray png_data;
 	QBuffer output_buffer(&png_data);
 	if(!output_buffer.open(QIODevice::WriteOnly) || !image.save(&output_buffer, "PNG") || png_data.isEmpty()) {
-		if(error_message)
-			*error_message = QObject::tr("Cannot prepare selected image for printing.");
+		error_message = QObject::tr("Cannot prepare selected image for printing.");
 		return false;
 	}
 
-	if(image_base64)
-		*image_base64 = QString::fromLatin1(png_data.toBase64());
-	if(image_format)
-		*image_format = QStringLiteral("png");
+	image_base64 = QString::fromLatin1(png_data.toBase64());
+	image_format = QStringLiteral("png");
 	return true;
 }
 }
@@ -136,19 +128,21 @@ void ReceiptsSettingsPage::load()
 		}
 	}
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
-	auto *event_config = event_plugin ? event_plugin->eventConfig() : nullptr;
-	m_stageId = event_config ? qMax(event_config->currentStageId(), 1) : 1;
-	ui->chkPrintReceiptQrCode->setChecked(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool() : false);
-	ui->edReceiptQrCodeBaseUrl->setText(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed() : QString());
-	ui->chkPrintReceiptImage->setChecked(event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool() : false);
-	int image_height_mm = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt() : 18;
+	Q_ASSERT(event_plugin);
+	auto *event_config = event_plugin->eventConfig();
+	Q_ASSERT(event_config);
+	m_stageId = qMax(event_config->currentStageId(), 1);
+	ui->chkPrintReceiptQrCode->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool());
+	ui->edReceiptQrCodeBaseUrl->setText(event_config->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed());
+	ui->chkPrintReceiptImage->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool());
+	int image_height_mm = event_config->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt();
 	if(image_height_mm < 10)
 		image_height_mm = 10;
 	else if(image_height_mm > 60)
 		image_height_mm = 60;
 	ui->edReceiptImageHeight->setValue(image_height_mm);
-	m_receiptImageBase64 = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString() : QString();
-	m_receiptImageFormat = event_config ? event_config->value(eventConfigKey(QStringLiteral("receiptImageFormat"))).toString().trimmed().toLower() : QString();
+	m_receiptImageBase64 = event_config->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString();
+	m_receiptImageFormat = event_config->value(eventConfigKey(QStringLiteral("receiptImageFormat"))).toString().trimmed().toLower();
 	if(m_receiptImageBase64.isEmpty()) {
 		m_receiptImageFormat.clear();
 		ui->edReceiptImageFile->clear();
@@ -171,16 +165,16 @@ void ReceiptsSettingsPage::save()
 	settings.setWhenRunnerNotFoundPrint(ui->cbxWhenRunnerNotFound->currentData().toString());
 
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
-	auto *event_config = event_plugin ? event_plugin->eventConfig() : nullptr;
-	if(event_config) {
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), ui->chkPrintReceiptQrCode->isChecked());
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptEventLinkUrl")), ui->edReceiptQrCodeBaseUrl->text().trimmed());
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventImage")), ui->chkPrintReceiptImage->isChecked());
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageHeightMm")), ui->edReceiptImageHeight->value());
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageDataBase64")), m_receiptImageBase64);
-		event_config->setValue(eventConfigKey(QStringLiteral("receiptImageFormat")), m_receiptImageFormat);
-		event_config->save(QStringLiteral("event"));
-	}
+	Q_ASSERT(event_plugin);
+	auto *event_config = event_plugin->eventConfig();
+	Q_ASSERT(event_config);
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), ui->chkPrintReceiptQrCode->isChecked());
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptEventLinkUrl")), ui->edReceiptQrCodeBaseUrl->text().trimmed());
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventImage")), ui->chkPrintReceiptImage->isChecked());
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptImageHeightMm")), ui->edReceiptImageHeight->value());
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptImageDataBase64")), m_receiptImageBase64);
+	event_config->setValue(eventConfigKey(QStringLiteral("receiptImageFormat")), m_receiptImageFormat);
+	event_config->save(QStringLiteral("event"));
 }
 
 void ReceiptsSettingsPage::loadReceptList()
@@ -241,7 +235,7 @@ void ReceiptsSettingsPage::onSelectReceiptImageClicked()
 	QString image_base64;
 	QString image_format;
 	QString error_message;
-	if(!loadReceiptImagePayload(file_path, &image_base64, &image_format, &error_message)) {
+	if(!loadReceiptImagePayload(file_path, image_base64, image_format, error_message)) {
 		QMessageBox::warning(this, tr("Warning"), error_message);
 		return;
 	}

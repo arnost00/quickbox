@@ -58,6 +58,7 @@ Report {
 					visible: printLotteryTicket
 				}
 				Frame {
+					htmlExportAttributes: {"lpt_textAlign": "center", "lpt_textWidth": "%"}
 					id: receiptImageFrame
 					width: "%"
 					halign: Frame.AlignHCenter
