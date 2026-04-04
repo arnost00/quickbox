@@ -136,7 +136,7 @@ QString receiptImageCacheDirPath()
 	return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/receipt-image-cache");
 }
 
-QString ensureReceiptImageFile(const QString &image_base64, const QString &image_format)
+QString ensureReceiptImageFileImpl(const QString &image_base64, const QString &image_format)
 {
 	if(image_base64.isEmpty())
 		return {};
@@ -179,7 +179,7 @@ QString ensureReceiptImageFile(const QString &image_base64, const QString &image
 	return file_path;
 }
 
-QString ensureReceiptQrCodeFile(const QString &link_url)
+QString ensureReceiptQrCodeFileImpl(const QString &link_url)
 {
 	const QString trimmed_link_url = link_url.trimmed();
 	if(trimmed_link_url.isEmpty())
@@ -269,7 +269,7 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &competit
 		const QString image_base64 = configuredReceiptImageBase64();
 		const QString image_format = configuredReceiptImageFormat();
 		// Reports consume a temporary file path, while the service persists the cached image payload in config.
-		tt.setValue("event.receiptImagePath", ensureReceiptImageFile(image_base64, image_format));
+		tt.setValue("event.receiptImagePath", ensureReceiptImageFileImpl(image_base64, image_format));
 		tt.setValue("event.receiptImageDataBase64", image_base64);
 		tt.setValue("event.receiptImageFormat", image_format);
 	}
@@ -282,7 +282,7 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &competit
 	if(printReceiptQrCodeEnabled()) {
 		const QString receipt_link = receiptLinkWithCompetitorClass(configuredReceiptEventLinkUrl(), competitor_class_name);
 		tt.setValue("event.receiptQrCodeUrl", receipt_link);
-		tt.setValue("event.receiptQrCodePath", ensureReceiptQrCodeFile(receipt_link));
+		tt.setValue("event.receiptQrCodePath", ensureReceiptQrCodeFileImpl(receipt_link));
 		tt.setValue("event.receiptQrCodeCaption", configuredReceiptQrCodeCaption());
 	}
 	else {
@@ -291,6 +291,16 @@ void setReceiptMediaData(qf::core::utils::TreeTable &tt, const QString &competit
 		tt.setValue("event.receiptQrCodeCaption", QString());
 	}
 }
+}
+
+QString ReceiptsPlugin::ensureReceiptImageFile(const QString &image_base64, const QString &image_format)
+{
+	return ensureReceiptImageFileImpl(image_base64, image_format);
+}
+
+QString ReceiptsPlugin::ensureReceiptQrCodeFile(const QString &link_url)
+{
+	return ensureReceiptQrCodeFileImpl(link_url);
 }
 
 ReceiptsPlugin::ReceiptsPlugin(QObject *parent)
@@ -712,6 +722,23 @@ bool ReceiptsPlugin::printCard(int card_id)
 	try {
 		QVariantMap dt = readCardTablesData(card_id);
 		return receiptsPrinter()->printReceipt("sicard.qml", dt, card_id);
+	}
+	catch(const qf::core::Exception &e) {
+		qfError() << e.toString();
+	}
+	return false;
+}
+
+bool ReceiptsPlugin::printTestReceipt(const QString &report_file_name, const QVariantMap &report_data)
+{
+	qfLogFuncFrame() << report_file_name;
+	QF_TIME_SCOPE("ReceiptsPlugin::printTestReceipt()");
+	if(report_file_name.isEmpty()) {
+		qfError() << "Empty test receipt path.";
+		return false;
+	}
+	try {
+		return receiptsPrinter()->printReceipt(report_file_name, report_data, 0);
 	}
 	catch(const qf::core::Exception &e) {
 		qfError() << e.toString();

@@ -2,6 +2,7 @@
 
 #include "../../Core/src/widgets/settingspage.h"
 #include <QString>
+#include <QVariantMap>
 
 namespace Receipts {
 
@@ -19,10 +20,12 @@ protected:
 	void load();
 	void save();
 private:
+	QVariantMap currentTestReceiptData() const;
 	void loadReceptList();
 	void updateReceiptsPrinterLabel();
 	void updateReceiptMediaControls();
 	void onPrinterOptionsClicked();
+	void onTestPrintClicked();
 	void onSelectReceiptImageClicked();
 	void onClearReceiptImageClicked();
 	QString eventConfigKey(const QString &suffix) const;

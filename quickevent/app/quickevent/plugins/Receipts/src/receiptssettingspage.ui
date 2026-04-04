@@ -199,10 +199,47 @@
       </property>
      </widget>
     </item>
-    <item row="10" column="0">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
+     <item row="10" column="1">
+      <layout class="QHBoxLayout" name="testPrintLayout">
+       <item>
+        <spacer name="horizontalSpacerLeft">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btTestPrint">
+         <property name="text">
+          <string>Test print</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacerRight">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="11" column="0">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
       </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -228,6 +265,7 @@
   <tabstop>btClearReceiptImage</tabstop>
   <tabstop>edReceiptImageHeight</tabstop>
   <tabstop>btPrinterOptions</tabstop>
+  <tabstop>btTestPrint</tabstop>
  </tabstops>
  <resources/>
  <connections/>
