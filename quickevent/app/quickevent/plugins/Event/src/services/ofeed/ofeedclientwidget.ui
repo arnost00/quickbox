@@ -394,7 +394,7 @@
          <item>
           <widget class="QLabel" name="lbReceiptImageHeight">
            <property name="text">
-            <string>Receipt image height</string>
+             <string>Receipt image height (max 60 mm)</string>
            </property>
           </widget>
          </item>
