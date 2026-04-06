@@ -571,7 +571,7 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="454"/>
         <source>Laps only CSV</source>
-        <translation>Solo tiempo parciales (csv)</translation>
+        <translation>Solo tiempos parciales (csv)</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="459"/>
@@ -1059,7 +1059,7 @@ Si continúas, se eliminará esta distinción</translation>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="193"/>
         <source>Classes &amp;layout</source>
-        <translation>Categoría &amp;organización</translation>
+        <translation>&amp;Organización por categorias</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="194"/>
@@ -1743,7 +1743,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="75"/>
         <source>&amp;File</source>
-        <translation>%Archivo</translation>
+        <translation>&amp;Archivo</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="77"/>
@@ -5341,7 +5341,7 @@ Please choose a receipt template first.</source>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="617"/>
         <source>CSV files (*.csv *.txt)</source>
-        <translation>Archivos CSV (*.csv, *.txt)</translation>
+        <translation>Archivos CSV (*.csv *.txt)</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/relayswidget.cpp" line="633"/>
@@ -6794,7 +6794,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="394"/>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="508"/>
         <source>CSV files (*.csv *.txt)</source>
-        <translation>Archivos CSV (*.csv, *.txt)</translation>
+        <translation>Archivos CSV (*.csv *.txt)</translation>
     </message>
     <message>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="183"/>
@@ -6816,12 +6816,12 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="267"/>
         <source>Import UTF8 text file with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing runners (key is Czech registration).</source>
         <oldsource>Import comma separated values UTF8 text files with header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing runners (key is Czech registration).</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Importar archivo CSV UTF8 con la primera fila como cabecera.&lt;br/&gt;El separador es el punto y coma (;).&lt;br/&gt;Actualizar únicamente corredores existentes (los corredores son identificados por el número de registro checo).</translation>
     </message>
     <message>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="268"/>
         <source>Each row should have following columns: &lt;ol&gt;&lt;li&gt;Registration &lt;i&gt;- key&lt;/i&gt;&lt;/li&gt;&lt;li&gt;SI&lt;/li&gt;&lt;li&gt;Class&lt;/li&gt;&lt;li&gt;Bib&lt;/li&gt;&lt;li&gt;Start time &lt;i&gt;(in format: &lt;b&gt;mmm.ss&lt;/b&gt; from zero time or &lt;b&gt;hh:mm:ss&lt;/b&gt;)&lt;/i&gt;&lt;/li&gt;&lt;/ol&gt; Only first column is mandatory, others can be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cada una de la filas debe tener las siguientes columnas:&lt;ol&gt;&lt;li&gt;Registro&lt;i&gt; - clave&lt;/i&gt;&lt;/li&gt;&lt;li&gt;Chip&lt;/li&gt;&lt;li&gt;Categoría&lt;/li&gt;&lt;li&gt;Dorsal&lt;/li&gt;&lt;li&gt;Hora de salida&lt;i&gt;(formato &lt;b&gt;mmm.ss&lt;/b&gt; desde la hora cero o &lt;b&gt;h:mm:ss&lt;/b&gt;)&lt;/i&gt;&lt;/li&gt;&lt;/ol&gt; La primera fila es la única obligatoria, las demás puedes estar vacías.</translation>
     </message>
     <message>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="381"/>
@@ -6838,7 +6838,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="495"/>
         <source>Import UTF8 text file with comma separated values with first row as header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing runners (key is IOF ID).</source>
         <oldsource>Import comma separated values UTF8 text files with header.&lt;br/&gt;Separator is semicolon(;).&lt;br/&gt;Updates only existing runners (key is IOF ID).</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Importar archivo CSV UTF8 con la primera fila como cabecera.&lt;br/&gt;El separador es el punto y coma (;).&lt;br/&gt;Actualizar únicamente corredores existentes (los corredores son identificados por IOF ID).</translation>
     </message>
     <message>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="496"/>
@@ -6851,7 +6851,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="431"/>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="545"/>
         <source>Fields separation error, invalid CSV format, Error reading CSV line: [%1]</source>
-        <translation type="unfinished">Error en la separación de los campos, formato CSV invalido. Error leyendo la línea: [%1]</translation>
+        <translation>Formato CSV inválido. Error en el separador de campos. Error al leer la línea: [%1]</translation>
     </message>
     <message>
         <location filename="plugins/Oris/src/txtimporter.cpp" line="155"/>

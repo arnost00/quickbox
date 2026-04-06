@@ -1162,7 +1162,7 @@ void RunsWidget::editCompetitor_helper(const QVariant &id, int mode, int siid)
 		qfd::Dialog dlg(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 		dlg.setDefaultButton(QDialogButtonBox::Ok);
 		if(mode == qf::gui::model::DataDocument::ModeInsert || mode == qf::gui::model::DataDocument::ModeEdit) {
-			QPushButton *bt_save_and_next = dlg.buttonBox()->addButton(tr("Ok and &next"), QDialogButtonBox::ActionRole);
+			QPushButton *bt_save_and_next = dlg.buttonBox()->addButton(tr("Ok and &next"), QDialogButtonBox::AcceptRole);
 			connect(dlg.buttonBox(), &qf::gui::DialogButtonBox::clicked, &dlg, [&save_and_next, bt_save_and_next](QAbstractButton *button) {
 				save_and_next = (button == bt_save_and_next);
 			});
