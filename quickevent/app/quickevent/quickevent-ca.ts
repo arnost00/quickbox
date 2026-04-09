@@ -6,47 +6,47 @@
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulari</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="37"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtre</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="44"/>
         <source>Type name, registration or SI</source>
-        <translation type="unfinished"></translation>
+        <translation>Escriu el nom, identificador o número de xip</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="56"/>
         <source>Double-click on runner to add leg</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Doble click a un corredor per a afegir un relleu</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="68"/>
         <source>Registrations</source>
-        <translation type="unfinished"></translation>
+        <translation>Inscripcions</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="85"/>
         <source>Competitors</source>
-        <translation type="unfinished"></translation>
+        <translation>Corredors</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="97"/>
         <source>Unregistered runner</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Corredor no registrat</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="109"/>
         <source>First name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="132"/>
         <source>Last name</source>
-        <translation type="unfinished"></translation>
+        <translation>Cognoms</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.ui" line="178"/>
@@ -57,7 +57,7 @@
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="36"/>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="38"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom complet</translation>
     </message>
     <message>
         <location filename="plugins/Relays/src/addlegdialogwidget.cpp" line="37"/>
