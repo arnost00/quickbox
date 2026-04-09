@@ -6,7 +6,7 @@
     <message>
         <location filename="src/cellrenderer.cpp" line="78"/>
         <source>length: {{length}} climb: {{climb}}</source>
-        <translation type="unfinished"></translation>
+        <translation>distància: {{lenght}} desnivell: {{climb}}</translation>
     </message>
 </context>
 <context>
@@ -14,27 +14,27 @@
     <message>
         <location filename="src/mainwindow.ui" line="14"/>
         <source>MainWindow</source>
-        <translation type="unfinished"></translation>
+        <translation>Finestra principal</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="26"/>
         <source>Toggle full screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Pantalla completa</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="39"/>
         <source>Increase font size</source>
-        <translation type="unfinished"></translation>
+        <translation>Augmentar la mida de la lletra</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="52"/>
         <source>Decrease font size</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduir la mida de la lletra</translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="79"/>
         <source>E%1</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1</translation>
     </message>
 </context>
 <context>
