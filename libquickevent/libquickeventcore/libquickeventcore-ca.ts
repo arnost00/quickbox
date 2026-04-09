@@ -7,42 +7,42 @@
         <location filename="src/runstatus.cpp" line="121"/>
         <source>DISQ</source>
         <comment>Disqualified</comment>
-        <translation type="unfinished"></translation>
+        <translation>DSQ</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="123"/>
         <source>MP</source>
         <comment>Missing Punch</comment>
-        <translation type="unfinished"></translation>
+        <translation>MP</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="125"/>
         <source>DNS</source>
         <comment>Did Not Start</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">NS</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="127"/>
         <source>DNF</source>
         <comment>Did Not Finish</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Abandona</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="129"/>
         <source>OVRT</source>
         <comment>Over Time</comment>
-        <translation type="unfinished"></translation>
+        <translation>FT</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="119"/>
         <source>NC</source>
         <comment>Not Competing</comment>
-        <translation type="unfinished"></translation>
+        <translation>NC</translation>
     </message>
     <message>
         <location filename="src/runstatus.cpp" line="130"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -77,7 +77,7 @@
     <message>
         <location filename="src/exporters/htmlfileexporter.cpp" line="60"/>
         <source>E%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2</translation>
     </message>
 </context>
 <context>
@@ -85,22 +85,22 @@
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="20"/>
         <source>Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Resultats</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="42"/>
         <source>E%1 %2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>E%1 %2 %3</translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source> length: </source>
-        <translation type="unfinished"></translation>
+        <translation> distància </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="46"/>
         <source>climb: </source>
-        <translation type="unfinished"></translation>
+        <translation>desnivell </translation>
     </message>
     <message>
         <location filename="src/exporters/stageresultshtmlexporter.cpp" line="64"/>
