@@ -6,27 +6,27 @@
     <message>
         <location filename="src/sicard.cpp" line="38"/>
         <source>stationNumber: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de base: %1</translation>
     </message>
     <message>
         <location filename="src/sicard.cpp" line="39"/>
         <source>cardNumber: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de xip: %1</translation>
     </message>
     <message>
         <location filename="src/sicard.cpp" line="43"/>
         <source>check: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Comprovar: %1</translation>
     </message>
     <message>
         <location filename="src/sicard.cpp" line="44"/>
         <source>start: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sortida: %1</translation>
     </message>
     <message>
         <location filename="src/sicard.cpp" line="45"/>
         <source>finish: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>meta: %1</translation>
     </message>
     <message>
         <location filename="src/sicard.cpp" line="46"/>
@@ -71,7 +71,7 @@ Read out after punch: {{ReadOutAfterPunch}}
     <message>
         <location filename="src/device/commport.cpp" line="41"/>
         <source>Available ports: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ports disponibles: %1</translation>
     </message>
     <message>
         <location filename="src/device/commport.cpp" line="49"/>
