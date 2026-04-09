@@ -6,17 +6,17 @@
     <message>
         <location filename="src/reportoptionsdialog.ui" line="14"/>
         <source>Print Report Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Imprimir Opcions de l&apos;Informe</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="60"/>
         <source>Stages count</source>
-        <translation type="unfinished"></translation>
+        <translation>Número d&apos;etapes</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="66"/>
         <source>Number of stages</source>
-        <translation type="unfinished"></translation>
+        <translation>Número d&apos;etapes</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="247"/>
@@ -31,7 +31,7 @@
     <message>
         <location filename="src/reportoptionsdialog.ui" line="266"/>
         <source>Class filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtre de categories</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="310"/>
@@ -56,7 +56,7 @@
     <message>
         <location filename="src/reportoptionsdialog.ui" line="290"/>
         <source>Doesn&apos;t match</source>
-        <translation type="unfinished"></translation>
+        <translation>No hi ha coincidències</translation>
     </message>
     <message>
         <location filename="src/reportoptionsdialog.ui" line="320"/>
