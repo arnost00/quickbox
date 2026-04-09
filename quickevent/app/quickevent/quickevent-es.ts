@@ -592,12 +592,12 @@
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="331"/>
         <source>Show error</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar error</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="333"/>
         <source>Show error long</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar error largo</translation>
     </message>
     <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="528"/>
@@ -1262,7 +1262,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="79"/>
         <source>DISQ</source>
         <comment>Disqualified</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Desc</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="81"/>
@@ -1310,13 +1310,13 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="105"/>
         <source>CT</source>
         <comment>Card in lent cards table</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Alquilado</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="107"/>
         <source>RET</source>
         <comment>Card returned</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Devuelto</translation>
     </message>
     <message>
         <location filename="plugins/Competitors/src/competitorwidget.cpp" line="138"/>
@@ -1828,7 +1828,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="120"/>
         <source>Spanish</source>
-        <translation type="unfinished"></translation>
+        <translation>Español</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="121"/>
@@ -1863,12 +1863,12 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="159"/>
         <source>&amp;About Quick Event</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Sobre Quick Event</translation>
     </message>
     <message>
         <location filename="plugins/Core/src/coreplugin.cpp" line="209"/>
         <source>The &lt;b&gt;Quick Event&lt;/b&gt; is an application which helps you to organize the orienteering events.&lt;br/&gt;&lt;br/&gt;version: %1&lt;br/&gt;commit: %7&lt;br/&gt;min. db version: %2&lt;br/&gt;build: %3 %4&lt;br/&gt;SSL build: %5&lt;br/&gt;SSL run: %6</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;b&gt;Quick Event&lt;/b&gt; es una aplicación que te permite organizar los eventos de orientación.&lt;br/&gt;&lt;br/&gt;versión: %1&lt;br/&gt;commit: %7&lt;br/&gt;min. versión bbdd: %2&lt;br/&gt;build: %3 %4&lt;br/&gt;SSL build: %5&lt;br/&gt;SSL run: %6</translation>
     </message>
     <message>
         <source>&amp;About Quick event</source>
@@ -2038,17 +2038,17 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="45"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="46"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Distancia</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="47"/>
         <source>Climb</source>
-        <translation type="unfinished"></translation>
+        <translation>Desnivel</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="48"/>
@@ -2068,7 +2068,7 @@ Configure la columna &quot;Intervalo&quot; para todas las clases antes de contin
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="51"/>
         <source>Code count</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de controles</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="52"/>
@@ -2551,7 +2551,7 @@ Utilice: Archivo --&gt; Importar --&gt; Evento (*.qbe) para convertir el evento 
     <message>
         <location filename="plugins/Event/src/eventplugin.cpp" line="1399"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="plugins/Event/src/eventplugin.cpp" line="1400"/>
@@ -6982,7 +6982,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Classes/src/drawing/classitem.cpp" line="263"/>
         <source>, clash with: %1&lt;br/&gt;</source>
         <oldsource>clash with: %1&lt;br/&gt;</oldsource>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">, coincide con: %1&lt;br/&gt;</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/drawing/classitem.cpp" line="457"/>
@@ -6996,7 +6996,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
     <message>
         <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="29"/>
         <source>Lock class start time</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fijar categoría</translation>
     </message>
 </context>
 <context>
@@ -7044,7 +7044,7 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
         <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="101"/>
         <source>Save classes start times</source>
         <oldsource>Save class start times</oldsource>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Guardar horas de salida de categoría</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="102"/>
@@ -7052,7 +7052,8 @@ Pulsa el botón de actualizar para mostrar los datos importados.</translation>
 Do you want to save your changes?</source>
         <oldsource>All the user edited class start times will be overrided.
 Do you want to save your changes?</oldsource>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Todas las horas de salida de categoría editadas serán sobreescritas.
+¿Desea guardar los cambios?</translation>
     </message>
 </context>
 <context>
@@ -7075,7 +7076,7 @@ Do you want to save your changes?</oldsource>
     <message>
         <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="166"/>
         <source>Ignore class clash check</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ignorar la comprobación de coincidencias de categorías</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="185"/>
