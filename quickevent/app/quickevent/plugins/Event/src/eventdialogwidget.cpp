@@ -18,13 +18,16 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	connect(ui->ed_orisRace, &QAbstractButton::toggled, ui->frameOrisRace, &QWidget::setVisible);
 	ui->frameOrisRace->hide();
 
-	ui->cbxDisciplineId->addItem(tr("Classic"), static_cast<int>(Event::EventConfig::Discipline::Classic));
-	ui->cbxDisciplineId->addItem(tr("Short Race"), static_cast<int>(Event::EventConfig::Discipline::ShortRace));
+	ui->cbxDisciplineId->addItem(tr("Long distance"), static_cast<int>(Event::EventConfig::Discipline::LongDistance));
+	ui->cbxDisciplineId->addItem(tr("Middle distance"), static_cast<int>(Event::EventConfig::Discipline::ShortDistance));
+	ui->cbxDisciplineId->addItem(tr("Ultralong distance"), static_cast<int>(Event::EventConfig::Discipline::UltralongDistance));
 	ui->cbxDisciplineId->addItem(tr("Sprint"), static_cast<int>(Event::EventConfig::Discipline::Sprint));
 	ui->cbxDisciplineId->addItem(tr("Relays"), static_cast<int>(Event::EventConfig::Discipline::Relays));
 	ui->cbxDisciplineId->addItem(tr("Teams"), static_cast<int>(Event::EventConfig::Discipline::Teams));
-	ui->cbxDisciplineId->addItem(tr("NightRace"), static_cast<int>(Event::EventConfig::Discipline::NightRace));
-	ui->cbxDisciplineId->addItem(tr("Sprint Relays"), static_cast<int>(Event::EventConfig::Discipline::SprintRelays));
+	ui->cbxDisciplineId->addItem(tr("Free order"), static_cast<int>(Event::EventConfig::Discipline::FreeOrder));
+	ui->cbxDisciplineId->addItem(tr("Night"), static_cast<int>(Event::EventConfig::Discipline::NightRace));
+	ui->cbxDisciplineId->addItem(tr("Sprint relays"), static_cast<int>(Event::EventConfig::Discipline::SprintRelays));
+	ui->cbxDisciplineId->addItem(tr("Knock-out sprint"), static_cast<int>(Event::EventConfig::Discipline::KnocOutSprint));
 
 	ui->ed_oneTenthSecResults->setDisabled(true);
 
@@ -105,7 +108,7 @@ QVariantMap EventDialogWidget::saveParams()
 	ret["director"] = ui->ed_director->text();
 	ret["handicapLength"] = ui->ed_handicapLength->value();
 	ret["sportId"] = (ui->cbxSportId->currentIndex() <= 0) ? 1 : ui->cbxSportId->currentIndex() + 1;
-	ret["disciplineId"] = (ui->cbxDisciplineId->currentIndex() <= 0) ? static_cast<int>(Event::EventConfig::Discipline::Classic) : ui->cbxDisciplineId->currentData();
+	ret["disciplineId"] = (ui->cbxDisciplineId->currentIndex() <= 0) ? static_cast<int>(Event::EventConfig::Discipline::LongDistance) : ui->cbxDisciplineId->currentData();
 	ret["importId"] = ui->ed_orisImportId->text().toInt();
 	ret["orisEventKey"] = ui->ed_orisEventKey->text();
 	ret["cardChechCheckTimeSec"] = ui->ed_cardChecCheckTimeSec->value();
