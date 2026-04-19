@@ -318,7 +318,7 @@
      <item row="1" column="1" colspan="3">
       <widget class="QLineEdit" name="ed_name"/>
      </item>
-     <item row="0" column="1" colspan="2">
+     <item row="0" column="1" colspan="3">
       <widget class="QLineEdit" name="ed_eventId">
        <property name="placeholderText">
         <string>Unique event name</string>
