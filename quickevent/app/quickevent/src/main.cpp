@@ -4,6 +4,8 @@
 #include "appclioptions.h"
 
 #include <plugins/Core/src/coreplugin.h>
+#include <plugins/Event/src/eventplugin.h>
+#include <plugins/Event/src/dbschema.h>
 
 #include <quickevent/core/si/siid.h>
 #include <quickevent/core/og/timems.h>
@@ -89,8 +91,13 @@ int main(int argc, char *argv[])
 			cli_opts.printHelp();
 		return EXIT_SUCCESS;
 	}
+	bool create_db_sql_script;
 	foreach(QString s, cli_opts.unusedArguments()) {
-		qDebug() << "Undefined argument:" << s;
+		if (s == "--create-db-sql-script") {
+			create_db_sql_script = true;
+		} else {
+			qfWarning() << "Undefined argument:" << s;
+		}
 	}
 
 	// Uncaught exception is intentional here
@@ -154,6 +161,31 @@ int main(int argc, char *argv[])
 
 	main_window.setUiLanguageName(lc_name);
 	main_window.loadPlugins();
+	if (create_db_sql_script) {
+		auto *event_plugin = qobject_cast<Event::EventPlugin*>(main_window.plugin("Event", qf::core::Exception::Throw));
+		for (const auto &driver_name : {"SQLITE", "PSQL"}) {
+			QString file_name = QStringLiteral("create_db_%1.sql").arg(QString(driver_name).toLower());
+			QFile f(file_name);
+			if (!f.open(QFile::WriteOnly)) {
+				qfError() << "Cannot open file:" << f.fileName() << "for writing";
+			} else {
+				QFileInfo fi(f);
+				qfInfo() << "Writing file:" << fi.canonicalFilePath();
+				QVariantMap create_options;
+				create_options["schemaName"] = "{{eventId}}";
+				create_options["driverName"] = driver_name;
+				auto lines = event_plugin->dbSchema()->createDbSqlScriptQml(create_options);
+				QVariantMap replacements;
+				replacements["minDbVersion"] = Event::EventPlugin::dbVersion();
+				for (auto line : lines) {
+					line = qf::core::Utils::replaceCaptions(line, replacements);
+					f.write(line.toUtf8());
+					f.write(";\n");
+				}
+			}
+		}
+		return EXIT_SUCCESS;
+	}
 	main_window.show();
 	emit main_window.applicationLaunched();
 
