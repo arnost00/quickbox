@@ -583,12 +583,11 @@ int EventPlugin::dbVersion()
 QString EventPlugin::dbVersionString()
 {
 	int dbv = dbVersion();
-	int rev = dbv % 100;
 	dbv /= 100;
 	int min = dbv % 100;
 	int maj = dbv / 100;
 
-	return QString("%1.%2.0").arg(maj).arg(min).arg(rev);
+	return QString("%1.%2.0").arg(maj).arg(min);
 }
 
 void EventPlugin::onDbEvent(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload)
