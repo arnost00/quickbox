@@ -29,8 +29,12 @@ public:
 						   Teams = 6,
 						   FreeOrder = 7,
 						   NightRace = 9,
+						   TempO = 11,
+						   MultiStages = 13,
+						   MassStart = 14,
 						   SprintRelays = 15,
-						   KnocOutSprint = 16
+						   KnocOutSprint = 16,
+						   Indoor = 19,
 						  };
 	static std::optional<Discipline> disciplineFromInt(int i);
 public:

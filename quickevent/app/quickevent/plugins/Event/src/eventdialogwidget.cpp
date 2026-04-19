@@ -28,6 +28,11 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	ui->cbxDisciplineId->addItem(tr("Night"), static_cast<int>(Event::EventConfig::Discipline::NightRace));
 	ui->cbxDisciplineId->addItem(tr("Sprint relays"), static_cast<int>(Event::EventConfig::Discipline::SprintRelays));
 	ui->cbxDisciplineId->addItem(tr("Knock-out sprint"), static_cast<int>(Event::EventConfig::Discipline::KnocOutSprint));
+	ui->cbxDisciplineId->addItem(tr("TempO"), static_cast<int>(Event::EventConfig::Discipline::TempO));
+	ui->cbxDisciplineId->addItem(tr("Multi stages"), static_cast<int>(Event::EventConfig::Discipline::MultiStages));
+	ui->cbxDisciplineId->addItem(tr("Indoor"), static_cast<int>(Event::EventConfig::Discipline::Indoor));
+	ui->cbxDisciplineId->addItem(tr("Mass start"), static_cast<int>(Event::EventConfig::Discipline::MassStart));
+
 
 	ui->ed_oneTenthSecResults->setDisabled(true);
 

@@ -32,6 +32,10 @@ std::optional<EventConfig::Discipline> EventConfig::disciplineFromInt(int i)
 	case Discipline::UltralongDistance: return Discipline::UltralongDistance;
 	case Discipline::FreeOrder: return Discipline::FreeOrder;
 	case Discipline::KnocOutSprint: return Discipline::KnocOutSprint;
+	case Discipline::TempO: return Discipline::TempO;
+	case Discipline::MultiStages: return Discipline::MultiStages;
+	case Discipline::MassStart: return Discipline::MassStart;
+	case Discipline::Indoor: return Discipline::Indoor;
 	}
 	return {};
 }
