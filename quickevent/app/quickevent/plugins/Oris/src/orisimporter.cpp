@@ -33,6 +33,8 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 
+#include <set>
+
 #if QT_VERSION_MAJOR >= 6
 // workaround to decode cp-1250 on linux, needed for relays import from Oris
 #include <iconv.h>
