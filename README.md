@@ -121,6 +121,19 @@ listen_addresses = '*'
 ```
 Restart the PostgreSQL service.
 
+##### Windows
+The Windows firewall may block connections to your database. If this happens, you will see a “connection timed out”
+error when attempting to connect from the network.
+
+To allow incoming connections, create a firewall rule:
+
+ 1. Open Windows Defender Firewall with Advanced Security
+ 2. Click Inbound Rules → New Rule
+ 3. Select Port → TCP → Specific port: 5432 (or the port your database uses)
+ 4. Select Allow the connection
+ 5. Choose when the rule applies (Domain, Private, Public — at minimum, select Private)
+ 6. Give the rule a name (for example: QuickEvent database access)
+
 ---
 <!-- BUILD -->
 ## Build QE3 (Qt6 version)
