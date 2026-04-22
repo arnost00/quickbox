@@ -79,6 +79,7 @@ QStringList DbSchema::loadCreateDbSqlScript(const CreateDbSqlScriptOptions &crea
 	}
 	auto sql = QString::fromUtf8(f.readAll());
 	QVariantMap replacements;
+	replacements["eventId"] = create_options.schemaName();
 	replacements["minDbVersion"] = Event::EventPlugin::dbVersion();
 	sql = qf::core::Utils::replaceCaptions(sql, replacements);
 	auto lines = sql.split(";\n");

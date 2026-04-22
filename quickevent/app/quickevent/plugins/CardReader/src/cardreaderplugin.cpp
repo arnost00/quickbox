@@ -117,7 +117,7 @@ int CardReaderPlugin::findRunId(int si_id, int si_finish_time, QString *err_msg)
 		q.exec("SELECT id, leg, startTimeMs, finishTimeMs FROM runs WHERE siId=" QF_IARG(si_id)
 			" AND isRunning"
 			" ORDER BY leg DESC"
-, qf::core::Exception::Throw);
+			, qf::core::Exception::Throw);
 	}
 	else {
 		int stage_no = currentStageId();
