@@ -566,7 +566,10 @@ QString EventPlugin::resultsIofXml3FileName(std::optional<int> stage_id)
 
 DbSchema *EventPlugin::dbSchema()
 {
-	return new DbSchema(this);
+	if (!m_dbSchema) {
+		m_dbSchema = new DbSchema(this);
+	}
+	return m_dbSchema;
 }
 
 int EventPlugin::dbVersion()
@@ -580,12 +583,11 @@ int EventPlugin::dbVersion()
 QString EventPlugin::dbVersionString()
 {
 	int dbv = dbVersion();
-	int rev = dbv % 100;
 	dbv /= 100;
 	int min = dbv % 100;
 	int maj = dbv / 100;
 
-	return QString("%1.%2.%3").arg(maj).arg(min).arg(rev);
+	return QString("%1.%2.0").arg(maj).arg(min);
 }
 
 void EventPlugin::onDbEvent(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload)
@@ -811,15 +813,12 @@ namespace {
 bool run_sql_script(qf::core::sql::Query &q, const QStringList &sql_lines)
 {
 	qfLogFuncFrame();
-	QVariantMap replacements;
-	replacements["minDbVersion"] = EventPlugin::dbVersion();
-	for(auto cmd : sql_lines) {
+	for(const auto &cmd : sql_lines) {
 		if(cmd.isEmpty())
 			continue;
 		if(cmd.startsWith(QLatin1String("--")))
 			continue;
 		qfDebug() << cmd << ';';
-		cmd = qf::core::Utils::replaceCaptions(cmd, replacements);
 		bool ok = q.exec(cmd);
 		if(!ok) {
 			qfInfo() << cmd;
@@ -897,7 +896,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 		create_options["schemaName"] = event_id;
 		create_options["driverName"] = conn.driverName();
 
-		QStringList create_script = dbSchema()->createDbSqlScript(create_options);
+		QStringList create_script = dbSchema()->loadCreateDbSqlScript(create_options);
 
 		qfInfo().nospace() << create_script.join(";\n") << ';';
 		qfs::Query q(conn);
@@ -909,8 +908,9 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 				break;
 			qfDebug() << "creating stages:" << stage_count;
 			QString stage_table_name = "stages";
-			if(connection_type == ConnectionType::SqlServer)
+			if(connection_type == ConnectionType::SqlServer) {
 				stage_table_name = event_id + '.' + stage_table_name;
+			}
 			QDateTime start_dt = event_config.eventDateTime();
 			// FIXME: handle SQL errors here and below in q.exec()
 			q.prepare("INSERT INTO " + stage_table_name + " (id, startDateTime) VALUES (:id, :startDateTime)");
@@ -1221,7 +1221,7 @@ void EventPlugin::exportEvent_qbe()
 		{
 			DbSchema::CreateDbSqlScriptOptions create_options;
 			create_options.setDriverName(ex_conn.driverName());
-			QStringList create_script = db_schema->createDbSqlScript(create_options);
+			QStringList create_script = db_schema->loadCreateDbSqlScript(create_options);
 			qfs::Query ex_q(ex_conn);
 			if(!run_sql_script(ex_q, create_script)) {
 				err_str = tr("Create Database Error: %1").arg(ex_q.lastError().text());
@@ -1319,7 +1319,7 @@ void EventPlugin::importEvent_qbe()
 			DbSchema::CreateDbSqlScriptOptions create_options;
 			create_options.setDriverName(exp_conn.driverName());
 			create_options.setSchemaName(event_name);
-			QStringList create_script = db_schema->createDbSqlScript(create_options);
+			QStringList create_script = db_schema->loadCreateDbSqlScript(create_options);
 			qfs::Query ex_q(exp_conn);
 			if(!run_sql_script(ex_q, create_script)) {
 				err_str = tr("Create Database Error: %1").arg(ex_q.lastError().text());

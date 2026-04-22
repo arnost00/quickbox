@@ -1066,48 +1066,58 @@ If you continue, this flag will be removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="263"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="240"/>
+        <source>Edit Courses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="250"/>
+        <source>Edit Codes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="265"/>
         <source>Classes without start interval won&apos;t be displayed.
 Consider setting &quot;Interval&quot; column for all classes before continuing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="281"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="283"/>
         <source>E%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="387"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="389"/>
         <source>Delete all courses definitions for stage %1?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="407"/>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="588"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="409"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="590"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="407"/>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="588"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="409"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="590"/>
         <source>Import does not yet support relays.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="411"/>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="481"/>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="593"/>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="664"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="413"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="483"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="595"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="666"/>
         <source>Open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="593"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="595"/>
         <source>XML files (*.xml);; All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Classes/src/classeswidget.cpp" line="786"/>
+        <location filename="plugins/Classes/src/classeswidget.cpp" line="788"/>
         <source>Class name &apos;%1&apos; seems to be combined, separate it to more classes?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2127,6 +2137,11 @@ Consider setting &quot;Interval&quot; column for all classes before continuing.<
         <source>Courses</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="plugins/Classes/src/editcourseswidget.ui" line="63"/>
+        <source>Show runners count</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Event::EventPlugin</name>
@@ -2792,7 +2807,6 @@ Use: File --&gt; Import --&gt; Event (*.qbe) to convert event to current version
     </message>
     <message>
         <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="182"/>
-        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.cpp" line="357"/>
         <source>Test connection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3853,12 +3867,12 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="src/mainwindow.cpp" line="24"/>
+        <location filename="src/mainwindow.cpp" line="26"/>
         <source>Quick Event ver. %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/mainwindow.cpp" line="35"/>
+        <location filename="src/mainwindow.cpp" line="37"/>
         <source>Application log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4246,37 +4260,37 @@ source - ORIS-&gt;Event-&gt;Information-&gt;Event key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="31"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="33"/>
         <source>Stored image (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="267"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="269"/>
         <source>Test Runner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="273"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="275"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="287"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="289"/>
         <source>Cannot open image file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="293"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="295"/>
         <source>Selected image file is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="311"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="313"/>
         <source>Selected file is not a supported image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="318"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="320"/>
         <source>Cannot prepare selected image for printing.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4320,55 +4334,55 @@ Please go to Settings-&gt;Receipts and set receipt type.</source>
 <context>
     <name>Receipts::ReceiptsSettingsPage</name>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="333"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="335"/>
         <source>Receipts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="335"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="337"/>
         <source>Error info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="336"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="338"/>
         <source>Error info with picture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="337"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="339"/>
         <source>Receipt without name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="412"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="414"/>
         <source>Image payload is stored in the event configuration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="662"/>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="666"/>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="684"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="661"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="665"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="683"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="662"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="661"/>
         <source>Receipt report type is not defined.
 Please choose a receipt template first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="666"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="665"/>
         <source>Test print failed. Check the printer setup.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="674"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="673"/>
         <source>Select receipt image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="676"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="675"/>
         <source>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.svg);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4494,7 +4508,7 @@ Please choose a receipt template first.</source>
     </message>
     <message>
         <location filename="plugins/Receipts/src/receiptssettingspage.ui" line="220"/>
-        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="457"/>
+        <location filename="plugins/Receipts/src/receiptssettingspage.cpp" line="459"/>
         <source>Test print</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4530,112 +4544,112 @@ Please choose a receipt template first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="39"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="35"/>
         <source>Character printer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="75"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="67"/>
         <source>Text encoding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="83"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="75"/>
         <source>ASCII7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="88"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="80"/>
         <source>cp1250</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="93"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="85"/>
         <source>iso8859-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="98"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="90"/>
         <source>utf8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="109"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="101"/>
         <source>LPT device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="119"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="111"/>
         <source>Network address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="126"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="118"/>
         <source>Generate printer control codes (escape sequences)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="133"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="125"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;There are two options how to configure the casch printer on Windows: &lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;\\.\LPT1&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;\\computer_name\printer_share_name&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;When we want USB connected printer be accessible from LPT1 we need to : &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Create given printer shared&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;by &amp;quot;net use LPT1 \\computer_name\printer_share_name&amp;quot;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="140"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="132"/>
         <source>/dev/usb/lp1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="145"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="137"/>
         <source>/dev/usb/lp2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="150"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="142"/>
         <source>/dev/usb/lp3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="155"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="147"/>
         <source>/dev/usb/lp4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="160"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="152"/>
         <source>\\.\LPT1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="169"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="161"/>
         <source>Epson TM-T88V</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="174"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="166"/>
         <source>Epson TM-U220B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="182"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="174"/>
         <source>Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="195"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="187"/>
         <source>Line length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="202"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="194"/>
         <source> characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="221"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="213"/>
         <source>Printer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="235"/>
+        <location filename="plugins/Receipts/src/receiptsprinteroptionsdialog.ui" line="227"/>
         <source>UDP</source>
         <translation type="unfinished"></translation>
     </message>

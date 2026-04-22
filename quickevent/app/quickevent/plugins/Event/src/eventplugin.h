@@ -170,6 +170,8 @@ private:
 
 	qf::gui::model::SqlTableModel *m_registrationsModel = nullptr;
 	qf::core::utils::Table m_registrationsTable;
+
+	DbSchema *m_dbSchema = nullptr;
 };
 
 }
