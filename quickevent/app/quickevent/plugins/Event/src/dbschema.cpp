@@ -73,7 +73,7 @@ QStringList DbSchema::loadCreateDbSqlScript(const CreateDbSqlScriptOptions &crea
 	auto dbtype = create_options.driverName().endsWith("PSQL", Qt::CaseInsensitive)? "psql": "sqlite";
 	auto file_name = QStringLiteral(":/quickevent/Event/sql/create_db_%1.sql").arg(dbtype);
 	QFile f(file_name);
-	if (!f.open(QFile::ReadOnly)) {
+	if (!f.open(QFile::ReadOnly | QIODevice::Text)) {
 		qfError() << "Cannot open file:" << f.fileName() << "for reading";
 		return {};
 	}
