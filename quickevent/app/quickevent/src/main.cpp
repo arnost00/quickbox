@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 			cli_opts.printHelp();
 		return EXIT_SUCCESS;
 	}
-	bool create_db_sql_script;
+	bool create_db_sql_script = false;
 	foreach(QString s, cli_opts.unusedArguments()) {
 		if (s == "--create-db-sql-script") {
 			create_db_sql_script = true;
