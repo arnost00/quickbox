@@ -959,7 +959,6 @@ QVariantMap RunsPlugin::printAwardsOptionsWithDialog(const QVariantMap &opts)
 QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 {
 	QDateTime stage_start_date_time = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
-	//qfInfo() << stage_start_date_time << datetime_to_string(stage_start_date_time);
 	qf::core::utils::TreeTable tt1 = stageResultsTable(stage_id, QString(), 0, false, true);
 	Event::EventConfig *event_config = getPlugin<EventPlugin>()->eventConfig();
 	bool is_iof_race = event_config->isIofRace();
@@ -981,8 +980,8 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 		event_lst.insert(event_lst.count(), QVariantList{"Id", QVariantMap{{"type", "ORIS"}}, event.value("importId")});
 		event_lst.insert(event_lst.count(), QVariantList{"Name", event.value("name")});
 		event_lst.insert(event_lst.count(), QVariantList{"StartTime",
-				   QVariantList{"Date", event.value("date")},
-				   QVariantList{"Time", event.value("time")}
+				   QVariantList{"Date", stage_start_date_time.date().toString(Qt::ISODate)},
+				   QVariantList{"Time", stage_start_date_time.time().toString(Qt::ISODate)}
 		});
 		event_lst.insert(event_lst.count(),
 			QVariantList{"Official",
