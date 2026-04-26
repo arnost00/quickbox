@@ -136,11 +136,13 @@ To allow incoming connections, create a firewall rule:
 
 ---
 <!-- BUILD -->
-## Build QE3 (Qt6 version)
+## Build
+
+### Linux Build QE3 (Qt6 version)
 ```
 git clone https://github.com/Quick-Event/quickbox.git
 cd quickbox
-git sw qe3
+git switch main
 git submodule update --init --recursive
 mkdir build
 cd build
@@ -148,7 +150,7 @@ cmake .. -DCMAKE_GENERATOR:STRING=Ninja -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_
 cmake --build . 
 cmake --install . --prefix /path/to/install/qe3
 ```
-## Run QE3 from QTC (Qt6 version)  
+### Linux Run QE3 from QTC (Qt6 version)  
 When QE3 is run from QTC (QT Creator), some symlinks must be created to load QML modules.
 1. build QE3 manually and run `cmake --install ...` as described in previous chapter.
 2. Open `CMakeLists.txt` as project in QTC
@@ -161,6 +163,9 @@ ln -s /tmp/qe3/bin/qml qml
 ln -s /tmp/qe3/bin/reports reports
 ln -s /tmp/qe3/bin/translations translations
 ```
+
+### Windows Build
+See the [README_WINDOWS.md](README_WINDOWS.md) for detailed guide how to get the working running on Windows.
 
 ---
 <!-- CONTRIBUTING -->
