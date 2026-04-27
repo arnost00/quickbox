@@ -2,6 +2,8 @@
 
 This guide covers building QuickEvent on Windows (including Windows ARM). The build targets x86_64 using MinGW, which runs natively on x64 and via emulation on Windows ARM.
 
+It is heavily inspired by the `.github\workflows\installer.yml` GitHub workflow.
+
 ---
 
 ## Tools to Install
