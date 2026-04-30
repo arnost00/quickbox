@@ -52,22 +52,36 @@ qreal qf::gui::graphics::device2y(qreal y, QPaintDevice *dev)
 	double dpmm = dev->logicalDpiY() / 25.4;
 	return y / dpmm;
 }
+/*
+qreal qf::gui::graphics::x2device_physical(qreal x, QPaintDevice *dev)
+{
+	QF_ASSERT_EX(dev, "dev is NULL");
+	double dpmm = dev->physicalDpiX() / 25.4;
+	return x * dpmm;
+}
 
+qreal qf::gui::graphics::y2device_physical(qreal y, QPaintDevice *dev)
+{
+	QF_ASSERT_EX(dev, "dev is NULL");
+	double dpmm = dev->physicalDpiY() / 25.4;
+	return y * dpmm;
+}
+*/
 Rect qf::gui::graphics::mm2device(const Rect &r, QPaintDevice *dev)
 {
 	Rect ret;
 	ret.setLeft(x2device(r.left(), dev));
-	ret.setTop(qf::gui::graphics::y2device(r.top(), dev));
-	ret.setWidth(qf::gui::graphics::x2device(r.width(), dev));
-	ret.setHeight(qf::gui::graphics::y2device(r.height(), dev));
+	ret.setTop(y2device(r.top(), dev));
+	ret.setWidth(x2device(r.width(), dev));
+	ret.setHeight(y2device(r.height(), dev));
 	return ret;
 }
 
 Point qf::gui::graphics::mm2device(const Point &p, QPaintDevice *dev)
 {
 	Point ret;
-	ret.setX(qf::gui::graphics::x2device(p.x(), dev));
-	ret.setY(qf::gui::graphics::y2device(p.y(), dev));
+	ret.setX(x2device(p.x(), dev));
+	ret.setY(y2device(p.y(), dev));
 	return ret;
 }
 

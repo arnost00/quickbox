@@ -422,10 +422,10 @@ void ReportItemMetaPaintFrame::fillItem(QPainter *painter, bool selected)
 {
 	Rect r = qf::gui::graphics::mm2device(renderedRect, painter->device());
 	//qfDebug().color(QFLog::Yellow) << QF_FUNC_NAME << reportElement.tagName();
-	//qfInfo() << "\t logicalDpiX:" << painter->device()->logicalDpiX();
-	//qfInfo() << "\t logicalDpiY:" << painter->device()->logicalDpiY();
-	//qfInfo() << "\t rendered rect:" << renderedRect.toString();
-	//qfInfo() << "\t br:" << r.toString();
+	qfInfo() << "\t logicalDpi:" << painter->device()->logicalDpiX() << " | " << painter->device()->logicalDpiY();
+	qfInfo() << "\t physicalDpi:" << painter->device()->physicalDpiX() << " | " << painter->device()->physicalDpiY();
+	qfInfo() << "\t rendered rect:" << renderedRect.toString();
+	qfInfo() << "\t br:" << r.toString();
 	//qfDebug() << "\tbrush color:"
 	if(selected) {
 		painter->fillRect(r, QColor(0xFFEEEE));

@@ -64,7 +64,7 @@ bool ReceiptsPrinter::printReceipt(const QString &report_file_name, const QVaria
 			return false;
 		}
 		qfInfo() << "printing on:" << pi.printerName();
-		printer = new QPrinter(pi);
+		printer = new QPrinter(pi);//, QPrinter::HighResolution);
 		paint_device = printer;
 	}
 	else {

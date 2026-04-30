@@ -81,6 +81,8 @@ Rect mm2device(const Rect &r, QPaintDevice *dev);
 Point mm2device(const Point &p, QPaintDevice *dev);
 Point device2mm(const Point &p, QPaintDevice *dev);
 Rect device2mm(const Rect &p, QPaintDevice *dev);
+//qreal x2device_physical(qreal x, QPaintDevice *dev);
+//qreal y2device_physical(qreal y, QPaintDevice *dev);
 
 double parseRational(const QString &rational_or_proc_repr);
 
