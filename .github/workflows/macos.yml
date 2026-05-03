@@ -2,7 +2,7 @@ name: macOS
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "update-actions-test-202605" ]
   pull_request:
     branches: [ "main" ]
 
