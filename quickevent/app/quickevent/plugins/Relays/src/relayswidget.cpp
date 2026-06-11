@@ -4,6 +4,7 @@
 
 #include "relaydocument.h"
 #include "relaysplugin.h"
+#include "printrelayawardsoptionsdialogwidget.h"
 #include "partwidget.h"
 #include "relaystableitemdelegate.h"
 
@@ -189,6 +190,11 @@ void RelaysWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		auto *a = new qfw::Action("nlegs", tr("Overall condensed"));
 		a_print_results->addActionInto(a);
 		connect(a, &qfw::Action::triggered, this, &RelaysWidget::print_results_overal_condensed);
+	}
+	{
+		auto *a = new qfw::Action("awards", tr("A&wards"));
+		a_print_results->addActionInto(a);
+		connect(a, &qfw::Action::triggered, this, &RelaysWidget::print_results_awards);
 	}
 
 	auto *a_export = part_widget->menuBar()->actionForPath("export");
@@ -565,6 +571,34 @@ void RelaysWidget::print_results_overal_condensed()
 														  );
 }
 
+
+void RelaysWidget::print_results_awards()
+{
+	qfLogFuncFrame();
+	static QVariantMap s_opts;
+	auto *w = new PrintRelayAwardsOptionsDialogWidget();
+	w->setWindowTitle(tr("Print Relay Awards"));
+	w->setPrintOptions(s_opts);
+	qfd::Dialog dlg(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+	dlg.setCentralWidget(w);
+	if(!dlg.exec())
+		return;
+	s_opts = w->printOptions();
+	QString rep_path = s_opts.value("reportPath").toString();
+	if(rep_path.isEmpty())
+		return;
+
+	QVariantMap props;
+	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
+	int num_places = s_opts.value("numPlaces", 3).toInt();
+	auto td = getPlugin<RelaysPlugin>()->nLegsResultsTable(QString(), 999, num_places, true);
+	qf::gui::reports::ReportViewWidget::showReport(this,
+		getPlugin<RelaysPlugin>()->findReportFile(rep_path),
+		td.toVariant(),
+		tr("Awards"),
+		"relaysAwards",
+		props);
+}
 
 void RelaysWidget::save_xml_file(QString str, QString fn) {
 	qfLogFuncFrame();

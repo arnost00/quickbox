@@ -131,6 +131,9 @@ add_executable(quickevent
 
 	plugins/Relays/src/addlegdialogwidget.cpp
 	plugins/Relays/src/addlegdialogwidget.ui
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.h
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.cpp
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.ui
 	plugins/Relays/src/relaydocument.cpp
 	plugins/Relays/src/relaysplugin.cpp
 	plugins/Relays/src/relayswidget.cpp
@@ -230,6 +233,7 @@ add_executable(quickevent
 	plugins/Relays/qml/reports/startList_clubs.qml
 	plugins/Relays/qml/reports/startList_classes_condensed.qml
 	plugins/Relays/qml/reports/startList_clubs_condensed.qml
+	plugins/Relays/qml/reports/awards/relay_awards.qml
 
 	plugins/Runs/qml/reports/competitorsWithCardRent.qml
 	plugins/Runs/qml/reports/results_nstages.qml
