@@ -1972,7 +1972,7 @@ void RunsPlugin::report_resultsAwards()
 	static const QLatin1String DB_PREFIX("db:");
 	QVariantMap props;
 	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
-	auto tt = stageResultsTable(opts.value("stageId").toInt(), QString(), opts.value("numPlaces").toInt());
+	auto tt = stageResultsTable(opts.value("stageId").toInt(), opts.value("classFilter").toString(), opts.value("numPlaces").toInt());
 
 	QString qmlFile;
 	AwardQmlRenderer *awardRenderer = nullptr;
@@ -2069,7 +2069,7 @@ void RunsPlugin::report_nStagesAwards()
 	static const QLatin1String DB_PREFIX("db:");
 	QVariantMap props;
 	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
-	auto tt = nstagesResultsTable(QString(), opts.value("stageId").toInt(), opts.value("numPlaces").toInt());
+	auto tt = nstagesResultsTable(opts.value("classFilter").toString(), opts.value("stageId").toInt(), opts.value("numPlaces").toInt());
 
 	QString qmlFile;
 	AwardQmlRenderer *awardRenderer = nullptr;

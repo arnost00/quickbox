@@ -5,6 +5,8 @@
 #include <awarddesigner/awarddesign.h>
 #include <awarddesigner/awarddesignerdialog.h>
 
+#include <quickevent/gui/reportoptionsdialog.h>
+
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/core/log.h>
 
@@ -59,6 +61,21 @@ QVariantMap PrintAwardsOptionsDialogWidget::printOptions() const
 		ret["stageId"]   = ui->edStageNumber->value();
 		ret["reportPath"] = ui->edReportPath->currentData().toString();
 	}
+
+	quickevent::gui::ReportOptionsDialog::Options filterOpts;
+	filterOpts.setUseClassFilter(ui->grpClassFilter->isChecked());
+	filterOpts.setClassFilter(ui->edFilter->text().trimmed());
+	filterOpts.setInvertClassFilter(ui->chkClassFilterDoesntMatch->isChecked());
+	int ft = ui->btWildCard->isChecked()  ? 0
+	       : ui->btRegExp->isChecked()    ? 1
+	       : 2;
+	filterOpts.setClassFilterType(ft);
+	ret["classFilter"]       = quickevent::gui::ReportOptionsDialog::sqlWhereExpression(filterOpts, ret["stageId"].toInt());
+	ret["classFilterText"]   = filterOpts.classFilter();
+	ret["classFilterType"]   = filterOpts.classFilterType();
+	ret["useClassFilter"]    = filterOpts.isUseClassFilter();
+	ret["invertClassFilter"] = filterOpts.isInvertClassFilter();
+
 	return ret;
 }
 
@@ -72,6 +89,14 @@ void PrintAwardsOptionsDialogWidget::setPrintOptions(const QVariantMap &opts)
 		if (ix >= 0)
 			ui->edReportPath->setCurrentIndex(ix);
 	}
+
+	ui->grpClassFilter->setChecked(opts.value("useClassFilter", false).toBool());
+	ui->edFilter->setText(opts.value("classFilterText").toString());
+	ui->chkClassFilterDoesntMatch->setChecked(opts.value("invertClassFilter", false).toBool());
+	int ft = opts.value("classFilterType", 0).toInt();
+	if (ft == 1)      ui->btRegExp->setChecked(true);
+	else if (ft == 2) ui->btClassNames->setChecked(true);
+	else              ui->btWildCard->setChecked(true);
 }
 
 void PrintAwardsOptionsDialogWidget::onDesignerClicked()

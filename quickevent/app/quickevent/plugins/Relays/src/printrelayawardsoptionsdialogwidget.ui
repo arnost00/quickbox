@@ -7,66 +7,156 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>130</height>
+    <height>210</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Print Relay Awards</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Počet oceněných míst:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QSpinBox" name="edNumPlaces">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>55</number>
-     </property>
-     <property name="value">
-      <number>3</number>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Šablona diplomu:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <layout class="QHBoxLayout">
-     <item>
-      <widget class="QComboBox" name="edReportPath">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>1</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>5</number>
+   </property>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Počet oceněných míst:</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="btnDesigner">
-       <property name="text">
-        <string>Designer...</string>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="edNumPlaces">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
-       <property name="toolTip">
-        <string>Otevřít designer diplomů</string>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>55</number>
+       </property>
+       <property name="value">
+        <number>3</number>
        </property>
       </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Šablona diplomu:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout">
+       <item>
+        <widget class="QComboBox" name="edReportPath">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnDesigner">
+         <property name="text">
+          <string>Designer...</string>
+         </property>
+         <property name="toolTip">
+          <string>Otevřít designer diplomů</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpClassFilter">
+     <property name="title">
+      <string>Class filter</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="btWildCard">
+        <property name="toolTip">
+         <string>An question mark (?) in pattern stands for (matches) any single character; a asterisk (*) matches any sequence of zero or more characters.</string>
+        </property>
+        <property name="text">
+         <string>Wild card</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="btRegExp">
+        <property name="toolTip">
+         <string>Posix regular expression</string>
+        </property>
+        <property name="text">
+         <string>RegExp</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="btClassNames">
+        <property name="toolTip">
+         <string>Comma delimited list of class names</string>
+        </property>
+        <property name="text">
+         <string>Class names</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3">
+       <widget class="QLineEdit" name="edFilter"/>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QCheckBox" name="chkClassFilterDoesntMatch">
+        <property name="text">
+         <string>Doesn't match</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -74,6 +164,12 @@
   <tabstop>edNumPlaces</tabstop>
   <tabstop>edReportPath</tabstop>
   <tabstop>btnDesigner</tabstop>
+  <tabstop>grpClassFilter</tabstop>
+  <tabstop>btWildCard</tabstop>
+  <tabstop>btRegExp</tabstop>
+  <tabstop>btClassNames</tabstop>
+  <tabstop>edFilter</tabstop>
+  <tabstop>chkClassFilterDoesntMatch</tabstop>
  </tabstops>
  <resources/>
  <connections/>

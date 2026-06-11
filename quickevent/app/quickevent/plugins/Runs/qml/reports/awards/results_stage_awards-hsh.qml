@@ -71,6 +71,7 @@ Report {
 						id: detail
 						objectName: "runnersDetail"
 						width: "%"
+						Break { skipFirst: true }
 						/*
 						Frame {height: 30}
 						Para {
@@ -164,7 +165,6 @@ Report {
 							}
 							Frame { width: 10 }
 						}
-						Break {}
 					}
 				}
 			}

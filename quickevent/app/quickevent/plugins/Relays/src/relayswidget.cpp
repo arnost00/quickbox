@@ -593,7 +593,7 @@ void RelaysWidget::print_results_awards()
 		return;
 
 	int num_places = s_opts.value("numPlaces", 3).toInt();
-	auto td = getPlugin<RelaysPlugin>()->nLegsResultsTable(QString(), 999, num_places, true);
+	auto td = getPlugin<RelaysPlugin>()->nLegsResultsTable(s_opts.value("classFilter").toString(), 999, num_places, true);
 
 	static const QLatin1String DB_PREFIX("db:");
 	QVariantMap props;
