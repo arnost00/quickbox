@@ -13,10 +13,12 @@
 #include <QWheelEvent>
 
 AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &availableFields,
+	const AwardDesigner::Design &defaultDesign,
 	QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::AwardDesignerDialog)
 	, m_availableFields(availableFields)
+	, m_designType(defaultDesign.type)
 {
 	ui->setupUi(this);
 
@@ -77,7 +79,7 @@ AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &a
 	setPropsEnabled(false);
 
 	// Load default design on first open
-	loadDesign(AwardDesigner::Design::defaultRelayDesign());
+	loadDesign(defaultDesign);
 }
 
 AwardDesignerDialog::~AwardDesignerDialog()
@@ -187,6 +189,7 @@ void AwardDesignerDialog::onSaveDesignClicked()
 		return;
 	}
 	AwardDesigner::Design d = m_scene->collectDesign(name);
+	d.type = m_designType;
 	if (d.saveToDb())
 		QMessageBox::information(this, tr("Uložit návrh"),
 			tr("Návrh '%1' byl uložen do databáze.").arg(name));
@@ -194,7 +197,7 @@ void AwardDesignerDialog::onSaveDesignClicked()
 
 void AwardDesignerDialog::onLoadDesignClicked()
 {
-	QStringList designs = AwardDesigner::Design::listFromDb();
+	QStringList designs = AwardDesigner::Design::listFromDb(m_designType);
 	if (designs.isEmpty()) {
 		QMessageBox::information(this, tr("Načíst návrh"),
 			tr("V databázi nejsou uloženy žádné návrhy diplomů."));
@@ -222,6 +225,7 @@ void AwardDesignerDialog::accept()
 	QString name = ui->edDesignName->text().trimmed();
 	if (!name.isEmpty()) {
 		AwardDesigner::Design d = m_scene->collectDesign(name);
+		d.type = m_designType;
 		d.saveToDb();
 	}
 	QDialog::accept();

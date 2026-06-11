@@ -92,6 +92,87 @@ QList<QVariantMap> AwardPrintRenderer::collectPages(const qf::core::utils::TreeT
 	return pages;
 }
 
+QList<QVariantMap> AwardPrintRenderer::collectRunsPages(const qf::core::utils::TreeTable &tt,
+	Event::EventConfig *eventConfig) const
+{
+	QList<QVariantMap> pages;
+
+	QVariantMap eventMap = tt.value(QStringLiteral("event")).toMap();
+	QString eventName  = eventMap.value(QStringLiteral("name")).toString();
+	QString eventPlace = eventMap.value(QStringLiteral("place")).toString();
+
+	QString dateStr;
+	{
+		QDateTime dt;
+		QVariant stageStart = tt.value(QStringLiteral("stageStart"));
+		if (stageStart.isValid())
+			dt = stageStart.toDateTime();
+		if (!dt.isValid()) {
+			QVariant evDt = eventMap.value(QStringLiteral("dateTime"));
+			if (!evDt.isValid())
+				evDt = eventMap.value(QStringLiteral("date"));
+			dt = evDt.toDateTime();
+			if (!dt.isValid())
+				dt = QDateTime(evDt.toDate(), QTime());
+		}
+		if (dt.isValid())
+			dateStr = dt.toString(QStringLiteral("dd.MM.yyyy"));
+	}
+
+	QString mainReferee;
+	QString director;
+	if (eventConfig) {
+		mainReferee = eventConfig->mainReferee();
+		director    = eventConfig->director();
+	}
+
+	for (int ci = 0; ci < tt.rowCount(); ++ci) {
+		auto classRow = tt.row(ci);
+		QString className = classRow.value(QStringLiteral("name")).toString();
+		auto runnerTable = classRow.table(0);
+
+		for (int ri = 0; ri < runnerTable.rowCount(); ++ri) {
+			auto runnerRow = runnerTable.row(ri);
+
+			// stageResultsTable has integer "npos"; nstagesResultsTable has text "pos" like "1."
+			int pos = runnerRow.value(QStringLiteral("npos")).toInt();
+			if (pos <= 0) {
+				QString posText = runnerRow.value(QStringLiteral("pos")).toString();
+				if (posText.endsWith(QLatin1Char('.')))
+					pos = posText.chopped(1).toInt();
+			}
+
+			QString competitorName = runnerRow.value(QStringLiteral("competitorName")).toString();
+			QString orgName = runnerRow.value(QStringLiteral("clubs.name")).toString();
+			if (orgName.isEmpty())
+				orgName = runnerRow.value(QStringLiteral("club")).toString();
+
+			const QString posStr = (pos > 0)
+				? QString::number(pos) + QStringLiteral(". místo")
+				: QString();
+
+			QVariantMap data;
+			data[QStringLiteral("_classIdx")]        = ci;
+			data[QStringLiteral("_runnerIdx")]       = ri;
+			data[QStringLiteral("pos")]              = pos;
+			data[QStringLiteral("eventName")]        = eventName;
+			data[QStringLiteral("date")]             = dateStr;
+			data[QStringLiteral("place")]            = eventPlace;
+			data[QStringLiteral("position")]         = posStr;
+			data[QStringLiteral("category")]         = className;
+			data[QStringLiteral("positionCategory")] = posStr.isEmpty()
+				? QStringLiteral("v kategorii ") + className
+				: posStr + QStringLiteral(" v kategorii ") + className;
+			data[QStringLiteral("competitorName")]   = competitorName;
+			data[QStringLiteral("clubName")]         = orgName;
+			data[QStringLiteral("mainReferee")]      = mainReferee;
+			data[QStringLiteral("director")]         = director;
+			pages.append(data);
+		}
+	}
+	return pages;
+}
+
 QList<QImage> AwardPrintRenderer::renderToImages(const QList<QVariantMap> &pages, int dpi) const
 {
 	const qreal mmToPx = dpi / 25.4;

@@ -9,8 +9,6 @@ Report {
 	property string reportTitle: qsTr("Awards")
 	property var eventConfig
 	property var awardRenderer   // AwardQmlRenderer* passed via report_init_properties
-	property string classNameColumn: "className"  // column name for class name in class Detail rows
-	property string posColumn: "pos"              // column name for numeric position in runner/relay Detail rows
 
 	styleSheet: StyleSheet {
 		basedOn: ReportStyleCommon { id: myStyle }
@@ -45,9 +43,10 @@ Report {
 							dataFn: function() {
 								if (!root.awardRenderer)
 									return "";
-								var cls = class_detail.rowData(root.classNameColumn);
-								var pos = relay_detail.rowData(root.posColumn);
-								return root.awardRenderer.renderPageBase64(cls, pos);
+								return root.awardRenderer.renderRunPageBase64(
+									class_detail.currentIndex,
+									relay_detail.currentIndex
+								);
 							}
 						}
 					}

@@ -6,6 +6,10 @@
 #include "runstabledialogwidget.h"
 #include "eventstatisticswidget.h"
 #include "printawardsoptionsdialogwidget.h"
+
+#include <awarddesigner/awarddesign.h>
+#include <awarddesigner/awardprintrenderer.h>
+#include <awarddesigner/awardqmlrenderer.h>
 #include "services/resultsexporter.h"
 #include "partwidget.h"
 // #include "../../Competitors/src/competitorwidget.h"
@@ -1965,16 +1969,37 @@ void RunsPlugin::report_resultsAwards()
 	if(rep_path.isEmpty())
 		return;
 
+	static const QLatin1String DB_PREFIX("db:");
 	QVariantMap props;
 	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
 	auto tt = stageResultsTable(opts.value("stageId").toInt(), QString(), opts.value("numPlaces").toInt());
+
+	QString qmlFile;
+	AwardQmlRenderer *awardRenderer = nullptr;
+	if(rep_path.startsWith(DB_PREFIX)) {
+		QString design_name = rep_path.mid(DB_PREFIX.size());
+		AwardDesigner::Design design = AwardDesigner::Design::loadFromDb(design_name);
+		if(!design.isValid()) {
+			qfWarning() << "Award design not found in DB:" << design_name;
+			return;
+		}
+		AwardPrintRenderer renderer(design);
+		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		awardRenderer = new AwardQmlRenderer(design, pages, fwk);
+		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
+		qmlFile = findReportFile(QStringLiteral("award_db_design.qml"));
+	} else {
+		qmlFile = findReportFile(rep_path);
+	}
+
 	qf::gui::reports::ReportViewWidget::showReport(fwk
-								, findReportFile(rep_path)
+								, qmlFile
 								, tt.toVariant()
 								, tr("Stage awards")
 								, "printResultsAwards"
 								, props
 								);
+	delete awardRenderer;
 }
 
 void RunsPlugin::report_resultsNStages()
@@ -2041,16 +2066,37 @@ void RunsPlugin::report_nStagesAwards()
 	if(rep_path.isEmpty())
 		return;
 
+	static const QLatin1String DB_PREFIX("db:");
 	QVariantMap props;
 	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
 	auto tt = nstagesResultsTable(QString(), opts.value("stageId").toInt(), opts.value("numPlaces").toInt());
+
+	QString qmlFile;
+	AwardQmlRenderer *awardRenderer = nullptr;
+	if(rep_path.startsWith(DB_PREFIX)) {
+		QString design_name = rep_path.mid(DB_PREFIX.size());
+		AwardDesigner::Design design = AwardDesigner::Design::loadFromDb(design_name);
+		if(!design.isValid()) {
+			qfWarning() << "Award design not found in DB:" << design_name;
+			return;
+		}
+		AwardPrintRenderer renderer(design);
+		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		awardRenderer = new AwardQmlRenderer(design, pages, fwk);
+		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
+		qmlFile = findReportFile(QStringLiteral("award_db_design.qml"));
+	} else {
+		qmlFile = findReportFile(rep_path);
+	}
+
 	qf::gui::reports::ReportViewWidget::showReport(fwk
-								, findReportFile(rep_path)
+								, qmlFile
 								, tt.toVariant()
 								, tr("Awards after %1 stages").arg(opts.value("stageId").toInt())
 								, "printResultsAwardsNStages"
 								, props
 								);
+	delete awardRenderer;
 }
 
 namespace {

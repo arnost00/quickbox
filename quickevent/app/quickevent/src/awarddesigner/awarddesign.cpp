@@ -3,25 +3,45 @@
 #include <qf/core/sql/query.h>
 #include <qf/core/log.h>
 
+#include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 
 namespace AwardDesigner {
 
+#define TR(s) QCoreApplication::translate("AwardDesigner", s)
+
 QList<FieldDef> relayFields()
 {
 	return {
-		{QStringLiteral("eventName"),        QStringLiteral("Název závodu")},
-		{QStringLiteral("date"),             QStringLiteral("Datum")},
-		{QStringLiteral("place"),            QStringLiteral("Místo konání")},
-		{QStringLiteral("positionCategory"), QStringLiteral("Pořadí v kategorii")},
-		{QStringLiteral("position"),         QStringLiteral("Pořadí")},
-		{QStringLiteral("category"),         QStringLiteral("Kategorie")},
-		{QStringLiteral("clubName"),         QStringLiteral("Název štafety/klubu")},
-		{QStringLiteral("runners"),          QStringLiteral("Závodníci (seznam)")},
-		{QStringLiteral("mainReferee"),      QStringLiteral("Hlavní rozhodčí")},
-		{QStringLiteral("director"),         QStringLiteral("Ředitel závodu")},
-		{QStringLiteral("customText"),       QStringLiteral("Vlastní text")},
+		{QStringLiteral("eventName"),        TR("Název závodu")},
+		{QStringLiteral("date"),             TR("Datum")},
+		{QStringLiteral("place"),            TR("Místo konání")},
+		{QStringLiteral("positionCategory"), TR("Pořadí v kategorii")},
+		{QStringLiteral("position"),         TR("Pořadí")},
+		{QStringLiteral("category"),         TR("Kategorie")},
+		{QStringLiteral("clubName"),         TR("Název štafety/klubu")},
+		{QStringLiteral("runners"),          TR("Závodníci (seznam)")},
+		{QStringLiteral("mainReferee"),      TR("Hlavní rozhodčí")},
+		{QStringLiteral("director"),         TR("Ředitel závodu")},
+		{QStringLiteral("customText"),       TR("Vlastní text")},
+	};
+}
+
+QList<FieldDef> runsFields()
+{
+	return {
+		{QStringLiteral("eventName"),        TR("Název závodu")},
+		{QStringLiteral("date"),             TR("Datum")},
+		{QStringLiteral("place"),            TR("Místo konání")},
+		{QStringLiteral("positionCategory"), TR("Pořadí v kategorii")},
+		{QStringLiteral("position"),         TR("Pořadí")},
+		{QStringLiteral("category"),         TR("Kategorie")},
+		{QStringLiteral("competitorName"),   TR("Jméno závodníka")},
+		{QStringLiteral("clubName"),         TR("Klub")},
+		{QStringLiteral("mainReferee"),      TR("Hlavní rozhodčí")},
+		{QStringLiteral("director"),         TR("Ředitel závodu")},
+		{QStringLiteral("customText"),       TR("Vlastní text")},
 	};
 }
 
@@ -42,6 +62,7 @@ static Item makeFieldItem(const QString &fieldId, qreal x, qreal y, qreal w, qre
 Design Design::defaultRelayDesign()
 {
 	Design d;
+	d.type = QStringLiteral("relay");
 	d.pageW = 210; d.pageH = 297;
 
 	// Event name — large bold
@@ -79,6 +100,45 @@ Design Design::defaultRelayDesign()
 		15, 265, 80, 8, QStringLiteral("Arial"), 10, false);
 
 	// Director signature (right)
+	d.items << makeFieldItem(QStringLiteral("director"),
+		115, 265, 80, 8, QStringLiteral("Arial"), 10, false);
+
+	return d;
+}
+
+Design Design::defaultRunsDesign()
+{
+	Design d;
+	d.type = QStringLiteral("runs");
+	d.pageW = 210; d.pageH = 297;
+
+	d.items << makeFieldItem(QStringLiteral("eventName"),
+		15, 15, 180, 14, QStringLiteral("Arial"), 16, true);
+
+	d.items << makeFieldItem(QStringLiteral("date"),
+		15, 31, 180, 8, QStringLiteral("Arial"), 10, false, QStringLiteral("#cc0000"));
+
+	Item diplom;
+	diplom.kind = Item::Field;
+	diplom.fieldId = QStringLiteral("customText");
+	diplom.customText = QStringLiteral("Diplom");
+	diplom.x = 15; diplom.y = 52; diplom.w = 180; diplom.h = 38;
+	diplom.fontFamily = QStringLiteral("Times New Roman"); diplom.fontSize = 72;
+	diplom.color = QStringLiteral("#800000"); diplom.halign = Qt::AlignHCenter;
+	d.items << diplom;
+
+	d.items << makeFieldItem(QStringLiteral("positionCategory"),
+		15, 100, 180, 12, QStringLiteral("Arial"), 16, true);
+
+	d.items << makeFieldItem(QStringLiteral("competitorName"),
+		15, 117, 180, 12, QStringLiteral("Arial"), 16, true);
+
+	d.items << makeFieldItem(QStringLiteral("clubName"),
+		15, 133, 180, 10, QStringLiteral("Arial"), 13, false);
+
+	d.items << makeFieldItem(QStringLiteral("mainReferee"),
+		15, 265, 80, 8, QStringLiteral("Arial"), 10, false);
+
 	d.items << makeFieldItem(QStringLiteral("director"),
 		115, 265, 80, 8, QStringLiteral("Arial"), 10, false);
 
@@ -133,6 +193,7 @@ QJsonObject Design::toJson() const
 {
 	QJsonObject o;
 	o[QStringLiteral("name")] = name;
+	o[QStringLiteral("type")] = type;
 	o[QStringLiteral("pageW")] = pageW;
 	o[QStringLiteral("pageH")] = pageH;
 	QJsonArray arr;
@@ -146,6 +207,8 @@ Design Design::fromJson(const QJsonObject &o)
 {
 	Design d;
 	d.name = o[QStringLiteral("name")].toString();
+	// default "relay" for backward compat — old designs had no type field
+	d.type = o[QStringLiteral("type")].toString(QStringLiteral("relay"));
 	d.pageW = o[QStringLiteral("pageW")].toDouble(210);
 	d.pageH = o[QStringLiteral("pageH")].toDouble(297);
 	for (const auto &v : o[QStringLiteral("items")].toArray())
@@ -196,14 +259,25 @@ Design Design::loadFromDb(const QString &name)
 	return Design{};
 }
 
-QStringList Design::listFromDb()
+QStringList Design::listFromDb(const QString &type)
 {
 	qf::core::sql::Query q;
-	q.exec(QStringLiteral("SELECT ckey FROM config WHERE ckey LIKE 'awards.design.%' ORDER BY ckey"));
+	q.exec(QStringLiteral("SELECT ckey, cvalue FROM config WHERE ckey LIKE 'awards.design.%' ORDER BY ckey"));
 	QStringList names;
 	const int prefixLen = QStringLiteral("awards.design.").length();
-	while (q.next())
+	while (q.next()) {
+		if (!type.isEmpty()) {
+			QJsonParseError err;
+			auto doc = QJsonDocument::fromJson(q.value(1).toString().toUtf8(), &err);
+			if (err.error != QJsonParseError::NoError)
+				continue;
+			// default "relay" for backward compat
+			QString t = doc.object().value(QStringLiteral("type")).toString(QStringLiteral("relay"));
+			if (t != type)
+				continue;
+		}
 		names << q.value(0).toString().mid(prefixLen);
+	}
 	return names;
 }
 

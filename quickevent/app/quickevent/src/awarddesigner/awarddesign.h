@@ -13,6 +13,7 @@ struct FieldDef {
 };
 
 QList<FieldDef> relayFields();
+QList<FieldDef> runsFields();
 
 struct Item {
 	enum Kind { Image = 0, Field = 1 };
@@ -46,6 +47,7 @@ struct Item {
 
 struct Design {
 	QString name;
+	QString type; // "relay" or "runs"; empty = treat as "relay" (backward compat)
 	qreal pageW = 210;
 	qreal pageH = 297;
 	QList<Item> items;
@@ -55,7 +57,8 @@ struct Design {
 
 	bool saveToDb() const;
 	static Design loadFromDb(const QString &name);
-	static QStringList listFromDb();
+	// type filter: "relay", "runs", or QString() for all
+	static QStringList listFromDb(const QString &type = QString());
 	static bool deleteFromDb(const QString &name);
 
 	static QString dbKey(const QString &name)
@@ -66,6 +69,7 @@ struct Design {
 	bool isValid() const { return !name.isEmpty(); }
 
 	static Design defaultRelayDesign();
+	static Design defaultRunsDesign();
 };
 
 } // namespace AwardDesigner

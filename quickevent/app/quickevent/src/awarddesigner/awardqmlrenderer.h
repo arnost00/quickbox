@@ -12,12 +12,16 @@ public:
 		const QList<QVariantMap> &pages,
 		QObject *parent = nullptr);
 
-	// Called from QML dataFn — key identifies the relay page
+	// Called from QML dataFn for Relays — key is "className|pos"
 	Q_INVOKABLE QString renderPageBase64(const QString &className, int pos);
+	// Called from QML dataFn for Runs — key is "classIdx|runnerIdx" (Detail.currentIndex)
+	Q_INVOKABLE QString renderRunPageBase64(int classIdx, int runnerIdx);
 
 private:
 	AwardDesigner::Design m_design;
-	QMap<QString, QVariantMap> m_pageMap; // "className|pos" → data
+	QMap<QString, QVariantMap> m_pageMap;    // "className|pos" → data (Relays)
+	QMap<QString, QVariantMap> m_runPageMap; // "ci|ri" → data (Runs)
 
 	static QString pageKey(const QString &className, int pos);
+	static QString runPageKey(int ci, int ri);
 };

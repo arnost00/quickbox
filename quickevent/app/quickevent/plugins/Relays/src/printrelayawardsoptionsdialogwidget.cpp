@@ -40,7 +40,7 @@ void PrintRelayAwardsOptionsDialogWidget::refreshTemplateList()
 	}
 
 	// DB-stored designer templates
-	for (const QString &name : AwardDesigner::Design::listFromDb()) {
+	for (const QString &name : AwardDesigner::Design::listFromDb(QStringLiteral("relay"))) {
 		ui->edReportPath->addItem(QStringLiteral("★ ") + name,
 			QString(DB_PREFIX) + name);
 	}
@@ -84,7 +84,7 @@ void PrintRelayAwardsOptionsDialogWidget::onDesignerClicked()
 		design = AwardDesigner::Design::loadFromDb(name);
 	}
 
-	AwardDesignerDialog dlg(AwardDesigner::relayFields(), this);
+	AwardDesignerDialog dlg(AwardDesigner::relayFields(), AwardDesigner::Design::defaultRelayDesign(), this);
 	if (design.isValid())
 		dlg.loadDesign(design);
 	dlg.exec();

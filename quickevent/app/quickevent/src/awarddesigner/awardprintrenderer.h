@@ -15,8 +15,12 @@ class AwardPrintRenderer
 public:
 	explicit AwardPrintRenderer(const AwardDesigner::Design &design);
 
-	// Collect per-relay data maps from the TreeTable
+	// Collect per-relay data maps from the relay results TreeTable
 	QList<QVariantMap> collectPages(const qf::core::utils::TreeTable &tt,
+		Event::EventConfig *eventConfig) const;
+
+	// Collect per-runner data maps from the stage results TreeTable
+	QList<QVariantMap> collectRunsPages(const qf::core::utils::TreeTable &tt,
 		Event::EventConfig *eventConfig) const;
 
 	// Render pages to QImage list at given DPI

@@ -17,6 +17,7 @@ class AwardDesignerDialog : public QDialog
 	Q_OBJECT
 public:
 	explicit AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &availableFields,
+		const AwardDesigner::Design &defaultDesign,
 		QWidget *parent = nullptr);
 	~AwardDesignerDialog() override;
 
@@ -45,6 +46,7 @@ private:
 	Ui::AwardDesignerDialog *ui;
 	AwardDesignerScene *m_scene;
 	QList<AwardDesigner::FieldDef> m_availableFields;
+	QString m_designType;
 	AwardSceneItem *m_selectedItem = nullptr;
 	bool m_updatingProps = false;
 	QString m_colorHex = QStringLiteral("#000000");
