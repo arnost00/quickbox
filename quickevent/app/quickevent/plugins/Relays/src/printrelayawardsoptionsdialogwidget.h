@@ -17,6 +17,11 @@ public:
 
 	QVariantMap printOptions() const;
 	void setPrintOptions(const QVariantMap &opts);
+
+	void refreshTemplateList();
+
 private:
+	void onDesignerClicked();
+
 	Ui::PrintRelayAwardsOptionsDialogWidget *ui;
 };

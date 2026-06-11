@@ -6,6 +6,10 @@
 #include "relaysplugin.h"
 #include "printrelayawardsoptionsdialogwidget.h"
 #include "partwidget.h"
+
+#include <awarddesigner/awarddesign.h>
+#include <awarddesigner/awardprintrenderer.h>
+#include <awarddesigner/awardqmlrenderer.h>
 #include "relaystableitemdelegate.h"
 
 #include <plugins/Event/src/eventplugin.h>
@@ -588,16 +592,40 @@ void RelaysWidget::print_results_awards()
 	if(rep_path.isEmpty())
 		return;
 
-	QVariantMap props;
-	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
 	int num_places = s_opts.value("numPlaces", 3).toInt();
 	auto td = getPlugin<RelaysPlugin>()->nLegsResultsTable(QString(), 999, num_places, true);
+
+	static const QLatin1String DB_PREFIX("db:");
+	QVariantMap props;
+	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
+
+	QString qmlFile;
+	AwardQmlRenderer *awardRenderer = nullptr;
+
+	if(rep_path.startsWith(DB_PREFIX)) {
+		QString design_name = rep_path.mid(DB_PREFIX.size());
+		AwardDesigner::Design design = AwardDesigner::Design::loadFromDb(design_name);
+		if(!design.isValid()) {
+			qfWarning() << "Award design not found in DB:" << design_name;
+			return;
+		}
+		AwardPrintRenderer renderer(design);
+		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
+		awardRenderer = new AwardQmlRenderer(design, pages, this);
+		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
+		qmlFile = getPlugin<RelaysPlugin>()->findReportFile(QStringLiteral("award_db_design.qml"));
+	} else {
+		qmlFile = getPlugin<RelaysPlugin>()->findReportFile(rep_path);
+	}
+
 	qf::gui::reports::ReportViewWidget::showReport(this,
-		getPlugin<RelaysPlugin>()->findReportFile(rep_path),
+		qmlFile,
 		td.toVariant(),
 		tr("Awards"),
 		"relaysAwards",
 		props);
+
+	delete awardRenderer;
 }
 
 void RelaysWidget::save_xml_file(QString str, QString fn) {

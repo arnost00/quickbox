@@ -7,17 +7,17 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>100</height>
+    <height>130</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Print Relay Awards</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Number of places in each class</string>
+      <string>Počet oceněných míst:</string>
      </property>
     </widget>
    </item>
@@ -40,18 +40,40 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Awards report</string>
+      <string>Šablona diplomu:</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QComboBox" name="edReportPath"/>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QComboBox" name="edReportPath">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnDesigner">
+       <property name="text">
+        <string>Designer...</string>
+       </property>
+       <property name="toolTip">
+        <string>Otevřít designer diplomů</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
  <tabstops>
   <tabstop>edNumPlaces</tabstop>
   <tabstop>edReportPath</tabstop>
+  <tabstop>btnDesigner</tabstop>
  </tabstops>
  <resources/>
  <connections/>

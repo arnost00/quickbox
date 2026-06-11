@@ -187,6 +187,18 @@ add_executable(quickevent
 	plugins/Runs/Runs.qrc
 	plugins/CardReader/CardReader.qrc
 
+	src/awarddesigner/awarddesign.h
+	src/awarddesigner/awarddesign.cpp
+	src/awarddesigner/awarddesignerscene.h
+	src/awarddesigner/awarddesignerscene.cpp
+	src/awarddesigner/awarddesignerdialog.h
+	src/awarddesigner/awarddesignerdialog.cpp
+	src/awarddesigner/awarddesignerdialog.ui
+	src/awarddesigner/awardprintrenderer.h
+	src/awarddesigner/awardprintrenderer.cpp
+	src/awarddesigner/awardqmlrenderer.h
+	src/awarddesigner/awardqmlrenderer.cpp
+
 	src/appclioptions.cpp
 	src/application.cpp
 	src/loggerwidget.cpp
