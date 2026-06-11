@@ -139,8 +139,8 @@ void ReportItemImage::updateResolvedDataSource()
 			m_resolvedDataSource = qfu::FileUtils::joinPath(qfu::FileUtils::path(processor()->reportUrl().toString()), m_resolvedDataSource);
 			static const auto FILE_SCHEME = QStringLiteral("file:");
 			if(m_resolvedDataSource.startsWith(FILE_SCHEME)) {
-				// path like file:/path/to/file.svg is not recognized by QSvgRenderer
-				m_resolvedDataSource = m_resolvedDataSource.mid(FILE_SCHEME.length());
+				// QUrl::toLocalFile() handles Windows (file:///D:/...) and Unix (file:///path/...) correctly
+				m_resolvedDataSource = QUrl(m_resolvedDataSource).toLocalFile();
 			}
 		}
 		/*--
