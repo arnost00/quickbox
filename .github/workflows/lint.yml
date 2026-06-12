@@ -15,7 +15,7 @@ jobs:
       CXX: clang++
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@latest
         with:
           submodules: true
           
@@ -33,7 +33,7 @@ jobs:
       CXX: clang++
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@latest
         with:
           submodules: true
 
