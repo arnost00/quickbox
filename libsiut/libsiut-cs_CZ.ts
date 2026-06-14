@@ -131,17 +131,17 @@ Seznam dostupných portů:
         <translation>Přijata nevalidní data, odstraňuji %1 znaků ze začátku vyrovnávací paměti</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="140"/>
+        <location filename="src/device/sidevicedriver.cpp" line="142"/>
         <source>NAK received</source>
         <translation>Přijato NAK</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="146"/>
+        <location filename="src/device/sidevicedriver.cpp" line="147"/>
         <source>Legacy protocol is not supported, switch station to extended one.</source>
         <translation>Legacy protokol není podporován, přepněte jednotku na extended protokol.</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="153"/>
+        <location filename="src/device/sidevicedriver.cpp" line="154"/>
         <source>Valid message shall end with ETX or NAK, throwing data away</source>
         <translation>Validní zpráva musí končit s ETX nebo NAK, přeskakuji data</translation>
     </message>

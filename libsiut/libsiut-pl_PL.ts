@@ -131,17 +131,17 @@ Lista dostępnych portów:
         <translation>Odebrano nieprawidłowe dane, pominięto %1 znaków z początku bufora</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="140"/>
+        <location filename="src/device/sidevicedriver.cpp" line="142"/>
         <source>NAK received</source>
         <translation>odebrano NAK</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="146"/>
+        <location filename="src/device/sidevicedriver.cpp" line="147"/>
         <source>Legacy protocol is not supported, switch station to extended one.</source>
         <translation>Stary protokół nie jest obsługiwany, przełącz stację na rozszerzony protokół.</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="153"/>
+        <location filename="src/device/sidevicedriver.cpp" line="154"/>
         <source>Valid message shall end with ETX or NAK, throwing data away</source>
         <translation>Poprawny komunikat musi kończyć się ATX lub NAK, dane zostały odrzucone.</translation>
     </message>

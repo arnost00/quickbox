@@ -131,17 +131,17 @@ List of accessible ports:
         <translation>Отримано Garbage, видалення %1 символів від початку буфера</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="140"/>
+        <location filename="src/device/sidevicedriver.cpp" line="142"/>
         <source>NAK received</source>
         <translation>отримано НАК</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="146"/>
+        <location filename="src/device/sidevicedriver.cpp" line="147"/>
         <source>Legacy protocol is not supported, switch station to extended one.</source>
         <translation>Старий протокол не підтримується, перемкніть станцію на розширений.</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="153"/>
+        <location filename="src/device/sidevicedriver.cpp" line="154"/>
         <source>Valid message shall end with ETX or NAK, throwing data away</source>
         <translation>Коректне повідомлення закінчується ETX або NAK, дані відкинуто</translation>
     </message>
