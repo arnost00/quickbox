@@ -4,6 +4,7 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include <QList>
 #include <QPointer>
 
 namespace qf {
@@ -40,6 +41,7 @@ public:
 	~PartSwitch() Q_DECL_OVERRIDE;
 public:
 	void addPartWidget(PartWidget *widget);
+	void setPartVisible(int part_index, bool visible);
 
 	Q_SIGNAL void partActivated(int ix, bool is_active);
 	void setCurrentPartIndex(int ix, bool is_active = true);
@@ -49,6 +51,7 @@ private:
 private:
 	QPointer<StackedCentralWidget> m_centralWidget;
 	int m_currentPartIndex;
+	QList<QAction*> m_partActions;
 };
 
 }}}
