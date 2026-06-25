@@ -126,26 +126,24 @@ void PunchingTestService::onTimerTick()
 	int si_finish_sec = toSiSec(abs_finish_ms);
 
 	auto &rng = *QRandomGenerator::global();
+	const PunchingTestServiceSettings ss = settings();
 
-	// 1/100: simulate unknown card — use a random number outside normal SI range
-	if (rng.bounded(100u) == 0)
+	if (rng.bounded(static_cast<quint32>(ss.unknownCardRate())) == 0)
 		si_id = 1000000 + static_cast<int>(rng.bounded(8000000u));
 
-	// 1/80: missing start punch — runner didn't use start unit
-	if (rng.bounded(80u) == 0)
+	if (rng.bounded(static_cast<quint32>(ss.missingStartRate())) == 0)
 		si_start_sec = siut::SICard::INVALID_SI_TIME;
 
-	// 1/250: missing finish punch
-	if (rng.bounded(250u) == 0)
+	if (rng.bounded(static_cast<quint32>(ss.missingFinishRate())) == 0)
 		si_finish_sec = siut::SICard::INVALID_SI_TIME;
 
 	// Check time: respect the event's "Card check" max-advance setting.
-	// When enabled: 1/20 chance the runner checked too early (offset > max, triggers bad-check).
+	// When enabled: 1/badCheckRate chance the runner checked too early (triggers bad-check).
 	// When disabled: natural 1–2 minute window, no bad-check possible.
 	int check_offset_sec;
 	if (auto cfg = event_plugin->eventConfig()->maximumCardCheckAdvanceSec(); cfg.has_value()) {
 		int max_sec = cfg.value();
-		if (rng.bounded(1800u) == 0) {
+		if (rng.bounded(static_cast<quint32>(ss.badCheckRate())) == 0) {
 			// Bad check: checked too early — [max+1, max*3] seconds before start
 			check_offset_sec = max_sec + 1 + static_cast<int>(rng.bounded(static_cast<quint32>(max_sec * 2)));
 		} else {
@@ -209,8 +207,7 @@ void PunchingTestService::onTimerTick()
 	double cumulative_w = 0.0;
 	for (int k = 0; k < n_controls; ++k) {
 		cumulative_w += weights[k];
-		// 1/930: mispunch — skip this control entirely
-		if (rng.bounded(930u) == 0)
+		if (rng.bounded(static_cast<quint32>(ss.mispunchRate())) == 0)
 			continue;
 		quickevent::core::CodeDef cd(codes[k].toMap());
 		double t     = cumulative_w / total_weight;
@@ -220,8 +217,8 @@ void PunchingTestService::onTimerTick()
 		punches << QVariant(static_cast<QVariantMap>(punch));
 	}
 
-	// 1/30: extra punch — a wrong control inserted at a chronologically correct position
-	if (rng.bounded(30u) == 0) {
+	// Extra punch: a wrong control inserted at a chronologically correct position
+	if (rng.bounded(static_cast<quint32>(ss.extraPunchRate())) == 0) {
 		QSet<int> course_codes;
 		for (const auto &v : punches)
 			course_codes.insert(siut::SIPunch(v.toMap()).code());
