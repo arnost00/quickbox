@@ -7382,13 +7382,27 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <oldsource>Edit Competitor</oldsource>
         <translation>Upravit kategorii</translation>
     </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/classitem.cpp" line="265"/>
+        <source>Drag the class to move it to another slot,&lt;br/&gt;right-click to edit its definition.</source>
+        <translation>Kategorii přesuneš do jiného řádku přetažením,&lt;br/&gt;pravý klik otevře úpravu její definice.</translation>
+    </message>
 </context>
 <context>
     <name>drawing::ClassdefsLockItem</name>
     <message>
-        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="29"/>
-        <source>Lock class start time</source>
-        <translation>Uzamknout startovní čas kategorie</translation>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="35"/>
+        <source>Clash check is OFF for this slot.
+Click to check start time clashes of this slot's classes again.</source>
+        <translation>Kontrola kolizí je pro tento řádek vypnutá.
+Kliknutím kontrolu kolizí startů znovu zapneš.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="37"/>
+        <source>Clash check is ON for this slot.
+Click to exclude this slot's classes from start time clash checks.</source>
+        <translation>Kontrola kolizí je pro tento řádek zapnutá.
+Kliknutím vyloučíš kategorie v tomto řádku z kontroly kolizí startů.</translation>
     </message>
 </context>
 <context>
@@ -7440,20 +7454,142 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
     </message>
     <message>
         <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="102"/>
-        <source>All the user edited classes start times will be overridden.
+        <source>All the user edited classes start times and start intervals will be overridden.
 Do you want to save your changes?</source>
-        <oldsource>All the user edited class start times will be overrided.
+        <oldsource>All the user edited classes start times will be overridden.
 Do you want to save your changes?</oldsource>
-        <translation>Startovní časy všech kategorií budou přepsány.
+        <translation>Startovní časy a intervaly všech kategorií budou přepsány.
 Přejete si uložit změny?</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="35"/>
+        <source>Write start times and start slots of all classes back to the Classes table
+according to the current layout.</source>
+        <translation>Zapíše startovní časy a startovní řádky všech kategorií zpět do tabulky kategorií
+podle aktuálního rozvržení.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="36"/>
+        <source>Find class by name</source>
+        <translation>Najít kategorii podle názvu</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="53"/>
+        <source>Class</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="61"/>
+        <source>Highlight classes overlapping in time which share the first control
+and whose start intervals would let two runners punch it at the same moment.</source>
+        <translation>Zvýrazní kategorie překrývající se v čase, které sdílejí první kontrolu
+a jejichž startovní intervaly by dovolily, aby na ní razili dva závodníci současně.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="63"/>
+        <source>Highlight classes overlapping in time which run on the same course.</source>
+        <translation>Zvýrazní kategorie překrývající se v čase, které běží na stejné trati.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="95"/>
+        <source>Show all conflicts</source>
+        <translation>Zobrazit všechny konflikty</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="120"/>
+        <source>Unsaved changes</source>
+        <translation>Neuložené změny</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="121"/>
+        <source>The start times layout has unsaved changes.
+Do you want to save them before closing?</source>
+        <translation>Rozvržení startů má neuložené změny.
+Přejete si je před zavřením uložit?</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="195"/>
+        <source>Show all conflicts (%1)</source>
+        <translation>Zobrazit všechny konflikty (%1)</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="175"/>
+        <source>No conflicts</source>
+        <translation>Žádné konflikty</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="48"/>
+        <source>Show the list of start time conflicts</source>
+        <translation>Zobrazit seznam konfliktů startů</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="49"/>
+        <source>Click a conflict to highlight it in the layout</source>
+        <translation>Kliknutím na konflikt ho zvýrazníš v rozvržení</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="166"/>
+        <source>%1 × %2 — same course %3</source>
+        <translation>%1 × %2 — stejná trať %3</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/drawingganttwidget.cpp" line="168"/>
+        <source>%1 × %2 — first control %3</source>
+        <translation>%1 × %2 — první kontrola %3</translation>
     </message>
 </context>
 <context>
     <name>drawing::StartSlotHeader</name>
     <message>
-        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="87"/>
-        <source>Use mouse wheel to change start slot offset</source>
-        <translation>Použij kolečko myši pro posunutí startu v řádku</translation>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="97"/>
+        <source>Start time of the first class in this slot [min].
+Use mouse wheel to change it, or right-click the slot header for more options.</source>
+        <oldsource>Use mouse wheel to change start slot offset</oldsource>
+        <translation>Start první kategorie v tomto řádku [min].
+Změníš ho kolečkem myši, další možnosti nabídne pravý klik na hlavičku řádku.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="125"/>
+        <source>Start slot: drag the header to reorder slots,
+right-click for more options.</source>
+        <translation>Startovní řádek: přetažením hlavičky změníš pořadí řádků,
+pravý klik nabídne další možnosti.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="195"/>
+        <source>Move the slot start 1 minute earlier</source>
+        <translation>Posune start řádku o 1 minutu dříve</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="195"/>
+        <source>Move the slot start 1 minute later</source>
+        <translation>Posune start řádku o 1 minutu později</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="290"/>
+        <source>Start interval of classes in this slot [min].
+Use mouse wheel to change it, the value is set to all classes in the slot.</source>
+        <translation>Startovní interval kategorií v tomto řádku [min].
+Změníš ho kolečkem myši, hodnota se nastaví všem kategoriím v řádku.</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="291"/>
+        <source>Decrease the start interval by 1 minute</source>
+        <translation>Zmenší startovní interval o 1 minutu</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="292"/>
+        <source>Increase the start interval by 1 minute</source>
+        <translation>Zvětší startovní interval o 1 minutu</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="375"/>
+        <source>Classes in this slot have different start intervals (%1),
+editing is disabled.</source>
+        <oldsource>Classes in this slot have different start intervals,
+editing is disabled.</oldsource>
+        <translation>Kategorie v tomto řádku mají různé startovní intervaly (%1),
+úprava je vypnutá.</translation>
     </message>
     <message>
         <location filename="plugins/Classes/src/drawing/startslotheader.cpp" line="161"/>
