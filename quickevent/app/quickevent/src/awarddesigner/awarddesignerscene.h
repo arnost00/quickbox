@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
 
 class QGraphicsRectItem;
 
@@ -76,6 +77,9 @@ public:
 
 Q_SIGNALS:
 	void selectedItemChanged(AwardSceneItem *item); // nullptr when none/multi
+
+protected:
+	void keyPressEvent(QKeyEvent *event) override;
 
 private Q_SLOTS:
 	void onSelectionChanged();

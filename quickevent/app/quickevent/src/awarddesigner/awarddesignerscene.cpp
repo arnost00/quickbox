@@ -386,6 +386,16 @@ AwardSceneItem *AwardDesignerScene::selectedSceneItem() const
 	return nullptr;
 }
 
+void AwardDesignerScene::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Delete) {
+		deleteSelected();
+		event->accept();
+		return;
+	}
+	QGraphicsScene::keyPressEvent(event);
+}
+
 void AwardDesignerScene::onSelectionChanged()
 {
 	emit selectedItemChanged(selectedSceneItem());
