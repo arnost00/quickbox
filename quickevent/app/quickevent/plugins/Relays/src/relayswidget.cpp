@@ -611,7 +611,7 @@ void RelaysWidget::print_results_awards()
 		}
 		AwardPrintRenderer renderer(design);
 		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
-		awardRenderer = new AwardQmlRenderer(design, pages, this);
+		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
 		qmlFile = getPlugin<RelaysPlugin>()->findReportFile(QStringLiteral("award_db_design.qml"));
 	} else {

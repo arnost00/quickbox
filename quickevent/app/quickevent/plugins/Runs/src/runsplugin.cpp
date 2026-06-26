@@ -1985,7 +1985,7 @@ void RunsPlugin::report_resultsAwards()
 		}
 		AwardPrintRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
-		awardRenderer = new AwardQmlRenderer(design, pages, fwk);
+		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
 		qmlFile = findReportFile(QStringLiteral("award_db_design.qml"));
 	} else {
@@ -2082,7 +2082,7 @@ void RunsPlugin::report_nStagesAwards()
 		}
 		AwardPrintRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
-		awardRenderer = new AwardQmlRenderer(design, pages, fwk);
+		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
 		qmlFile = findReportFile(QStringLiteral("award_db_design.qml"));
 	} else {
