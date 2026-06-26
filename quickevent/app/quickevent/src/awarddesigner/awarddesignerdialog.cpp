@@ -23,6 +23,7 @@ AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &a
 	ui->setupUi(this);
 
 	m_scene = new AwardDesignerScene(this);
+	m_scene->setAvailableFields(m_availableFields);
 	ui->graphicsView->setScene(m_scene);
 	ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	ui->graphicsView->setDragMode(QGraphicsView::NoDrag);

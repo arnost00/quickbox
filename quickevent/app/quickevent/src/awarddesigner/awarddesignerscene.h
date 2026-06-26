@@ -54,7 +54,7 @@ private:
 	void applyResize(const QPointF &scenePos);
 
 	void ensurePixmap();
-	static QString fieldLabel(const QString &fieldId);
+	QString fieldLabel(const QString &fieldId) const;
 };
 
 class AwardDesignerScene : public QGraphicsScene
@@ -65,6 +65,9 @@ public:
 
 	void loadDesign(const AwardDesigner::Design &design);
 	AwardDesigner::Design collectDesign(const QString &name = QString()) const;
+
+	void setAvailableFields(const QList<AwardDesigner::FieldDef> &fields);
+	const QList<AwardDesigner::FieldDef> &availableFields() const { return m_availableFields; }
 
 	void addDesignItem(const AwardDesigner::Item &item);
 	void deleteSelected();
@@ -83,4 +86,5 @@ private:
 	qreal m_pageH = 297;
 	QGraphicsRectItem *m_pageRect = nullptr;
 	QList<AwardSceneItem *> m_items;
+	QList<AwardDesigner::FieldDef> m_availableFields;
 };

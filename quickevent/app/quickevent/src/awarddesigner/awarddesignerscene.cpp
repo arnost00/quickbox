@@ -296,9 +296,13 @@ void AwardSceneItem::ensurePixmap()
 		m_pixmap.load(m_item.imagePath);
 }
 
-QString AwardSceneItem::fieldLabel(const QString &fieldId)
+QString AwardSceneItem::fieldLabel(const QString &fieldId) const
 {
-	for (const auto &fd : AwardDesigner::relayFields()) {
+	const auto *s = qobject_cast<const AwardDesignerScene *>(scene());
+	const QList<AwardDesigner::FieldDef> &fields = s
+		? s->availableFields()
+		: AwardDesigner::relayFields();
+	for (const auto &fd : fields) {
 		if (fd.id == fieldId)
 			return QStringLiteral("[") + fd.label + QStringLiteral("]");
 	}
@@ -317,6 +321,13 @@ AwardDesignerScene::AwardDesignerScene(QObject *parent)
 	m_pageRect->setZValue(-1);
 
 	connect(this, &QGraphicsScene::selectionChanged, this, &AwardDesignerScene::onSelectionChanged);
+}
+
+void AwardDesignerScene::setAvailableFields(const QList<AwardDesigner::FieldDef> &fields)
+{
+	m_availableFields = fields;
+	for (auto *item : m_items)
+		item->update();
 }
 
 void AwardDesignerScene::loadDesign(const AwardDesigner::Design &design)
