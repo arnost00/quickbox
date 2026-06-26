@@ -107,17 +107,17 @@ void PunchingTestService::onTimerTick()
 
 	if (start_time_ms <= 0) {
 		// Runner has no drawn start — place randomly within the past 60 minutes
-		start_time_ms = static_cast<int>(QRandomGenerator::global()->bounded(60u * 60u * 1000u));
+		start_time_ms = static_cast<int>(QRandomGenerator::global()->bounded(60U * 60U * 1000U));
 	}
 
 	int abs_start_ms  = stage_start_ms + start_time_ms;
 	// Finish 20..30 minutes after start
-	int running_ms    = (20 * 60 + static_cast<int>(QRandomGenerator::global()->bounded(10u * 60u))) * 1000;
+	int running_ms    = (20 * 60 + static_cast<int>(QRandomGenerator::global()->bounded(10U * 60U))) * 1000;
 	int abs_finish_ms = abs_start_ms + running_ms;
 
 	// SI card times are in seconds within 12-hour AM window (0..43199)
 	static constexpr int SI_HALF_DAY_SEC = 12 * 3600;
-	auto toSiSec = [SI_HALF_DAY_SEC](int abs_ms) {
+	auto toSiSec = [](int abs_ms) {
 		// Use positive modulo to handle pre-midnight edge cases
 		return ((abs_ms / 1000) % SI_HALF_DAY_SEC + SI_HALF_DAY_SEC) % SI_HALF_DAY_SEC;
 	};
@@ -129,7 +129,7 @@ void PunchingTestService::onTimerTick()
 	const PunchingTestServiceSettings ss = settings();
 
 	if (rng.bounded(static_cast<quint32>(ss.unknownCardRate())) == 0)
-		si_id = 1000000 + static_cast<int>(rng.bounded(8000000u));
+		si_id = 1000000 + static_cast<int>(rng.bounded(8000000U));
 
 	if (rng.bounded(static_cast<quint32>(ss.missingStartRate())) == 0)
 		si_start_sec = siut::SICard::INVALID_SI_TIME;
@@ -150,7 +150,7 @@ void PunchingTestService::onTimerTick()
 			check_offset_sec = 1 + static_cast<int>(rng.bounded(static_cast<quint32>(max_sec)));
 		}
 	} else {
-		check_offset_sec = 60 + static_cast<int>(rng.bounded(60u)); // 1–2 minutes
+		check_offset_sec = 60 + static_cast<int>(rng.bounded(60U)); // 1–2 minutes
 	}
 	int si_check_sec = toSiSec(abs_start_ms - check_offset_sec * 1000);
 
