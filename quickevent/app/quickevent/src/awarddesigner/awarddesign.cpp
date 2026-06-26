@@ -228,14 +228,20 @@ bool Design::saveToDb() const
 	q_up.prepare(QStringLiteral("UPDATE config SET cvalue=:val WHERE ckey=:key"));
 	q_up.bindValue(QStringLiteral(":key"), key);
 	q_up.bindValue(QStringLiteral(":val"), json);
-	q_up.exec();
+	if (!q_up.exec()) {
+		qfWarning() << "Failed to update award design in DB:" << q_up.lastErrorText();
+		return false;
+	}
 	if (q_up.numRowsAffected() < 1) {
 		qf::core::sql::Query q_ins;
 		q_ins.prepare(QStringLiteral("INSERT INTO config(ckey, cname, cvalue, ctype) VALUES(:key, :cname, :val, 'QString')"));
 		q_ins.bindValue(QStringLiteral(":key"), key);
 		q_ins.bindValue(QStringLiteral(":cname"), QStringLiteral("Award design: ") + name);
 		q_ins.bindValue(QStringLiteral(":val"), json);
-		q_ins.exec();
+		if (!q_ins.exec()) {
+			qfWarning() << "Failed to insert award design into DB:" << q_ins.lastErrorText();
+			return false;
+		}
 	}
 	return true;
 }

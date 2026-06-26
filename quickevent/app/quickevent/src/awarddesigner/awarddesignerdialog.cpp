@@ -193,6 +193,9 @@ void AwardDesignerDialog::onSaveDesignClicked()
 	if (d.saveToDb())
 		QMessageBox::information(this, tr("Uložit návrh"),
 			tr("Návrh '%1' byl uložen do databáze.").arg(name));
+	else
+		QMessageBox::critical(this, tr("Uložit návrh"),
+			tr("Návrh '%1' se nepodařilo uložit do databáze.").arg(name));
 }
 
 void AwardDesignerDialog::onLoadDesignClicked()
@@ -226,7 +229,11 @@ void AwardDesignerDialog::accept()
 	if (!name.isEmpty()) {
 		AwardDesigner::Design d = m_scene->collectDesign(name);
 		d.type = m_designType;
-		d.saveToDb();
+		if (!d.saveToDb()) {
+			QMessageBox::critical(this, tr("Uložit návrh"),
+				tr("Návrh '%1' se nepodařilo uložit do databáze.").arg(name));
+			return;
+		}
 	}
 	QDialog::accept();
 }
