@@ -173,11 +173,32 @@ QList<QVariantMap> AwardPrintRenderer::collectRunsPages(const qf::core::utils::T
 	return pages;
 }
 
+QHash<QString, QPixmap> AwardPrintRenderer::buildPixmapCache() const
+{
+	QHash<QString, QPixmap> cache;
+	for (const auto &item : m_design.items) {
+		if (item.kind == AwardDesigner::Item::Image && !item.imagePath.isEmpty()
+				&& !cache.contains(item.imagePath)) {
+			QPixmap pm;
+			pm.load(item.imagePath);
+			cache.insert(item.imagePath, pm);
+		}
+	}
+	return cache;
+}
+
 QList<QImage> AwardPrintRenderer::renderToImages(const QList<QVariantMap> &pages, int dpi) const
 {
 	const qreal mmToPx = dpi / 25.4;
 	const int pw = qRound(m_design.pageW * mmToPx);
 	const int ph = qRound(m_design.pageH * mmToPx);
+
+	QList<AwardDesigner::Item> sorted = m_design.items;
+	std::stable_sort(sorted.begin(), sorted.end(),
+		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
+			return a.zOrder < b.zOrder;
+		});
+	const QHash<QString, QPixmap> pixmaps = buildPixmapCache();
 
 	QList<QImage> images;
 	images.reserve(pages.size());
@@ -191,7 +212,7 @@ QList<QImage> AwardPrintRenderer::renderToImages(const QList<QVariantMap> &pages
 		QPainter painter(&img);
 		painter.setRenderHint(QPainter::Antialiasing);
 		painter.setRenderHint(QPainter::TextAntialiasing);
-		renderPage(painter, data, QRectF(0, 0, pw, ph), mmToPx);
+		renderPage(painter, data, QRectF(0, 0, pw, ph), mmToPx, sorted, pixmaps);
 		painter.end();
 		images.append(std::move(img));
 	}
@@ -200,6 +221,13 @@ QList<QImage> AwardPrintRenderer::renderToImages(const QList<QVariantMap> &pages
 
 void AwardPrintRenderer::renderToPrinter(QPrinter &printer, const QList<QVariantMap> &pages) const
 {
+	QList<AwardDesigner::Item> sorted = m_design.items;
+	std::stable_sort(sorted.begin(), sorted.end(),
+		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
+			return a.zOrder < b.zOrder;
+		});
+	const QHash<QString, QPixmap> pixmaps = buildPixmapCache();
+
 	QPainter painter(&printer);
 	const QRectF pageRect = printer.pageLayout().paintRectPixels(printer.resolution());
 	const qreal mmToPx = printer.resolution() / 25.4;
@@ -207,25 +235,23 @@ void AwardPrintRenderer::renderToPrinter(QPrinter &printer, const QList<QVariant
 	for (int i = 0; i < pages.count(); ++i) {
 		if (i > 0)
 			printer.newPage();
-		renderPage(painter, pages.at(i), pageRect, mmToPx);
+		renderPage(painter, pages.at(i), pageRect, mmToPx, sorted, pixmaps);
 	}
 	painter.end();
 }
 
 void AwardPrintRenderer::renderPage(QPainter &painter, const QVariantMap &data,
-	const QRectF &pageRect, qreal mmToPx) const
+	const QRectF &pageRect, qreal mmToPx,
+	const QList<AwardDesigner::Item> &sortedItems,
+	const QHash<QString, QPixmap> &pixmaps) const
 {
-	QList<AwardDesigner::Item> sorted = m_design.items;
-	std::stable_sort(sorted.begin(), sorted.end(),
-		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
-			return a.zOrder < b.zOrder;
-		});
-	for (const auto &item : sorted)
-		renderItem(painter, item, data, pageRect, mmToPx);
+	for (const auto &item : sortedItems)
+		renderItem(painter, item, data, pageRect, mmToPx, pixmaps);
 }
 
 void AwardPrintRenderer::renderItem(QPainter &painter, const AwardDesigner::Item &item,
-	const QVariantMap &data, const QRectF &pageRect, qreal mmToPx) const
+	const QVariantMap &data, const QRectF &pageRect, qreal mmToPx,
+	const QHash<QString, QPixmap> &pixmaps) const
 {
 	const qreal x = pageRect.left() + item.x * mmToPx;
 	const qreal y = pageRect.top()  + item.y * mmToPx;
@@ -235,8 +261,8 @@ void AwardPrintRenderer::renderItem(QPainter &painter, const AwardDesigner::Item
 
 	if (item.kind == AwardDesigner::Item::Image) {
 		if (!item.imagePath.isEmpty()) {
-			QPixmap pm;
-			if (pm.load(item.imagePath)) {
+			const QPixmap &pm = pixmaps.value(item.imagePath);
+			if (!pm.isNull()) {
 				if (item.scaleProportional)
 					painter.drawPixmap(r.toRect(),
 						pm.scaled(r.toRect().size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));

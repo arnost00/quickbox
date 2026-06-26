@@ -1,8 +1,10 @@
 #pragma once
 #include "awarddesign.h"
 
+#include <QHash>
 #include <QImage>
 #include <QList>
+#include <QPixmap>
 #include <QVariantMap>
 
 namespace qf::core::utils { class TreeTable; }
@@ -32,9 +34,13 @@ public:
 private:
 	AwardDesigner::Design m_design;
 
+	QHash<QString, QPixmap> buildPixmapCache() const;
 	void renderPage(QPainter &painter, const QVariantMap &data,
-		const QRectF &pageRect, qreal mmToPx) const;
+		const QRectF &pageRect, qreal mmToPx,
+		const QList<AwardDesigner::Item> &sortedItems,
+		const QHash<QString, QPixmap> &pixmaps) const;
 	void renderItem(QPainter &painter, const AwardDesigner::Item &item,
-		const QVariantMap &data, const QRectF &pageRect, qreal mmToPx) const;
+		const QVariantMap &data, const QRectF &pageRect, qreal mmToPx,
+		const QHash<QString, QPixmap> &pixmaps) const;
 	static QString resolveField(const QString &fieldId, const QVariantMap &data);
 };

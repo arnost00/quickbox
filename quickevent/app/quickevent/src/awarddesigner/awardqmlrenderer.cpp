@@ -47,7 +47,6 @@ QString AwardQmlRenderer::renderPageBase64(const QString &className, int pos)
 QString AwardQmlRenderer::renderRunPageBase64(int classIdx, int runnerIdx)
 {
 	const QString key = runPageKey(classIdx, runnerIdx);
-	qfInfo() << "renderRunPageBase64 ci=" << classIdx << "ri=" << runnerIdx << "key=" << key << "found=" << m_runPageMap.contains(key);
 	if (!m_runPageMap.contains(key))
 		return {};
 	const QVariantMap &data = m_runPageMap.value(key);
