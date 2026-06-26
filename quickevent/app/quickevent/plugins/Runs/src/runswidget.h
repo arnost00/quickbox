@@ -4,11 +4,13 @@
 #include <QFrame>
 
 #include "partwidget.h"
+#include <quickevent/gui/reportoptionsdialog.h>
 
 class QComboBox;
 class QCheckBox;
 class QTextStream;
 class QLabel;
+class QToolButton;
 
 namespace qf {
 namespace core {
@@ -47,7 +49,7 @@ public:
 
 	Q_INVOKABLE int selectedStageId();
 public:
-	void export_startList_stage_iofxml30(bool with_vacants);
+	void export_startList_stage_iofxml30(quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	void export_startList_stage_csv_sime();
 	void export_startList_stage_tv_graphics();
 
@@ -88,6 +90,9 @@ private:
 
 	void updateClassComboBox();
 	void updateLegsComboBox();
+
+	void stepClass(int step);
+	void updateClassNavButtons();
 private:
 	enum class DrawMethod : int {Invalid = 0, RandomNumber,
 		EquidistantClubs, RandomizedEquidistantClubs, StageReverseOrder, Handicap,
@@ -95,6 +100,8 @@ private:
 
 	Ui::RunsWidget *ui;
 	qf::gui::ForeignKeyComboBox *m_cbxClasses = nullptr;
+	QToolButton *m_btPrevClass = nullptr;
+	QToolButton *m_btNextClass = nullptr;
 	QComboBox *m_cbxStage = nullptr;
 	QComboBox *m_cbxLeg = nullptr;
 	QAction *m_toolbarActionLabelLeg = nullptr;

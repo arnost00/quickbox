@@ -42,7 +42,7 @@ private:
 	bool saveSettings();
 private:
 	Ui::OFeedClientWidget *ui;
-	bool acceptDialogDone(int result);
+	bool acceptDialogDone(int result) override;
 	bool m_isTestConnectionRunning = false;
 	bool m_isImageRefreshRunning = false;
 	QString m_lastAutoReceiptEventLink;
