@@ -70,7 +70,7 @@ QVariantMap PrintAwardsOptionsDialogWidget::printOptions() const
 	       : ui->btRegExp->isChecked()    ? 1
 	       : 2;
 	filterOpts.setClassFilterType(ft);
-	ret["classFilter"]       = quickevent::gui::ReportOptionsDialog::sqlWhereExpression(filterOpts, ret["stageId"].toInt());
+	ret["classFilter"]       = quickevent::gui::ReportOptionsDialog::sqlWhereExpression(filterOpts, ui->edStageNumber->value());
 	ret["classFilterText"]   = filterOpts.classFilter();
 	ret["classFilterType"]   = filterOpts.classFilterType();
 	ret["useClassFilter"]    = filterOpts.isUseClassFilter();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <necrolog/necrologlevel.h>
+#include <necrologlevel.h>
 
 #include <QObject>
 

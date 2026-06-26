@@ -5,7 +5,7 @@
 #include <qf/core/utils.h>
 #include <qf/core/logentrymap.h>
 
-#include <necrolog/necrologlevel.h>
+#include <necrologlevel.h>
 
 #include <QAbstractTableModel>
 
