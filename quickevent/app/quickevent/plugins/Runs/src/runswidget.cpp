@@ -427,9 +427,11 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		auto *ep = getPlugin<EventPlugin>();
 		auto *cfg = ep->isEventOpen() ? ep->eventConfig() : nullptr;
 		bool enabled = !(cfg && cfg->isRelays());
-		for(const char *path : {"print", "import", "export"})
-			if(auto *a = part_widget->menuBar()->actionForPath(path))
+		for(const char *path : {"print", "import", "export"}) {
+			if(auto *a = part_widget->menuBar()->actionForPath(path)) {
 				a->setEnabled(enabled);
+			}
+		}
 	};
 	connect(getPlugin<EventPlugin>(), &EventPlugin::eventOpenChanged, this, updateMenuEnabled);
 	updateMenuEnabled();
