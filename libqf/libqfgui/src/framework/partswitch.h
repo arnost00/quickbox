@@ -4,7 +4,6 @@
 #include <QToolBar>
 #include <QToolButton>
 
-#include <QList>
 #include <QPointer>
 
 namespace qf {
@@ -51,7 +50,6 @@ private:
 private:
 	QPointer<StackedCentralWidget> m_centralWidget;
 	int m_currentPartIndex;
-	QList<QAction*> m_partActions;
 };
 
 }}}

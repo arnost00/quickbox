@@ -47,7 +47,7 @@ void PartSwitch::addPartWidget(PartWidget *widget)
 	});
 	bt->setText(widget->title());
 	bt->setPartIndex(buttonCount());
-	m_partActions.append(addWidget(bt));
+	addWidget(bt);
 	{
 		QIcon ico = widget->createIcon();
 		//bt->setIconSize(QSize{128, 128});
@@ -57,8 +57,14 @@ void PartSwitch::addPartWidget(PartWidget *widget)
 
 void PartSwitch::setPartVisible(int part_index, bool visible)
 {
-	if(part_index >= 0 && part_index < m_partActions.size())
-		m_partActions[part_index]->setVisible(visible);
+	for(auto *a : actions()) {
+		if(auto *bt = qobject_cast<PartSwitchToolButton*>(widgetForAction(a))) {
+			if(bt->partIndex() == part_index) {
+				a->setVisible(visible);
+				break;
+			}
+		}
+	}
 }
 
 void PartSwitch::setCurrentPartIndex(int ix, bool is_active)
@@ -88,14 +94,18 @@ void PartSwitch::setCurrentPartIndex(int ix, bool is_active)
 
 int PartSwitch::buttonCount()
 {
-	return m_partActions.size();
+	return findChildren<PartSwitchToolButton*>(QString(), Qt::FindDirectChildrenOnly).count();
 }
 
 PartSwitchToolButton *PartSwitch::buttonAt(int part_index)
 {
-	if(part_index < 0 || part_index >= m_partActions.size())
-		return nullptr;
-	return qobject_cast<PartSwitchToolButton*>(widgetForAction(m_partActions[part_index]));
+	QList<PartSwitchToolButton*> lst = findChildren<PartSwitchToolButton*>(QString(), Qt::FindDirectChildrenOnly);
+	for(auto *bt : lst) {
+		if(bt->partIndex() == part_index) {
+			return bt;
+		}
+	}
+	return nullptr;
 }
 
 
