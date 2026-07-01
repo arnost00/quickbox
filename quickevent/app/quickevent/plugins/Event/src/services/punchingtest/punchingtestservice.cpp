@@ -20,8 +20,6 @@
 #include <QTimer>
 #include <QRandomGenerator>
 
-#include <cmath>
-
 using qf::gui::framework::getPlugin;
 
 namespace Event::services {
@@ -154,18 +152,6 @@ void PunchingTestService::onTimerTick()
 	}
 	int si_check_sec = toSiSec(abs_start_ms - check_offset_sec * 1000);
 
-	// Straight-line distance in metres between two WGS-84 points (Haversine)
-	auto haversine_m = [](double lat1, double lon1, double lat2, double lon2) -> double {
-		constexpr double R = 6371000.0;
-		constexpr double DEG = M_PI / 180.0;
-		double phi1 = lat1 * DEG, phi2 = lat2 * DEG;
-		double dphi = (lat2 - lat1) * DEG;
-		double dlam = (lon2 - lon1) * DEG;
-		double a = std::sin(dphi / 2) * std::sin(dphi / 2)
-			+ std::cos(phi1) * std::cos(phi2) * std::sin(dlam / 2) * std::sin(dlam / 2);
-		return 2.0 * R * std::atan2(std::sqrt(a), std::sqrt(1.0 - a));
-	};
-
 	quickevent::core::CodeDef start_cd = course.startCode();
 	quickevent::core::CodeDef finish_cd = course.finishCode();
 	int n_controls = codes.size();
@@ -181,7 +167,7 @@ void PunchingTestService::onTimerTick()
 		quickevent::core::CodeDef cd(codes[k].toMap());
 		if (has_coords) {
 			double clat = cd.latitude(), clon = cd.longitude();
-			leg_dist << haversine_m(prev_lat, prev_lon, clat, clon);
+			leg_dist << Runs::RunsPlugin::latlng_distance(prev_lat, prev_lon, clat, clon);
 			prev_lat = clat;
 			prev_lon = clon;
 		} else {
@@ -189,7 +175,7 @@ void PunchingTestService::onTimerTick()
 		}
 	}
 	if (has_coords)
-		leg_dist << haversine_m(prev_lat, prev_lon, finish_cd.latitude(), finish_cd.longitude());
+		leg_dist << Runs::RunsPlugin::latlng_distance(prev_lat, prev_lon, finish_cd.latitude(), finish_cd.longitude());
 	else
 		leg_dist << 1.0;
 
