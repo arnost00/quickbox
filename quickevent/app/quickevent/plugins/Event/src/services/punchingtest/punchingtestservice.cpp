@@ -95,8 +95,8 @@ void PunchingTestService::onTimerTick()
 
 	int ix = static_cast<int>(QRandomGenerator::global()->bounded(static_cast<quint32>(candidates.size())));
 	const auto &cand = candidates[ix];
-	int run_id        = cand[0].toInt();
-	int si_id         = cand[1].toInt();
+	int run_id = cand[0].toInt();
+	int si_id = cand[1].toInt();
 	int start_time_ms = cand[2].toInt(); // ms relative to stage start
 
 	auto *runs_plugin = getPlugin<Runs::RunsPlugin>();
@@ -110,9 +110,9 @@ void PunchingTestService::onTimerTick()
 		start_time_ms = static_cast<int>(QRandomGenerator::global()->bounded(60U * 60U * 1000U));
 	}
 
-	int abs_start_ms  = stage_start_ms + start_time_ms;
+	int abs_start_ms = stage_start_ms + start_time_ms;
 	// Finish 20..30 minutes after start
-	int running_ms    = (20 * 60 + static_cast<int>(QRandomGenerator::global()->bounded(10U * 60U))) * 1000;
+	int running_ms = (20 * 60 + static_cast<int>(QRandomGenerator::global()->bounded(10U * 60U))) * 1000;
 	int abs_finish_ms = abs_start_ms + running_ms;
 
 	// SI card times are in seconds within 12-hour AM window (0..43199)
@@ -122,7 +122,7 @@ void PunchingTestService::onTimerTick()
 		return ((abs_ms / 1000) % SI_HALF_DAY_SEC + SI_HALF_DAY_SEC) % SI_HALF_DAY_SEC;
 	};
 
-	int si_start_sec  = toSiSec(abs_start_ms);
+	int si_start_sec = toSiSec(abs_start_ms);
 	int si_finish_sec = toSiSec(abs_finish_ms);
 
 	auto &rng = *QRandomGenerator::global();
@@ -156,17 +156,17 @@ void PunchingTestService::onTimerTick()
 
 	// Straight-line distance in metres between two WGS-84 points (Haversine)
 	auto haversine_m = [](double lat1, double lon1, double lat2, double lon2) -> double {
-		constexpr double R   = 6371000.0;
+		constexpr double R = 6371000.0;
 		constexpr double DEG = M_PI / 180.0;
 		double phi1 = lat1 * DEG, phi2 = lat2 * DEG;
 		double dphi = (lat2 - lat1) * DEG;
 		double dlam = (lon2 - lon1) * DEG;
 		double a = std::sin(dphi / 2) * std::sin(dphi / 2)
-		         + std::cos(phi1) * std::cos(phi2) * std::sin(dlam / 2) * std::sin(dlam / 2);
+			+ std::cos(phi1) * std::cos(phi2) * std::sin(dlam / 2) * std::sin(dlam / 2);
 		return 2.0 * R * std::atan2(std::sqrt(a), std::sqrt(1.0 - a));
 	};
 
-	quickevent::core::CodeDef start_cd  = course.startCode();
+	quickevent::core::CodeDef start_cd = course.startCode();
 	quickevent::core::CodeDef finish_cd = course.finishCode();
 	int n_controls = codes.size();
 
@@ -210,8 +210,8 @@ void PunchingTestService::onTimerTick()
 		if (rng.bounded(static_cast<quint32>(ss.mispunchRate())) == 0)
 			continue;
 		quickevent::core::CodeDef cd(codes[k].toMap());
-		double t     = cumulative_w / total_weight;
-		int ctrl_ms  = abs_start_ms + static_cast<int>(t * (abs_finish_ms - abs_start_ms));
+		double t = cumulative_w / total_weight;
+		int ctrl_ms = abs_start_ms + static_cast<int>(t * (abs_finish_ms - abs_start_ms));
 		int ctrl_sec = (ctrl_ms / 1000) % SI_HALF_DAY_SEC;
 		siut::SIPunch punch(cd.code(), ctrl_sec);
 		punches << QVariant(static_cast<QVariantMap>(punch));
@@ -224,16 +224,16 @@ void PunchingTestService::onTimerTick()
 			course_codes.insert(siut::SIPunch(v.toMap()).code());
 		int extra_code = 0;
 		const int code_range = quickevent::core::CodeDef::PUNCH_CODE_MAX
-		                     - quickevent::core::CodeDef::PUNCH_CODE_MIN + 1;
+			- quickevent::core::CodeDef::PUNCH_CODE_MIN + 1;
 		for (int attempt = 0; attempt < 20 && extra_code == 0; ++attempt) {
 			int candidate = quickevent::core::CodeDef::PUNCH_CODE_MIN
-			              + static_cast<int>(rng.bounded(static_cast<quint32>(code_range)));
+				+ static_cast<int>(rng.bounded(static_cast<quint32>(code_range)));
 			if (!course_codes.contains(candidate))
 				extra_code = candidate;
 		}
 		if (extra_code > 0) {
-			double t     = rng.generateDouble();
-			int extra_ms  = abs_start_ms + static_cast<int>(t * (abs_finish_ms - abs_start_ms));
+			double t = rng.generateDouble();
+			int extra_ms = abs_start_ms + static_cast<int>(t * (abs_finish_ms - abs_start_ms));
 			int extra_sec = (extra_ms / 1000) % SI_HALF_DAY_SEC;
 			siut::SIPunch extra_punch(extra_code, extra_sec);
 			// Insert at the position that keeps the list in chronological order
