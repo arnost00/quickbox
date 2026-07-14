@@ -247,8 +247,7 @@ void AwardReportViewWidget::refreshCurrentPage()
 		m_pageLabel->resize(0, 0);
 		return;
 	}
-	// Screen dots per mm at the current logical resolution, so scale == 1.0 renders the page at physical size.
-	const qreal px_per_mm = logicalDpiX() / 25.4;
+	const qreal px_per_mm = pxPerMm();
 	const int w = qRound(m_design.pageW * px_per_mm * m_scale);
 	const int h = qRound(m_design.pageH * px_per_mm * m_scale);
 	if (w <= 0 || h <= 0)
@@ -327,24 +326,22 @@ void AwardReportViewWidget::view_zoomOut()
 	setScale(scale() / 1.33);
 }
 
+void AwardReportViewWidget::zoomToFit(qreal page_mm, qreal viewport_px)
+{
+	if (page_mm <= 0)
+		return;
+	const qreal page_px = page_mm * pxPerMm() + 2 * PAGE_BORDER;
+	setScale(viewport_px / page_px * 0.98);
+}
+
 void AwardReportViewWidget::view_zoomToFitWidth()
 {
-	if (m_design.pageW <= 0)
-		return;
-	const qreal px_per_mm = logicalDpiX() / 25.4;
-	const qreal page_px = m_design.pageW * px_per_mm + 2 * PAGE_BORDER;
-	const qreal widget_px = m_scrollArea->viewport()->width();
-	setScale(widget_px / page_px * 0.98);
+	zoomToFit(m_design.pageW, m_scrollArea->viewport()->width());
 }
 
 void AwardReportViewWidget::view_zoomToFitHeight()
 {
-	if (m_design.pageH <= 0)
-		return;
-	const qreal px_per_mm = logicalDpiX() / 25.4;
-	const qreal page_px = m_design.pageH * px_per_mm + 2 * PAGE_BORDER;
-	const qreal widget_px = m_scrollArea->viewport()->height();
-	setScale(widget_px / page_px * 0.98);
+	zoomToFit(m_design.pageH, m_scrollArea->viewport()->height());
 }
 
 void AwardReportViewWidget::print(QPrinter &printer)

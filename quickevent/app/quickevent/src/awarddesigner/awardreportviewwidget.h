@@ -28,9 +28,6 @@ public:
 		const QList<QVariantMap> &pages, QWidget *parent = nullptr);
 	~AwardReportViewWidget() override;
 
-	// True when at least one page was rendered successfully.
-	bool hasPages() const { return !m_renderers.isEmpty(); }
-
 	// Build the pane, wrap it in the standard report dialog and show it modally.
 	static void showReport(const AwardDesigner::Design &design,
 		const QList<QVariantMap> &pages, QWidget *parent = nullptr);
@@ -64,6 +61,10 @@ private:
 	qreal scale() const { return m_scale; }
 	void setScale(qreal scale);
 	void setScaleProc(int proc) { setScale(proc * 0.01); }
+
+	// Screen dots per mm at the current logical resolution, so scale == 1.0 renders the page at physical size.
+	qreal pxPerMm() const { return logicalDpiX() / 25.4; }
+	void zoomToFit(qreal page_mm, qreal viewport_px);
 
 	void refreshCurrentPage();
 	void refreshWidget();
