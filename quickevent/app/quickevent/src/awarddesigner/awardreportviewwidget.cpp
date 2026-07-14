@@ -86,6 +86,7 @@ void AwardReportViewWidget::showReport(const AwardDesigner::Design &design,
 	w->setWindowTitle(tr("Awards"));
 
 	qf::gui::dialogs::Dialog dlg(parent);
+	dlg.setWindowFlag(Qt::WindowMaximizeButtonHint, true);
 	dlg.setCentralWidget(w);
 	dlg.exec();
 }
