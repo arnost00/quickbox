@@ -1,4 +1,5 @@
 #include "awardreportviewwidget.h"
+#include "awarddesign.h"
 #include "awardtypstrenderer.h"
 
 #include <qf/gui/action.h>
@@ -33,23 +34,28 @@ namespace {
 // Extra white margin drawn around the page, in device-independent pixels.
 constexpr int PAGE_BORDER = 5;
 
-void configurePrinter(QPrinter &printer, const AwardDesigner::Design &design)
+void configurePrinter(QPrinter &printer, qreal page_w, qreal page_h)
 {
-	printer.setPageSize(QPageSize(QSizeF(design.pageW, design.pageH), QPageSize::Millimeter));
+	printer.setPageSize(QPageSize(QSizeF(page_w, page_h), QPageSize::Millimeter));
 	printer.setFullPage(true);
 	printer.setPageMargins(QMarginsF(0, 0, 0, 0));
 }
 }
 
-AwardReportViewWidget::AwardReportViewWidget(const AwardDesigner::Design &design,
+AwardReportViewWidget::AwardReportViewWidget(const QString &typ_source, const QStringList &image_files,
 	const QList<QVariantMap> &pages, QWidget *parent)
 	: Super(parent)
-	, m_design(design)
+	, m_typSource(typ_source)
+	, m_imageFiles(image_files)
 	, m_pages(pages)
 {
 	setPersistentSettingsId(QStringLiteral("awardReportView"));
 
-	AwardTypstRenderer renderer(m_design);
+	const QSizeF page_size = AwardDesigner::Design::pageSizeFromTypst(m_typSource);
+	m_pageW = page_size.width();
+	m_pageH = page_size.height();
+
+	AwardTypstRenderer renderer(m_typSource, m_imageFiles);
 	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
 	QApplication::processEvents(); // paint the wait cursor before the blocking Typst render
 	const QList<QByteArray> svgs = renderer.renderToSvgs(m_pages);
@@ -79,10 +85,10 @@ AwardReportViewWidget::AwardReportViewWidget(const AwardDesigner::Design &design
 
 AwardReportViewWidget::~AwardReportViewWidget() = default;
 
-void AwardReportViewWidget::showReport(const AwardDesigner::Design &design,
+void AwardReportViewWidget::showReport(const QString &typ_source, const QStringList &image_files,
 	const QList<QVariantMap> &pages, QWidget *parent)
 {
-	auto *w = new AwardReportViewWidget(design, pages);
+	auto *w = new AwardReportViewWidget(typ_source, image_files, pages);
 	w->setWindowTitle(tr("Awards"));
 
 	qf::gui::dialogs::Dialog dlg(parent);
@@ -253,8 +259,8 @@ void AwardReportViewWidget::refreshCurrentPage()
 		return;
 	}
 	const qreal px_per_mm = pxPerMm();
-	const int w = qRound(m_design.pageW * px_per_mm * m_scale);
-	const int h = qRound(m_design.pageH * px_per_mm * m_scale);
+	const int w = qRound(m_pageW * px_per_mm * m_scale);
+	const int h = qRound(m_pageH * px_per_mm * m_scale);
 	if (w <= 0 || h <= 0)
 		return;
 
@@ -341,12 +347,12 @@ void AwardReportViewWidget::zoomToFit(qreal page_mm, qreal viewport_px)
 
 void AwardReportViewWidget::view_zoomToFitWidth()
 {
-	zoomToFit(m_design.pageW, m_scrollArea->viewport()->width());
+	zoomToFit(m_pageW, m_scrollArea->viewport()->width());
 }
 
 void AwardReportViewWidget::view_zoomToFitHeight()
 {
-	zoomToFit(m_design.pageH, m_scrollArea->viewport()->height());
+	zoomToFit(m_pageH, m_scrollArea->viewport()->height());
 }
 
 void AwardReportViewWidget::print(QPrinter &printer)
@@ -369,7 +375,7 @@ void AwardReportViewWidget::file_print()
 {
 	QPrinter printer(QPrinter::HighResolution);
 	printer.setOutputFormat(QPrinter::NativeFormat);
-	configurePrinter(printer, m_design);
+	configurePrinter(printer, m_pageW, m_pageH);
 
 	QPrintDialog dlg(&printer, this);
 	if (dlg.exec() != QDialog::Accepted)
@@ -381,7 +387,7 @@ void AwardReportViewWidget::file_printPreview()
 {
 	QPrinter printer(QPrinter::HighResolution);
 	printer.setOutputFormat(QPrinter::NativeFormat);
-	configurePrinter(printer, m_design);
+	configurePrinter(printer, m_pageW, m_pageH);
 
 	QPrintPreviewDialog preview(&printer, this);
 	connect(&preview, &QPrintPreviewDialog::paintRequested, this, [this](QPrinter *p) { print(*p); });
@@ -398,7 +404,7 @@ void AwardReportViewWidget::file_exportPdf()
 		fn += QStringLiteral(".pdf");
 
 	// Use Typst's native PDF output for best (vector) quality.
-	AwardTypstRenderer renderer(m_design);
+	AwardTypstRenderer renderer(m_typSource, m_imageFiles);
 	QTemporaryDir temp_dir;
 	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
 	QApplication::processEvents(); // paint the wait cursor before the blocking Typst render

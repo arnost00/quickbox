@@ -13,13 +13,20 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QSet>
 #include <QTemporaryDir>
 
-#include <algorithm>
 #include <utility>
 
+AwardTypstRenderer::AwardTypstRenderer(QString typ_source, QStringList image_files)
+	: m_typSource(std::move(typ_source))
+	, m_imageFiles(std::move(image_files))
+{
+}
+
 AwardTypstRenderer::AwardTypstRenderer(const AwardDesigner::Design &design)
-	: m_design(design)
+	: m_typSource(design.toTypst())
+	, m_imageFiles(design.imageFiles())
 {
 }
 
@@ -181,98 +188,20 @@ QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::T
 	return pages;
 }
 
-QHash<QString, QString> AwardTypstRenderer::copyImagesToDir(const QString &dir_path) const
+void AwardTypstRenderer::copyImageFilesToDir(const QString &dir_path) const
 {
-	QHash<QString, QString> file_names; // imagePath -> file name relative to dir_path
-	for (const auto &item : m_design.items) {
-		if (item.kind != AwardDesigner::Item::Image || item.imagePath.isEmpty())
+	QSet<QString> copied; // by file name, to avoid duplicate copies / collisions
+	for (const QString &src : m_imageFiles) {
+		if (src.isEmpty())
 			continue;
-		if (file_names.contains(item.imagePath))
+		const QString file_name = QFileInfo(src).fileName();
+		if (copied.contains(file_name))
 			continue;
-		const QString suffix = QFileInfo(item.imagePath).suffix();
-		const QString file_name = QStringLiteral("img%1.%2").arg(file_names.size()).arg(suffix);
-		if (QFile::copy(item.imagePath, dir_path + QLatin1Char('/') + file_name))
-			file_names.insert(item.imagePath, file_name);
+		if (QFile::copy(src, dir_path + QLatin1Char('/') + file_name))
+			copied.insert(file_name);
 		else
-			qfWarning() << "Cannot copy award image" << item.imagePath << "for Typst rendering";
+			qfWarning() << "Cannot copy award image" << src << "for Typst rendering";
 	}
-	return file_names;
-}
-
-QString AwardTypstRenderer::escapeTypstString(const QString &s)
-{
-	QString out = s;
-	out.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
-	out.replace(QLatin1Char('"'), QStringLiteral("\\\""));
-	out.replace(QLatin1Char('\n'), QStringLiteral("\\n"));
-	return out;
-}
-
-QString AwardTypstRenderer::typstAlignment(int halign)
-{
-	if (halign == Qt::AlignLeft)
-		return QStringLiteral("left");
-	if (halign == Qt::AlignRight)
-		return QStringLiteral("right");
-	return QStringLiteral("center");
-}
-
-QString AwardTypstRenderer::itemToTypstSnippet(const AwardDesigner::Item &item, int index,
-	const QHash<QString, QString> &image_file_names) const
-{
-	const QString dx = QString::number(item.x, 'f', 3) + QStringLiteral("mm");
-	const QString dy = QString::number(item.y, 'f', 3) + QStringLiteral("mm");
-	const QString w = QString::number(item.w, 'f', 3) + QStringLiteral("mm");
-	const QString h = QString::number(item.h, 'f', 3) + QStringLiteral("mm");
-
-	if (item.kind == AwardDesigner::Item::Image) {
-		if (!image_file_names.contains(item.imagePath))
-			return QString();
-		const QString fit = item.scaleProportional ? QStringLiteral("contain") : QStringLiteral("stretch");
-		return QStringLiteral("  #place(dx: ") + dx + QStringLiteral(", dy: ") + dy
-			+ QStringLiteral(", box(width: ") + w + QStringLiteral(", height: ") + h
-			+ QStringLiteral(", image(\"") + image_file_names.value(item.imagePath)
-			+ QStringLiteral("\", width: 100%, height: 100%, fit: \"") + fit
-			+ QStringLiteral("\")))\n");
-	}
-
-	const QString value_expr = (item.fieldId == QLatin1String("customText"))
-		? QLatin1Char('"') + escapeTypstString(item.customText) + QLatin1Char('"')
-		: QStringLiteral("page.at(\"") + escapeTypstString(item.fieldId) + QStringLiteral("\", default: \"\")");
-
-	const QString var_name = QStringLiteral("val%1").arg(index);
-	const QString align = typstAlignment(item.halign);
-	const QString weight = item.bold ? QStringLiteral("bold") : QStringLiteral("regular");
-	const QString style = item.italic ? QStringLiteral("italic") : QStringLiteral("normal");
-
-	QString snippet;
-	snippet += QStringLiteral("  #let ") + var_name + QStringLiteral(" = ") + value_expr + QStringLiteral("\n");
-	snippet += QStringLiteral("  #if ") + var_name + QStringLiteral(" != \"\" [\n");
-	snippet += QStringLiteral("    #place(dx: ") + dx + QStringLiteral(", dy: ") + dy
-		+ QStringLiteral(", box(width: ") + w + QStringLiteral(", height: ") + h
-		+ QStringLiteral(", align(") + align + QStringLiteral(" + horizon, text(font: \"")
-		+ escapeTypstString(item.fontFamily) + QStringLiteral("\", size: ") + QString::number(item.fontSize)
-		+ QStringLiteral("pt, weight: \"") + weight + QStringLiteral("\", style: \"") + style
-		+ QStringLiteral("\", fill: rgb(\"") + escapeTypstString(item.color)
-		+ QStringLiteral("\"))[#(") + var_name + QStringLiteral(".split(\"\\n\").join(linebreak()))]))) \n");
-	snippet += QStringLiteral("  ]\n");
-	return snippet;
-}
-
-QString AwardTypstRenderer::buildTypstSource(const QList<AwardDesigner::Item> &sorted_items,
-	const QHash<QString, QString> &image_file_names) const
-{
-	QString src;
-	src += QStringLiteral("#set page(width: ") + QString::number(m_design.pageW, 'f', 3)
-		+ QStringLiteral("mm, height: ") + QString::number(m_design.pageH, 'f', 3)
-		+ QStringLiteral("mm, margin: 0mm)\n");
-	src += QStringLiteral("#let pages = json(\"data.json\")\n");
-	src += QStringLiteral("#for (i, page) in pages.enumerate() [\n");
-	for (int idx = 0; idx < sorted_items.size(); ++idx)
-		src += itemToTypstSnippet(sorted_items.at(idx), idx, image_file_names);
-	src += QStringLiteral("  #if i < pages.len() - 1 [#pagebreak()]\n");
-	src += QStringLiteral("]\n");
-	return src;
 }
 
 bool AwardTypstRenderer::compile(const QList<QVariantMap> &pages, const QString &format,
@@ -292,12 +221,7 @@ bool AwardTypstRenderer::compile(const QList<QVariantMap> &pages, const QString 
 		return false;
 	}
 
-	QList<AwardDesigner::Item> sorted = m_design.items;
-	std::stable_sort(sorted.begin(), sorted.end(),
-		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
-			return a.zOrder < b.zOrder;
-		});
-	const QHash<QString, QString> image_file_names = copyImagesToDir(out_dir.path());
+	copyImageFilesToDir(out_dir.path());
 
 	QJsonArray pages_json;
 	for (const auto &page : pages)
@@ -311,7 +235,6 @@ bool AwardTypstRenderer::compile(const QList<QVariantMap> &pages, const QString 
 		data_file.write(QJsonDocument(pages_json).toJson(QJsonDocument::Compact));
 	}
 
-	const QString typ_source = buildTypstSource(sorted, image_file_names);
 	const QString typ_file_path = out_dir.filePath(QStringLiteral("award.typ"));
 	{
 		QFile typ_file(typ_file_path);
@@ -319,7 +242,7 @@ bool AwardTypstRenderer::compile(const QList<QVariantMap> &pages, const QString 
 			qfWarning() << "Cannot write Typst award source file";
 			return false;
 		}
-		typ_file.write(typ_source.toUtf8());
+		typ_file.write(m_typSource.toUtf8());
 	}
 
 	QStringList args;

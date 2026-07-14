@@ -1,8 +1,9 @@
 #pragma once
-#include <QJsonObject>
 #include <QList>
 #include <QPair>
+#include <QSizeF>
 #include <QString>
+#include <QStringList>
 #include <Qt>
 
 namespace AwardDesigner {
@@ -40,9 +41,6 @@ struct Item {
 
 	// Image sizing
 	bool scaleProportional = true;
-
-	QJsonObject toJson() const;
-	static Item fromJson(const QJsonObject &obj);
 };
 
 struct Design {
@@ -52,8 +50,18 @@ struct Design {
 	qreal pageH = 297;
 	QList<Item> items;
 
-	QJsonObject toJson() const;
-	static Design fromJson(const QJsonObject &obj);
+	// Serialize the design to a self-contained, renderable Typst document. The item
+	// model is embedded as `// @item ...` comment tags so the designer can reload it;
+	// Typst ignores the comments and renders the document directly.
+	QString toTypst() const;
+	static Design fromTypst(const QString &src);
+
+	// Absolute paths of all image items, in item order.
+	QStringList imageFiles() const;
+
+	// Page size in mm read from a Typst award document (any .typ following the award
+	// contract), falling back to A4 when it cannot be determined.
+	static QSizeF pageSizeFromTypst(const QString &src);
 
 	bool saveToDb() const;
 	static Design loadFromDb(const QString &name);
@@ -71,5 +79,11 @@ struct Design {
 	static Design defaultRelayDesign();
 	static Design defaultRunsDesign();
 };
+
+// Read a bundled/general .typ template file. out_image_files is filled with the
+// absolute paths of every file in the template's sibling "images" directory, which
+// the renderer copies next to the document (templates reference them by file name).
+// Returns false if the template file cannot be read.
+bool loadTypstTemplate(const QString &path, QString &out_source, QStringList &out_image_files);
 
 } // namespace AwardDesigner

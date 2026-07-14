@@ -2,9 +2,10 @@
 #include "awarddesign.h"
 
 #include <QByteArray>
-#include <QHash>
 #include <QImage>
 #include <QList>
+#include <QString>
+#include <QStringList>
 #include <QVariantMap>
 
 class QTemporaryDir;
@@ -15,6 +16,10 @@ namespace Event { class EventConfig; }
 class AwardTypstRenderer
 {
 public:
+	// Render an arbitrary award .typ document. image_files are absolute paths copied
+	// next to the document under their file name (templates reference them by name).
+	explicit AwardTypstRenderer(QString typ_source, QStringList image_files = {});
+	// Convenience: render a designer design (serialized to .typ).
 	explicit AwardTypstRenderer(const AwardDesigner::Design &design);
 
 	// Collect per-relay data maps from the relay results TreeTable
@@ -36,18 +41,12 @@ public:
 	QList<QByteArray> renderToSvgs(const QList<QVariantMap> &pages) const;
 
 private:
-	AwardDesigner::Design m_design;
+	QString m_typSource;
+	QStringList m_imageFiles;
 
 	// Compile the document for all pages into out_dir/out-{p}.<ext>. Returns true on success.
 	bool compile(const QList<QVariantMap> &pages, const QString &format,
 		const QString &out_pattern, QTemporaryDir &out_dir, int dpi = 0) const;
 
-	QHash<QString, QString> copyImagesToDir(const QString &dir_path) const;
-	QString buildTypstSource(const QList<AwardDesigner::Item> &sorted_items,
-		const QHash<QString, QString> &image_file_names) const;
-	QString itemToTypstSnippet(const AwardDesigner::Item &item, int index,
-		const QHash<QString, QString> &image_file_names) const;
-
-	static QString escapeTypstString(const QString &s);
-	static QString typstAlignment(int halign);
+	void copyImageFilesToDir(const QString &dir_path) const;
 };

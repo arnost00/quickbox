@@ -42,8 +42,8 @@ void PrintAwardsOptionsDialogWidget::refreshTemplateList()
 	}
 
 	auto *runs_plugin = qf::gui::framework::getPlugin<Runs::RunsPlugin>();
-	for (const auto &i : runs_plugin->listReportFiles("awards")) {
-		qfDebug() << i.reportName << i.reportFilePath;
+	// General (bundled) Typst templates
+	for (const auto &i : runs_plugin->listReportFiles("awards", QStringLiteral("typ"))) {
 		ui->edReportPath->addItem(i.reportName, i.reportFilePath);
 	}
 

@@ -40,10 +40,9 @@ void PrintRelayAwardsOptionsDialogWidget::refreshTemplateList()
 			QString(DB_PREFIX) + name);
 	}
 
-	// QML templates
 	auto *relays_plugin = qf::gui::framework::getPlugin<Relays::RelaysPlugin>();
-	for (const auto &i : relays_plugin->listReportFiles("awards")) {
-		qfDebug() << i.reportName << i.reportFilePath;
+	// General (bundled) Typst templates
+	for (const auto &i : relays_plugin->listReportFiles("awards", QStringLiteral("typ"))) {
 		ui->edReportPath->addItem(i.reportName, i.reportFilePath);
 	}
 

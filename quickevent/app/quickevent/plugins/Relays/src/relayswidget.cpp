@@ -596,8 +596,6 @@ void RelaysWidget::print_results_awards()
 	auto td = getPlugin<RelaysPlugin>()->nLegsResultsTable(s_opts.value("classFilter").toString(), 999, num_places, true);
 
 	static const QLatin1String DB_PREFIX("db:");
-	QVariantMap props;
-	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
 
 	if(rep_path.startsWith(DB_PREFIX)) {
 		QString design_name = rep_path.mid(DB_PREFIX.size());
@@ -606,18 +604,26 @@ void RelaysWidget::print_results_awards()
 			qfWarning() << "Award design not found in DB:" << design_name;
 			return;
 		}
-		AwardTypstRenderer renderer(design);
+		QString typ = design.toTypst();
+		QStringList images = design.imageFiles();
+		AwardTypstRenderer renderer(typ, images);
 		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget::showReport(design, pages, this);
+		AwardReportViewWidget::showReport(typ, images, pages, this);
 		return;
 	}
-
-	qf::gui::reports::ReportViewWidget::showReport(this,
-		getPlugin<RelaysPlugin>()->findReportFile(rep_path),
-		td.toVariant(),
-		tr("Awards"),
-		"relaysAwards",
-		props);
+	if(rep_path.endsWith(QStringLiteral(".typ"))) {
+		QString typ;
+		QStringList images;
+		if(!AwardDesigner::loadTypstTemplate(getPlugin<RelaysPlugin>()->findReportFile(rep_path), typ, images)) {
+			qfWarning() << "Cannot load Typst award template:" << rep_path;
+			return;
+		}
+		AwardTypstRenderer renderer(typ, images);
+		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
+		AwardReportViewWidget::showReport(typ, images, pages, this);
+		return;
+	}
+	qfWarning() << "Unsupported award template:" << rep_path;
 }
 
 void RelaysWidget::save_xml_file(QString str, QString fn) {

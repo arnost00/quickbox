@@ -1,10 +1,10 @@
 #pragma once
-#include "awarddesign.h"
-
 #include <qf/gui/framework/dialogwidget.h>
 
 #include <QList>
 #include <QSharedPointer>
+#include <QString>
+#include <QStringList>
 #include <QVariantMap>
 
 class QLabel;
@@ -24,12 +24,12 @@ class AwardReportViewWidget : public qf::gui::framework::DialogWidget
 	Q_OBJECT
 	using Super = qf::gui::framework::DialogWidget;
 public:
-	explicit AwardReportViewWidget(const AwardDesigner::Design &design,
+	AwardReportViewWidget(const QString &typ_source, const QStringList &image_files,
 		const QList<QVariantMap> &pages, QWidget *parent = nullptr);
 	~AwardReportViewWidget() override;
 
 	// Build the pane, wrap it in the standard report dialog and show it modally.
-	static void showReport(const AwardDesigner::Design &design,
+	static void showReport(const QString &typ_source, const QStringList &image_files,
 		const QList<QVariantMap> &pages, QWidget *parent = nullptr);
 
 	void settleDownInDialog(qf::gui::dialogs::Dialog *dlg) override;
@@ -70,7 +70,10 @@ private:
 	void refreshWidget();
 	void refreshActions();
 
-	AwardDesigner::Design m_design;
+	QString m_typSource;
+	QStringList m_imageFiles;
+	qreal m_pageW = 210;
+	qreal m_pageH = 297;
 	QList<QVariantMap> m_pages;
 	QList<QSharedPointer<QSvgRenderer>> m_renderers;
 

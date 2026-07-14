@@ -250,7 +250,7 @@ add_executable(quickevent
 	plugins/Relays/qml/reports/startList_clubs.qml
 	plugins/Relays/qml/reports/startList_classes_condensed.qml
 	plugins/Relays/qml/reports/startList_clubs_condensed.qml
-	plugins/Relays/qml/reports/awards/relay_awards.qml
+	plugins/Relays/qml/reports/awards/relay_awards.typ
 
 	plugins/Runs/qml/reports/competitorsWithCardRent.qml
 	plugins/Runs/qml/reports/results_nstages.qml
@@ -262,12 +262,7 @@ add_executable(quickevent
 	plugins/Runs/qml/reports/startList_clubs.qml
 	plugins/Runs/qml/reports/startList_clubs_nstages.qml
 	plugins/Runs/qml/reports/startList_starters.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-apple.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-apple2.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-covid.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-hsh-2023.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-hsh.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards.qml
+	plugins/Runs/qml/reports/awards/results_stage_awards.typ
 	plugins/Runs/qml/reports/competitorsStatistics.qml
 
 	plugins/shared/qml/reports/Cell.qml
