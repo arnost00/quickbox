@@ -35,15 +35,16 @@ void PrintAwardsOptionsDialogWidget::refreshTemplateList()
 	QString currentData = ui->edReportPath->currentData().toString();
 	ui->edReportPath->clear();
 
+	// DB-stored designer templates (user-defined) are listed first
+	for (const QString &name : AwardDesigner::Design::listFromDb(QStringLiteral("runs"))) {
+		ui->edReportPath->addItem(QStringLiteral("★ ") + name,
+			QString(DB_PREFIX) + name);
+	}
+
 	auto *runs_plugin = qf::gui::framework::getPlugin<Runs::RunsPlugin>();
 	for (const auto &i : runs_plugin->listReportFiles("awards")) {
 		qfDebug() << i.reportName << i.reportFilePath;
 		ui->edReportPath->addItem(i.reportName, i.reportFilePath);
-	}
-
-	for (const QString &name : AwardDesigner::Design::listFromDb(QStringLiteral("runs"))) {
-		ui->edReportPath->addItem(QStringLiteral("★ ") + name,
-			QString(DB_PREFIX) + name);
 	}
 
 	if (!currentData.isEmpty()) {

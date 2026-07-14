@@ -34,17 +34,17 @@ void PrintRelayAwardsOptionsDialogWidget::refreshTemplateList()
 	QString currentData = ui->edReportPath->currentData().toString();
 	ui->edReportPath->clear();
 
+	// DB-stored designer templates (user-defined) are listed first
+	for (const QString &name : AwardDesigner::Design::listFromDb(QStringLiteral("relay"))) {
+		ui->edReportPath->addItem(QStringLiteral("★ ") + name,
+			QString(DB_PREFIX) + name);
+	}
+
 	// QML templates
 	auto *relays_plugin = qf::gui::framework::getPlugin<Relays::RelaysPlugin>();
 	for (const auto &i : relays_plugin->listReportFiles("awards")) {
 		qfDebug() << i.reportName << i.reportFilePath;
 		ui->edReportPath->addItem(i.reportName, i.reportFilePath);
-	}
-
-	// DB-stored designer templates
-	for (const QString &name : AwardDesigner::Design::listFromDb(QStringLiteral("relay"))) {
-		ui->edReportPath->addItem(QStringLiteral("★ ") + name,
-			QString(DB_PREFIX) + name);
 	}
 
 	// Restore previous selection

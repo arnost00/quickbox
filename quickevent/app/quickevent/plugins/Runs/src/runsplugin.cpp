@@ -2063,8 +2063,7 @@ void RunsPlugin::report_resultsAwards()
 		}
 		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget dlg(design, pages, fwk);
-		dlg.exec();
+		AwardReportViewWidget::showReport(design, pages, fwk);
 		return;
 	}
 
@@ -2155,8 +2154,7 @@ void RunsPlugin::report_nStagesAwards()
 		}
 		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget dlg(design, pages, fwk);
-		dlg.exec();
+		AwardReportViewWidget::showReport(design, pages, fwk);
 		return;
 	}
 

@@ -608,8 +608,7 @@ void RelaysWidget::print_results_awards()
 		}
 		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget dlg(design, pages, this);
-		dlg.exec();
+		AwardReportViewWidget::showReport(design, pages, this);
 		return;
 	}
 
