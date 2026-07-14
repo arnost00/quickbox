@@ -51,11 +51,11 @@ private:
 	AwardDesigner::Item m_origItem;
 
 	QRectF handleRect(ResizeHandle h) const;
-	ResizeHandle handleAt(const QPointF &itemPos) const;
-	void applyResize(const QPointF &scenePos);
+	ResizeHandle handleAt(const QPointF &item_pos) const;
+	void applyResize(const QPointF &scene_pos);
 
 	void ensurePixmap();
-	QString fieldLabel(const QString &fieldId) const;
+	QString fieldLabel(const QString &field_id) const;
 };
 
 class AwardDesignerScene : public QGraphicsScene

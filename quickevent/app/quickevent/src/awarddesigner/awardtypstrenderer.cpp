@@ -1,0 +1,349 @@
+#include "awardtypstrenderer.h"
+#include "typstexecutable.h"
+
+#include <plugins/Event/src/eventconfig.h>
+
+#include <qf/core/utils/treetable.h>
+#include <qf/core/log.h>
+
+#include <QDate>
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QProcess>
+#include <QTemporaryDir>
+
+#include <algorithm>
+#include <utility>
+
+AwardTypstRenderer::AwardTypstRenderer(const AwardDesigner::Design &design)
+	: m_design(design)
+{
+}
+
+QList<QVariantMap> AwardTypstRenderer::collectPages(const qf::core::utils::TreeTable &tt,
+	Event::EventConfig *event_config) const
+{
+	QList<QVariantMap> pages;
+
+	QVariantMap event_map = tt.value(QStringLiteral("event")).toMap();
+	QString event_name = event_map.value(QStringLiteral("name")).toString();
+	QString event_place = event_map.value(QStringLiteral("place")).toString();
+
+	QString date_str;
+	{
+		QDateTime dt;
+		QVariant stage_start = tt.value(QStringLiteral("stageStart"));
+		if (stage_start.isValid())
+			dt = stage_start.toDateTime();
+		if (!dt.isValid()) {
+			QVariant ev_dt = event_map.value(QStringLiteral("dateTime"));
+			if (!ev_dt.isValid())
+				ev_dt = event_map.value(QStringLiteral("date"));
+			dt = ev_dt.toDateTime();
+			if (!dt.isValid())
+				dt = QDateTime(ev_dt.toDate(), QTime());
+		}
+		if (dt.isValid())
+			date_str = dt.toString(QStringLiteral("dd.MM.yyyy"));
+	}
+
+	QString main_referee;
+	QString director;
+	if (event_config) {
+		main_referee = event_config->mainReferee();
+		director = event_config->director();
+	}
+
+	for (int ci = 0; ci < tt.rowCount(); ++ci) {
+		auto class_row = tt.row(ci);
+		QString class_name = class_row.value(QStringLiteral("className")).toString();
+		auto relay_table = class_row.table(0);
+
+		for (int ri = 0; ri < relay_table.rowCount(); ++ri) {
+			auto relay_row = relay_table.row(ri);
+			int pos = relay_row.value(QStringLiteral("pos")).toInt();
+			QString org_name = relay_row.value(QStringLiteral("orgName")).toString();
+			if (org_name.isEmpty())
+				org_name = relay_row.value(QStringLiteral("name")).toString();
+
+			QStringList runner_names;
+			auto runner_table = relay_row.table(0);
+			for (int ki = 0; ki < runner_table.rowCount(); ++ki) {
+				auto runner_row = runner_table.row(ki);
+				QString name = runner_row.value(QStringLiteral("competitorName")).toString();
+				if (!name.isEmpty())
+					runner_names << name;
+			}
+
+			const QString pos_str = (pos > 0)
+				? QString::number(pos) + QStringLiteral(". místo")
+				: QStringLiteral("místo");
+
+			QVariantMap data;
+			data[QStringLiteral("pos")] = pos; // raw integer for keying
+			data[QStringLiteral("eventName")] = event_name;
+			data[QStringLiteral("date")] = date_str;
+			data[QStringLiteral("place")] = event_place;
+			data[QStringLiteral("position")] = pos_str;
+			data[QStringLiteral("category")] = class_name;
+			data[QStringLiteral("positionCategory")] = pos_str + QStringLiteral(" v kategorii ") + class_name;
+			data[QStringLiteral("clubName")] = org_name;
+			data[QStringLiteral("runners")] = runner_names.join(QStringLiteral("\n"));
+			data[QStringLiteral("mainReferee")] = main_referee;
+			data[QStringLiteral("director")] = director;
+			pages.append(data);
+		}
+	}
+	return pages;
+}
+
+QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::TreeTable &tt,
+	Event::EventConfig *event_config) const
+{
+	QList<QVariantMap> pages;
+
+	QVariantMap event_map = tt.value(QStringLiteral("event")).toMap();
+	QString event_name = event_map.value(QStringLiteral("name")).toString();
+	QString event_place = event_map.value(QStringLiteral("place")).toString();
+
+	QString date_str;
+	{
+		QDateTime dt;
+		QVariant stage_start = tt.value(QStringLiteral("stageStart"));
+		if (stage_start.isValid())
+			dt = stage_start.toDateTime();
+		if (!dt.isValid()) {
+			QVariant ev_dt = event_map.value(QStringLiteral("dateTime"));
+			if (!ev_dt.isValid())
+				ev_dt = event_map.value(QStringLiteral("date"));
+			dt = ev_dt.toDateTime();
+			if (!dt.isValid())
+				dt = QDateTime(ev_dt.toDate(), QTime());
+		}
+		if (dt.isValid())
+			date_str = dt.toString(QStringLiteral("dd.MM.yyyy"));
+	}
+
+	QString main_referee;
+	QString director;
+	if (event_config) {
+		main_referee = event_config->mainReferee();
+		director = event_config->director();
+	}
+
+	for (int ci = 0; ci < tt.rowCount(); ++ci) {
+		auto class_row = tt.row(ci);
+		QString class_name = class_row.value(QStringLiteral("name")).toString();
+		auto runner_table = class_row.table(0);
+
+		for (int ri = 0; ri < runner_table.rowCount(); ++ri) {
+			auto runner_row = runner_table.row(ri);
+
+			// stageResultsTable has integer "npos"; nstagesResultsTable has text "pos" like "1."
+			int pos = runner_row.value(QStringLiteral("npos")).toInt();
+			if (pos <= 0) {
+				QString pos_text = runner_row.value(QStringLiteral("pos")).toString();
+				if (pos_text.endsWith(QLatin1Char('.')))
+					pos = pos_text.chopped(1).toInt();
+			}
+
+			QString competitor_name = runner_row.value(QStringLiteral("competitorName")).toString();
+			QString org_name = runner_row.value(QStringLiteral("clubs.name")).toString();
+			if (org_name.isEmpty())
+				org_name = runner_row.value(QStringLiteral("club")).toString();
+
+			const QString pos_str = (pos > 0)
+				? QString::number(pos) + QStringLiteral(". místo")
+				: QString();
+
+			QVariantMap data;
+			data[QStringLiteral("_classIdx")] = ci;
+			data[QStringLiteral("_runnerIdx")] = ri;
+			data[QStringLiteral("pos")] = pos;
+			data[QStringLiteral("eventName")] = event_name;
+			data[QStringLiteral("date")] = date_str;
+			data[QStringLiteral("place")] = event_place;
+			data[QStringLiteral("position")] = pos_str;
+			data[QStringLiteral("category")] = class_name;
+			data[QStringLiteral("positionCategory")] = pos_str.isEmpty()
+				? QStringLiteral("v kategorii ") + class_name
+				: pos_str + QStringLiteral(" v kategorii ") + class_name;
+			data[QStringLiteral("competitorName")] = competitor_name;
+			data[QStringLiteral("clubName")] = org_name;
+			data[QStringLiteral("mainReferee")] = main_referee;
+			data[QStringLiteral("director")] = director;
+			pages.append(data);
+		}
+	}
+	return pages;
+}
+
+QHash<QString, QString> AwardTypstRenderer::copyImagesToDir(const QString &dir_path) const
+{
+	QHash<QString, QString> file_names; // imagePath -> file name relative to dir_path
+	for (const auto &item : m_design.items) {
+		if (item.kind != AwardDesigner::Item::Image || item.imagePath.isEmpty())
+			continue;
+		if (file_names.contains(item.imagePath))
+			continue;
+		const QString suffix = QFileInfo(item.imagePath).suffix();
+		const QString file_name = QStringLiteral("img%1.%2").arg(file_names.size()).arg(suffix);
+		if (QFile::copy(item.imagePath, dir_path + QLatin1Char('/') + file_name))
+			file_names.insert(item.imagePath, file_name);
+		else
+			qfWarning() << "Cannot copy award image" << item.imagePath << "for Typst rendering";
+	}
+	return file_names;
+}
+
+QString AwardTypstRenderer::escapeTypstString(const QString &s)
+{
+	QString out = s;
+	out.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
+	out.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+	out.replace(QLatin1Char('\n'), QStringLiteral("\\n"));
+	return out;
+}
+
+QString AwardTypstRenderer::typstAlignment(int halign)
+{
+	if (halign == Qt::AlignLeft)
+		return QStringLiteral("left");
+	if (halign == Qt::AlignRight)
+		return QStringLiteral("right");
+	return QStringLiteral("center");
+}
+
+QString AwardTypstRenderer::itemToTypstSnippet(const AwardDesigner::Item &item, int index,
+	const QHash<QString, QString> &image_file_names) const
+{
+	const QString dx = QString::number(item.x, 'f', 3) + QStringLiteral("mm");
+	const QString dy = QString::number(item.y, 'f', 3) + QStringLiteral("mm");
+	const QString w = QString::number(item.w, 'f', 3) + QStringLiteral("mm");
+	const QString h = QString::number(item.h, 'f', 3) + QStringLiteral("mm");
+
+	if (item.kind == AwardDesigner::Item::Image) {
+		if (!image_file_names.contains(item.imagePath))
+			return QString();
+		const QString fit = item.scaleProportional ? QStringLiteral("contain") : QStringLiteral("stretch");
+		return QStringLiteral("  #place(dx: ") + dx + QStringLiteral(", dy: ") + dy
+			+ QStringLiteral(", box(width: ") + w + QStringLiteral(", height: ") + h
+			+ QStringLiteral(", image(\"") + image_file_names.value(item.imagePath)
+			+ QStringLiteral("\", width: 100%, height: 100%, fit: \"") + fit
+			+ QStringLiteral("\")))\n");
+	}
+
+	const QString value_expr = (item.fieldId == QLatin1String("customText"))
+		? QLatin1Char('"') + escapeTypstString(item.customText) + QLatin1Char('"')
+		: QStringLiteral("page.at(\"") + escapeTypstString(item.fieldId) + QStringLiteral("\", default: \"\")");
+
+	const QString var_name = QStringLiteral("val%1").arg(index);
+	const QString align = typstAlignment(item.halign);
+	const QString weight = item.bold ? QStringLiteral("bold") : QStringLiteral("regular");
+	const QString style = item.italic ? QStringLiteral("italic") : QStringLiteral("normal");
+
+	QString snippet;
+	snippet += QStringLiteral("  #let ") + var_name + QStringLiteral(" = ") + value_expr + QStringLiteral("\n");
+	snippet += QStringLiteral("  #if ") + var_name + QStringLiteral(" != \"\" [\n");
+	snippet += QStringLiteral("    #place(dx: ") + dx + QStringLiteral(", dy: ") + dy
+		+ QStringLiteral(", box(width: ") + w + QStringLiteral(", height: ") + h
+		+ QStringLiteral(", align(") + align + QStringLiteral(" + horizon, text(font: \"")
+		+ escapeTypstString(item.fontFamily) + QStringLiteral("\", size: ") + QString::number(item.fontSize)
+		+ QStringLiteral("pt, weight: \"") + weight + QStringLiteral("\", style: \"") + style
+		+ QStringLiteral("\", fill: rgb(\"") + escapeTypstString(item.color)
+		+ QStringLiteral("\"))[#(") + var_name + QStringLiteral(".split(\"\\n\").join(linebreak()))]))) \n");
+	snippet += QStringLiteral("  ]\n");
+	return snippet;
+}
+
+QString AwardTypstRenderer::buildTypstSource(const QList<AwardDesigner::Item> &sorted_items,
+	const QHash<QString, QString> &image_file_names) const
+{
+	QString src;
+	src += QStringLiteral("#set page(width: ") + QString::number(m_design.pageW, 'f', 3)
+		+ QStringLiteral("mm, height: ") + QString::number(m_design.pageH, 'f', 3)
+		+ QStringLiteral("mm, margin: 0mm)\n");
+	src += QStringLiteral("#let pages = json(\"data.json\")\n");
+	src += QStringLiteral("#for (i, page) in pages.enumerate() [\n");
+	for (int idx = 0; idx < sorted_items.size(); ++idx)
+		src += itemToTypstSnippet(sorted_items.at(idx), idx, image_file_names);
+	src += QStringLiteral("  #if i < pages.len() - 1 [#pagebreak()]\n");
+	src += QStringLiteral("]\n");
+	return src;
+}
+
+QList<QImage> AwardTypstRenderer::renderToImages(const QList<QVariantMap> &pages, int dpi) const
+{
+	if (pages.isEmpty())
+		return {};
+
+	const QString typst = Typst::executablePath();
+	if (typst.isEmpty()) {
+		qfWarning() << "typst executable not found, cannot render awards";
+		return {};
+	}
+
+	QTemporaryDir temp_dir;
+	if (!temp_dir.isValid()) {
+		qfWarning() << "Cannot create a temporary directory for Typst award rendering";
+		return {};
+	}
+
+	QList<AwardDesigner::Item> sorted = m_design.items;
+	std::stable_sort(sorted.begin(), sorted.end(),
+		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
+			return a.zOrder < b.zOrder;
+		});
+	const QHash<QString, QString> image_file_names = copyImagesToDir(temp_dir.path());
+
+	QJsonArray pages_json;
+	for (const auto &page : pages)
+		pages_json.append(QJsonObject::fromVariantMap(page));
+	{
+		QFile data_file(temp_dir.filePath(QStringLiteral("data.json")));
+		if (!data_file.open(QIODevice::WriteOnly)) {
+			qfWarning() << "Cannot write Typst award data file";
+			return {};
+		}
+		data_file.write(QJsonDocument(pages_json).toJson(QJsonDocument::Compact));
+	}
+
+	const QString typ_source = buildTypstSource(sorted, image_file_names);
+	const QString typ_file_path = temp_dir.filePath(QStringLiteral("award.typ"));
+	{
+		QFile typ_file(typ_file_path);
+		if (!typ_file.open(QIODevice::WriteOnly)) {
+			qfWarning() << "Cannot write Typst award source file";
+			return {};
+		}
+		typ_file.write(typ_source.toUtf8());
+	}
+
+	QProcess process;
+	process.setWorkingDirectory(temp_dir.path());
+	process.start(typst, {
+		QStringLiteral("compile"), QStringLiteral("award.typ"), QStringLiteral("out-{p}.png"),
+		QStringLiteral("--format"), QStringLiteral("png"),
+		QStringLiteral("--ppi"), QString::number(dpi),
+	});
+	if (!process.waitForFinished(30000) || process.exitCode() != 0) {
+		qfWarning() << "typst compile failed:" << process.errorString()
+			<< QString::fromUtf8(process.readAllStandardError());
+		return {};
+	}
+
+	QList<QImage> images;
+	images.reserve(pages.size());
+	for (int i = 1; i <= pages.size(); ++i) {
+		QImage img(temp_dir.filePath(QStringLiteral("out-%1.png").arg(i)));
+		if (img.isNull()) {
+			qfWarning() << "Typst did not produce page" << i << "of the award document";
+			continue;
+		}
+		images.append(std::move(img));
+	}
+	return images;
+}

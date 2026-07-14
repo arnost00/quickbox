@@ -194,8 +194,10 @@ add_executable(quickevent
 	src/awarddesigner/awarddesignerdialog.h
 	src/awarddesigner/awarddesignerdialog.cpp
 	src/awarddesigner/awarddesignerdialog.ui
-	src/awarddesigner/awardprintrenderer.h
-	src/awarddesigner/awardprintrenderer.cpp
+	src/awarddesigner/awardtypstrenderer.h
+	src/awarddesigner/awardtypstrenderer.cpp
+	src/awarddesigner/typstexecutable.h
+	src/awarddesigner/typstexecutable.cpp
 	src/awarddesigner/awardqmlrenderer.h
 	src/awarddesigner/awardqmlrenderer.cpp
 

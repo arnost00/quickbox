@@ -1,5 +1,5 @@
 #include "awardqmlrenderer.h"
-#include "awardprintrenderer.h"
+#include "awardtypstrenderer.h"
 
 #include <qf/core/log.h>
 
@@ -13,7 +13,7 @@ AwardQmlRenderer::AwardQmlRenderer(const AwardDesigner::Design &design,
 {
 	for (const auto &data : pages) {
 		const QString cls = data.value(QStringLiteral("category")).toString();
-		const int     pos = data.value(QStringLiteral("pos")).toInt();
+		const int pos = data.value(QStringLiteral("pos")).toInt();
 		m_pageMap.insert(pageKey(cls, pos), data);
 
 		if (data.contains(QStringLiteral("_classIdx"))) {
@@ -24,15 +24,15 @@ AwardQmlRenderer::AwardQmlRenderer(const AwardDesigner::Design &design,
 	}
 }
 
-QString AwardQmlRenderer::renderPageBase64(const QString &className, int pos)
+QString AwardQmlRenderer::renderPageBase64(const QString &class_name, int pos)
 {
-	const QString key = pageKey(className, pos);
+	const QString key = pageKey(class_name, pos);
 	if (!m_pageMap.contains(key)) {
 		qfWarning() << "Award page not found for key:" << key;
 		return {};
 	}
 
-	AwardPrintRenderer renderer(m_design);
+	AwardTypstRenderer renderer(m_design);
 	auto images = renderer.renderToImages({m_pageMap.value(key)}, 200);
 	if (images.isEmpty())
 		return {};
@@ -44,16 +44,16 @@ QString AwardQmlRenderer::renderPageBase64(const QString &className, int pos)
 	return QString::fromLatin1(png.toBase64());
 }
 
-QString AwardQmlRenderer::renderRunPageBase64(int classIdx, int runnerIdx)
+QString AwardQmlRenderer::renderRunPageBase64(int class_idx, int runner_idx)
 {
-	const QString key = runPageKey(classIdx, runnerIdx);
+	const QString key = runPageKey(class_idx, runner_idx);
 	if (!m_runPageMap.contains(key))
 		return {};
 	const QVariantMap &data = m_runPageMap.value(key);
 	if (data.value(QStringLiteral("pos")).toInt() <= 0)
 		return {};
 
-	AwardPrintRenderer renderer(m_design);
+	AwardTypstRenderer renderer(m_design);
 	auto images = renderer.renderToImages({data}, 200);
 	if (images.isEmpty())
 		return {};
@@ -65,9 +65,9 @@ QString AwardQmlRenderer::renderRunPageBase64(int classIdx, int runnerIdx)
 	return QString::fromLatin1(png.toBase64());
 }
 
-QString AwardQmlRenderer::pageKey(const QString &className, int pos)
+QString AwardQmlRenderer::pageKey(const QString &class_name, int pos)
 {
-	return className + QLatin1Char('|') + QString::number(pos);
+	return class_name + QLatin1Char('|') + QString::number(pos);
 }
 
 QString AwardQmlRenderer::runPageKey(int ci, int ri)

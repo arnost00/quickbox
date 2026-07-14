@@ -8,7 +8,7 @@
 #include "partwidget.h"
 
 #include <awarddesigner/awarddesign.h>
-#include <awarddesigner/awardprintrenderer.h>
+#include <awarddesigner/awardtypstrenderer.h>
 #include <awarddesigner/awardqmlrenderer.h>
 #include "relaystableitemdelegate.h"
 
@@ -609,7 +609,7 @@ void RelaysWidget::print_results_awards()
 			qfWarning() << "Award design not found in DB:" << design_name;
 			return;
 		}
-		AwardPrintRenderer renderer(design);
+		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
 		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);

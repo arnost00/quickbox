@@ -16,8 +16,8 @@ class AwardDesignerDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	explicit AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &availableFields,
-		const AwardDesigner::Design &defaultDesign,
+	explicit AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &available_fields,
+		const AwardDesigner::Design &default_design,
 		QWidget *parent = nullptr);
 	~AwardDesignerDialog() override;
 

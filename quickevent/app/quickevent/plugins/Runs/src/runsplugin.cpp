@@ -8,7 +8,7 @@
 #include "printawardsoptionsdialogwidget.h"
 
 #include <awarddesigner/awarddesign.h>
-#include <awarddesigner/awardprintrenderer.h>
+#include <awarddesigner/awardtypstrenderer.h>
 #include <awarddesigner/awardqmlrenderer.h>
 #include "services/resultsexporter.h"
 #include "partwidget.h"
@@ -2065,7 +2065,7 @@ void RunsPlugin::report_resultsAwards()
 			qfWarning() << "Award design not found in DB:" << design_name;
 			return;
 		}
-		AwardPrintRenderer renderer(design);
+		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
 		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
@@ -2162,7 +2162,7 @@ void RunsPlugin::report_nStagesAwards()
 			qfWarning() << "Award design not found in DB:" << design_name;
 			return;
 		}
-		AwardPrintRenderer renderer(design);
+		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
 		awardRenderer = new AwardQmlRenderer(design, pages);
 		props["awardRenderer"] = QVariant::fromValue(awardRenderer);

@@ -14,47 +14,47 @@ namespace AwardDesigner {
 QList<FieldDef> relayFields()
 {
 	return {
-		{QStringLiteral("eventName"),        TR("Název závodu")},
-		{QStringLiteral("date"),             TR("Datum")},
-		{QStringLiteral("place"),            TR("Místo konání")},
+		{QStringLiteral("eventName"), TR("Název závodu")},
+		{QStringLiteral("date"), TR("Datum")},
+		{QStringLiteral("place"), TR("Místo konání")},
 		{QStringLiteral("positionCategory"), TR("Pořadí v kategorii")},
-		{QStringLiteral("position"),         TR("Pořadí")},
-		{QStringLiteral("category"),         TR("Kategorie")},
-		{QStringLiteral("clubName"),         TR("Název štafety/klubu")},
-		{QStringLiteral("runners"),          TR("Závodníci (seznam)")},
-		{QStringLiteral("mainReferee"),      TR("Hlavní rozhodčí")},
-		{QStringLiteral("director"),         TR("Ředitel závodu")},
-		{QStringLiteral("customText"),       TR("Vlastní text")},
+		{QStringLiteral("position"), TR("Pořadí")},
+		{QStringLiteral("category"), TR("Kategorie")},
+		{QStringLiteral("clubName"), TR("Název štafety/klubu")},
+		{QStringLiteral("runners"), TR("Závodníci (seznam)")},
+		{QStringLiteral("mainReferee"), TR("Hlavní rozhodčí")},
+		{QStringLiteral("director"), TR("Ředitel závodu")},
+		{QStringLiteral("customText"), TR("Vlastní text")},
 	};
 }
 
 QList<FieldDef> runsFields()
 {
 	return {
-		{QStringLiteral("eventName"),        TR("Název závodu")},
-		{QStringLiteral("date"),             TR("Datum")},
-		{QStringLiteral("place"),            TR("Místo konání")},
+		{QStringLiteral("eventName"), TR("Název závodu")},
+		{QStringLiteral("date"), TR("Datum")},
+		{QStringLiteral("place"), TR("Místo konání")},
 		{QStringLiteral("positionCategory"), TR("Pořadí v kategorii")},
-		{QStringLiteral("position"),         TR("Pořadí")},
-		{QStringLiteral("category"),         TR("Kategorie")},
-		{QStringLiteral("competitorName"),   TR("Jméno závodníka")},
-		{QStringLiteral("clubName"),         TR("Klub")},
-		{QStringLiteral("mainReferee"),      TR("Hlavní rozhodčí")},
-		{QStringLiteral("director"),         TR("Ředitel závodu")},
-		{QStringLiteral("customText"),       TR("Vlastní text")},
+		{QStringLiteral("position"), TR("Pořadí")},
+		{QStringLiteral("category"), TR("Kategorie")},
+		{QStringLiteral("competitorName"), TR("Jméno závodníka")},
+		{QStringLiteral("clubName"), TR("Klub")},
+		{QStringLiteral("mainReferee"), TR("Hlavní rozhodčí")},
+		{QStringLiteral("director"), TR("Ředitel závodu")},
+		{QStringLiteral("customText"), TR("Vlastní text")},
 	};
 }
 
-static Item makeFieldItem(const QString &fieldId, qreal x, qreal y, qreal w, qreal h,
-	const QString &fontFamily, int fontSize, bool bold,
+static Item makeFieldItem(const QString &field_id, qreal x, qreal y, qreal w, qreal h,
+	const QString &font_family, int font_size, bool bold,
 	const QString &color = QStringLiteral("#000000"),
 	int halign = Qt::AlignHCenter)
 {
 	Item it;
 	it.kind = Item::Field;
-	it.fieldId = fieldId;
+	it.fieldId = field_id;
 	it.x = x; it.y = y; it.w = w; it.h = h;
-	it.fontFamily = fontFamily; it.fontSize = fontSize; it.bold = bold;
+	it.fontFamily = font_family; it.fontSize = font_size; it.bold = bold;
 	it.color = color; it.halign = halign;
 	return it;
 }
@@ -197,8 +197,9 @@ QJsonObject Design::toJson() const
 	o[QStringLiteral("pageW")] = pageW;
 	o[QStringLiteral("pageH")] = pageH;
 	QJsonArray arr;
-	for (const auto &item : items)
+	for (const auto &item : items) {
 		arr.append(item.toJson());
+	}
 	o[QStringLiteral("items")] = arr;
 	return o;
 }
@@ -211,8 +212,9 @@ Design Design::fromJson(const QJsonObject &o)
 	d.type = o[QStringLiteral("type")].toString(QStringLiteral("relay"));
 	d.pageW = o[QStringLiteral("pageW")].toDouble(210);
 	d.pageH = o[QStringLiteral("pageH")].toDouble(297);
-	for (const auto &v : o[QStringLiteral("items")].toArray())
+	for (const auto &v : o[QStringLiteral("items")].toArray()) {
 		d.items.append(Item::fromJson(v.toObject()));
+	}
 	return d;
 }
 
@@ -270,19 +272,21 @@ QStringList Design::listFromDb(const QString &type)
 	qf::core::sql::Query q;
 	q.exec(QStringLiteral("SELECT ckey, cvalue FROM config WHERE ckey LIKE 'awards.design.%' ORDER BY ckey"));
 	QStringList names;
-	const int prefixLen = QStringLiteral("awards.design.").length();
+	const int prefix_len = QStringLiteral("awards.design.").length();
 	while (q.next()) {
 		if (!type.isEmpty()) {
 			QJsonParseError err;
 			auto doc = QJsonDocument::fromJson(q.value(1).toString().toUtf8(), &err);
-			if (err.error != QJsonParseError::NoError)
+			if (err.error != QJsonParseError::NoError) {
 				continue;
+			}
 			// default "relay" for backward compat
 			QString t = doc.object().value(QStringLiteral("type")).toString(QStringLiteral("relay"));
-			if (t != type)
+			if (t != type) {
 				continue;
+			}
 		}
-		names << q.value(0).toString().mid(prefixLen);
+		names << q.value(0).toString().mid(prefix_len);
 	}
 	return names;
 }

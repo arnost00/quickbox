@@ -12,13 +12,13 @@
 #include <QTimer>
 #include <QWheelEvent>
 
-AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &availableFields,
-	const AwardDesigner::Design &defaultDesign,
+AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &available_fields,
+	const AwardDesigner::Design &default_design,
 	QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::AwardDesignerDialog)
-	, m_availableFields(availableFields)
-	, m_designType(defaultDesign.type)
+	, m_availableFields(available_fields)
+	, m_designType(default_design.type)
 {
 	ui->setupUi(this);
 
@@ -33,39 +33,40 @@ AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &a
 	ui->graphicsView->installEventFilter(this);
 
 	// Populate field selector in properties panel
-	for (const auto &fd : m_availableFields)
+	for (const auto &fd : m_availableFields) {
 		ui->cbxItemField->addItem(fd.label, fd.id);
+	}
 
 	ui->cbxAlign->clear();
-	ui->cbxAlign->addItem(tr("Vlevo"),    static_cast<int>(Qt::AlignLeft));
+	ui->cbxAlign->addItem(tr("Vlevo"), static_cast<int>(Qt::AlignLeft));
 	ui->cbxAlign->addItem(tr("Na střed"), static_cast<int>(Qt::AlignHCenter));
-	ui->cbxAlign->addItem(tr("Vpravo"),   static_cast<int>(Qt::AlignRight));
+	ui->cbxAlign->addItem(tr("Vpravo"), static_cast<int>(Qt::AlignRight));
 
 	connect(m_scene, &AwardDesignerScene::selectedItemChanged,
 		this, &AwardDesignerDialog::onSelectedItemChanged);
 
-	connect(ui->btnAddField,    &QPushButton::clicked, this, &AwardDesignerDialog::onAddFieldClicked);
-	connect(ui->btnAddImage,    &QPushButton::clicked, this, &AwardDesignerDialog::onAddImageClicked);
-	connect(ui->btnDelete,      &QPushButton::clicked, this, &AwardDesignerDialog::onDeleteItemClicked);
+	connect(ui->btnAddField, &QPushButton::clicked, this, &AwardDesignerDialog::onAddFieldClicked);
+	connect(ui->btnAddImage, &QPushButton::clicked, this, &AwardDesignerDialog::onAddImageClicked);
+	connect(ui->btnDelete, &QPushButton::clicked, this, &AwardDesignerDialog::onDeleteItemClicked);
 	connect(ui->btnBrowseImage, &QPushButton::clicked, this, &AwardDesignerDialog::onBrowseImageClicked);
-	connect(ui->btnColor,       &QPushButton::clicked, this, &AwardDesignerDialog::onChooseColorClicked);
-	connect(ui->btnSave,        &QPushButton::clicked, this, &AwardDesignerDialog::onSaveDesignClicked);
-	connect(ui->btnLoad,        &QPushButton::clicked, this, &AwardDesignerDialog::onLoadDesignClicked);
-	connect(ui->btnNew,         &QPushButton::clicked, this, &AwardDesignerDialog::onNewDesignClicked);
+	connect(ui->btnColor, &QPushButton::clicked, this, &AwardDesignerDialog::onChooseColorClicked);
+	connect(ui->btnSave, &QPushButton::clicked, this, &AwardDesignerDialog::onSaveDesignClicked);
+	connect(ui->btnLoad, &QPushButton::clicked, this, &AwardDesignerDialog::onLoadDesignClicked);
+	connect(ui->btnNew, &QPushButton::clicked, this, &AwardDesignerDialog::onNewDesignClicked);
 
-	auto propChanged = [this]() { onItemPropertyChanged(); };
-	connect(ui->spX,          qOverload<double>(&QDoubleSpinBox::valueChanged), this, propChanged);
-	connect(ui->spY,          qOverload<double>(&QDoubleSpinBox::valueChanged), this, propChanged);
-	connect(ui->spW,          qOverload<double>(&QDoubleSpinBox::valueChanged), this, propChanged);
-	connect(ui->spH,          qOverload<double>(&QDoubleSpinBox::valueChanged), this, propChanged);
-	connect(ui->cbxFont,      &QFontComboBox::currentFontChanged, this, propChanged);
-	connect(ui->spFontSize,   qOverload<int>(&QSpinBox::valueChanged), this, propChanged);
-	connect(ui->chkBold,      &QCheckBox::toggled, this, propChanged);
-	connect(ui->chkItalic,    &QCheckBox::toggled, this, propChanged);
-	connect(ui->cbxAlign,     qOverload<int>(&QComboBox::currentIndexChanged), this, propChanged);
-	connect(ui->cbxItemField,          qOverload<int>(&QComboBox::currentIndexChanged), this, propChanged);
-	connect(ui->edCustomText,          &QLineEdit::editingFinished,                     this, propChanged);
-	connect(ui->chkScaleProportional,  &QCheckBox::toggled,                             this, propChanged);
+	auto prop_changed = [this]() { onItemPropertyChanged(); };
+	connect(ui->spX, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spY, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spW, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spH, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->cbxFont, &QFontComboBox::currentFontChanged, this, prop_changed);
+	connect(ui->spFontSize, qOverload<int>(&QSpinBox::valueChanged), this, prop_changed);
+	connect(ui->chkBold, &QCheckBox::toggled, this, prop_changed);
+	connect(ui->chkItalic, &QCheckBox::toggled, this, prop_changed);
+	connect(ui->cbxAlign, qOverload<int>(&QComboBox::currentIndexChanged), this, prop_changed);
+	connect(ui->cbxItemField, qOverload<int>(&QComboBox::currentIndexChanged), this, prop_changed);
+	connect(ui->edCustomText, &QLineEdit::editingFinished, this, prop_changed);
+	connect(ui->chkScaleProportional, &QCheckBox::toggled, this, prop_changed);
 
 	connect(ui->btnFitView, &QPushButton::clicked, this, [this]() {
 		ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
@@ -80,7 +81,7 @@ AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &a
 	setPropsEnabled(false);
 
 	// Load default design on first open
-	loadDesign(defaultDesign);
+	loadDesign(default_design);
 }
 
 AwardDesignerDialog::~AwardDesignerDialog()
@@ -111,8 +112,9 @@ void AwardDesignerDialog::onSelectedItemChanged(AwardSceneItem *item)
 {
 	m_selectedItem = item;
 	setPropsEnabled(item != nullptr);
-	if (item)
+	if (item) {
 		populatePropsFromItem(item);
+	}
 }
 
 void AwardDesignerDialog::onAddFieldClicked()
@@ -159,8 +161,9 @@ void AwardDesignerDialog::onBrowseImageClicked()
 		tr("Obrázky (*.png *.jpg *.jpeg *.svg *.bmp);;Všechny soubory (*)"));
 	if (!path.isEmpty()) {
 		ui->edImagePath->setText(path);
-		if (!m_updatingProps)
+		if (!m_updatingProps) {
 			applyPropsToItem();
+		}
 	}
 }
 
@@ -170,15 +173,17 @@ void AwardDesignerDialog::onChooseColorClicked()
 	if (c.isValid()) {
 		m_colorHex = c.name();
 		updateColorButton();
-		if (!m_updatingProps)
+		if (!m_updatingProps) {
 			applyPropsToItem();
+		}
 	}
 }
 
 void AwardDesignerDialog::onItemPropertyChanged()
 {
-	if (!m_updatingProps)
+	if (!m_updatingProps) {
 		applyPropsToItem();
+	}
 }
 
 void AwardDesignerDialog::onSaveDesignClicked()
@@ -191,12 +196,13 @@ void AwardDesignerDialog::onSaveDesignClicked()
 	}
 	AwardDesigner::Design d = m_scene->collectDesign(name);
 	d.type = m_designType;
-	if (d.saveToDb())
+	if (d.saveToDb()) {
 		QMessageBox::information(this, tr("Uložit návrh"),
 			tr("Návrh '%1' byl uložen do databáze.").arg(name));
-	else
+	} else {
 		QMessageBox::critical(this, tr("Uložit návrh"),
 			tr("Návrh '%1' se nepodařilo uložit do databáze.").arg(name));
+	}
 }
 
 void AwardDesignerDialog::onLoadDesignClicked()
@@ -210,11 +216,13 @@ void AwardDesignerDialog::onLoadDesignClicked()
 	bool ok;
 	QString name = QInputDialog::getItem(this,
 		tr("Načíst návrh"), tr("Vyberte návrh:"), designs, 0, false, &ok);
-	if (!ok || name.isEmpty())
+	if (!ok || name.isEmpty()) {
 		return;
+	}
 	AwardDesigner::Design d = AwardDesigner::Design::loadFromDb(name);
-	if (d.isValid())
+	if (d.isValid()) {
 		loadDesign(d);
+	}
 }
 
 void AwardDesignerDialog::onNewDesignClicked()
@@ -286,8 +294,9 @@ void AwardDesignerDialog::populatePropsFromItem(AwardSceneItem *item)
 
 void AwardDesignerDialog::applyPropsToItem()
 {
-	if (!m_selectedItem)
+	if (!m_selectedItem) {
 		return;
+	}
 
 	AwardDesigner::Item &it = m_selectedItem->designItem();
 
@@ -297,19 +306,19 @@ void AwardDesignerDialog::applyPropsToItem()
 	it.h = ui->spH->value();
 
 	if (it.kind == AwardDesigner::Item::Field) {
-		it.fieldId  = ui->cbxItemField->currentData().toString();
+		it.fieldId = ui->cbxItemField->currentData().toString();
 		it.customText = ui->edCustomText->text();
 		it.fontFamily = ui->cbxFont->currentFont().family();
-		it.fontSize   = ui->spFontSize->value();
-		it.bold       = ui->chkBold->isChecked();
-		it.italic     = ui->chkItalic->isChecked();
-		it.color      = m_colorHex;
-		it.halign     = ui->cbxAlign->currentData().toInt();
+		it.fontSize = ui->spFontSize->value();
+		it.bold = ui->chkBold->isChecked();
+		it.italic = ui->chkItalic->isChecked();
+		it.color = m_colorHex;
+		it.halign = ui->cbxAlign->currentData().toInt();
 
 		// Show/hide custom text input depending on selected field
-		bool isCustom = (it.fieldId == QLatin1String("customText"));
-		ui->lblCustomText->setVisible(isCustom);
-		ui->edCustomText->setVisible(isCustom);
+		bool is_custom = (it.fieldId == QLatin1String("customText"));
+		ui->lblCustomText->setVisible(is_custom);
+		ui->edCustomText->setVisible(is_custom);
 	} else {
 		it.imagePath = ui->edImagePath->text();
 		it.scaleProportional = ui->chkScaleProportional->isChecked();
@@ -333,10 +342,10 @@ void AwardDesignerDialog::setPropsEnabled(bool enabled)
 
 void AwardDesignerDialog::updateItemKindVisibility(AwardDesigner::Item::Kind kind)
 {
-	bool isField = (kind == AwardDesigner::Item::Field);
-	ui->frameFieldContent->setVisible(isField);
-	ui->frameImageContent->setVisible(!isField);
-	ui->frameTextStyle->setVisible(isField);
+	bool is_field = (kind == AwardDesigner::Item::Field);
+	ui->frameFieldContent->setVisible(is_field);
+	ui->frameImageContent->setVisible(!is_field);
+	ui->frameTextStyle->setVisible(is_field);
 }
 
 void AwardDesignerDialog::showEvent(QShowEvent *event)
