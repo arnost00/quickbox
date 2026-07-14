@@ -11,6 +11,7 @@
 #include <qf/gui/framework/cursoroverrider.h>
 #include <qf/core/log.h>
 
+#include <QApplication>
 #include <QFile>
 #include <QImage>
 #include <QLabel>
@@ -50,6 +51,7 @@ AwardReportViewWidget::AwardReportViewWidget(const AwardDesigner::Design &design
 
 	AwardTypstRenderer renderer(m_design);
 	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
+	QApplication::processEvents(); // paint the wait cursor before the blocking Typst render
 	const QList<QByteArray> svgs = renderer.renderToSvgs(m_pages);
 	for (const QByteArray &svg : svgs) {
 		auto r = QSharedPointer<QSvgRenderer>::create();
@@ -398,6 +400,7 @@ void AwardReportViewWidget::file_exportPdf()
 	AwardTypstRenderer renderer(m_design);
 	QTemporaryDir temp_dir;
 	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
+	QApplication::processEvents(); // paint the wait cursor before the blocking Typst render
 	const QString pdf_path = renderer.renderToPdf(m_pages, temp_dir);
 	if (pdf_path.isEmpty()) {
 		qfWarning() << "Cannot render the award PDF document";
