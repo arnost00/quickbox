@@ -9,7 +9,7 @@
 
 #include <awarddesigner/awarddesign.h>
 #include <awarddesigner/awardtypstrenderer.h>
-#include <awarddesigner/awardqmlrenderer.h>
+#include <awarddesigner/awardreportviewwidget.h>
 #include "relaystableitemdelegate.h"
 
 #include <plugins/Event/src/eventplugin.h>
@@ -599,9 +599,6 @@ void RelaysWidget::print_results_awards()
 	QVariantMap props;
 	props["eventConfig"] = QVariant::fromValue(getPlugin<EventPlugin>()->eventConfig());
 
-	QString qmlFile;
-	AwardQmlRenderer *awardRenderer = nullptr;
-
 	if(rep_path.startsWith(DB_PREFIX)) {
 		QString design_name = rep_path.mid(DB_PREFIX.size());
 		AwardDesigner::Design design = AwardDesigner::Design::loadFromDb(design_name);
@@ -611,21 +608,17 @@ void RelaysWidget::print_results_awards()
 		}
 		AwardTypstRenderer renderer(design);
 		auto pages = renderer.collectPages(td, getPlugin<EventPlugin>()->eventConfig());
-		awardRenderer = new AwardQmlRenderer(design, pages);
-		props["awardRenderer"] = QVariant::fromValue(awardRenderer);
-		qmlFile = getPlugin<RelaysPlugin>()->findReportFile(QStringLiteral("award_db_design.qml"));
-	} else {
-		qmlFile = getPlugin<RelaysPlugin>()->findReportFile(rep_path);
+		AwardReportViewWidget dlg(design, pages, this);
+		dlg.exec();
+		return;
 	}
 
 	qf::gui::reports::ReportViewWidget::showReport(this,
-		qmlFile,
+		getPlugin<RelaysPlugin>()->findReportFile(rep_path),
 		td.toVariant(),
 		tr("Awards"),
 		"relaysAwards",
 		props);
-
-	delete awardRenderer;
 }
 
 void RelaysWidget::save_xml_file(QString str, QString fn) {

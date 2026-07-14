@@ -275,21 +275,21 @@ QString AwardTypstRenderer::buildTypstSource(const QList<AwardDesigner::Item> &s
 	return src;
 }
 
-QList<QImage> AwardTypstRenderer::renderToImages(const QList<QVariantMap> &pages, int dpi) const
+bool AwardTypstRenderer::compile(const QList<QVariantMap> &pages, const QString &format,
+	const QString &out_pattern, QTemporaryDir &out_dir, int dpi) const
 {
 	if (pages.isEmpty())
-		return {};
+		return false;
 
 	const QString typst = Typst::executablePath();
 	if (typst.isEmpty()) {
 		qfWarning() << "typst executable not found, cannot render awards";
-		return {};
+		return false;
 	}
 
-	QTemporaryDir temp_dir;
-	if (!temp_dir.isValid()) {
+	if (!out_dir.isValid()) {
 		qfWarning() << "Cannot create a temporary directory for Typst award rendering";
-		return {};
+		return false;
 	}
 
 	QList<AwardDesigner::Item> sorted = m_design.items;
@@ -297,43 +297,53 @@ QList<QImage> AwardTypstRenderer::renderToImages(const QList<QVariantMap> &pages
 		[](const AwardDesigner::Item &a, const AwardDesigner::Item &b) {
 			return a.zOrder < b.zOrder;
 		});
-	const QHash<QString, QString> image_file_names = copyImagesToDir(temp_dir.path());
+	const QHash<QString, QString> image_file_names = copyImagesToDir(out_dir.path());
 
 	QJsonArray pages_json;
 	for (const auto &page : pages)
 		pages_json.append(QJsonObject::fromVariantMap(page));
 	{
-		QFile data_file(temp_dir.filePath(QStringLiteral("data.json")));
+		QFile data_file(out_dir.filePath(QStringLiteral("data.json")));
 		if (!data_file.open(QIODevice::WriteOnly)) {
 			qfWarning() << "Cannot write Typst award data file";
-			return {};
+			return false;
 		}
 		data_file.write(QJsonDocument(pages_json).toJson(QJsonDocument::Compact));
 	}
 
 	const QString typ_source = buildTypstSource(sorted, image_file_names);
-	const QString typ_file_path = temp_dir.filePath(QStringLiteral("award.typ"));
+	const QString typ_file_path = out_dir.filePath(QStringLiteral("award.typ"));
 	{
 		QFile typ_file(typ_file_path);
 		if (!typ_file.open(QIODevice::WriteOnly)) {
 			qfWarning() << "Cannot write Typst award source file";
-			return {};
+			return false;
 		}
 		typ_file.write(typ_source.toUtf8());
 	}
 
+	QStringList args;
+	args << QStringLiteral("compile") << QStringLiteral("award.typ") << out_pattern
+		<< QStringLiteral("--format") << format;
+	if (dpi > 0)
+		args << QStringLiteral("--ppi") << QString::number(dpi);
+
 	QProcess process;
-	process.setWorkingDirectory(temp_dir.path());
-	process.start(typst, {
-		QStringLiteral("compile"), QStringLiteral("award.typ"), QStringLiteral("out-{p}.png"),
-		QStringLiteral("--format"), QStringLiteral("png"),
-		QStringLiteral("--ppi"), QString::number(dpi),
-	});
+	process.setWorkingDirectory(out_dir.path());
+	process.start(typst, args);
 	if (!process.waitForFinished(30000) || process.exitCode() != 0) {
 		qfWarning() << "typst compile failed:" << process.errorString()
 			<< QString::fromUtf8(process.readAllStandardError());
-		return {};
+		return false;
 	}
+	return true;
+}
+
+QList<QImage> AwardTypstRenderer::renderToImages(const QList<QVariantMap> &pages, int dpi) const
+{
+	QTemporaryDir temp_dir;
+	if (!compile(pages, QStringLiteral("png"), QStringLiteral("out-{p}.png"), temp_dir, dpi))
+		return {};
 
 	QList<QImage> images;
 	images.reserve(pages.size());
@@ -346,4 +356,36 @@ QList<QImage> AwardTypstRenderer::renderToImages(const QList<QVariantMap> &pages
 		images.append(std::move(img));
 	}
 	return images;
+}
+
+QString AwardTypstRenderer::renderToPdf(const QList<QVariantMap> &pages, QTemporaryDir &out_dir) const
+{
+	if (!compile(pages, QStringLiteral("pdf"), QStringLiteral("award.pdf"), out_dir))
+		return {};
+
+	const QString pdf_path = out_dir.filePath(QStringLiteral("award.pdf"));
+	if (!QFile::exists(pdf_path)) {
+		qfWarning() << "Typst did not produce the award PDF document";
+		return {};
+	}
+	return pdf_path;
+}
+
+QList<QByteArray> AwardTypstRenderer::renderToSvgs(const QList<QVariantMap> &pages) const
+{
+	QTemporaryDir temp_dir;
+	if (!compile(pages, QStringLiteral("svg"), QStringLiteral("out-{p}.svg"), temp_dir))
+		return {};
+
+	QList<QByteArray> svgs;
+	svgs.reserve(pages.size());
+	for (int i = 1; i <= pages.size(); ++i) {
+		QFile svg_file(temp_dir.filePath(QStringLiteral("out-%1.svg").arg(i)));
+		if (!svg_file.open(QIODevice::ReadOnly)) {
+			qfWarning() << "Typst did not produce page" << i << "of the award document";
+			continue;
+		}
+		svgs.append(svg_file.readAll());
+	}
+	return svgs;
 }

@@ -201,8 +201,8 @@ add_executable(quickevent
 	src/awarddesigner/awardtypstrenderer.cpp
 	src/awarddesigner/typstexecutable.h
 	src/awarddesigner/typstexecutable.cpp
-	src/awarddesigner/awardqmlrenderer.h
-	src/awarddesigner/awardqmlrenderer.cpp
+	src/awarddesigner/awardreportviewwidget.h
+	src/awarddesigner/awardreportviewwidget.cpp
 
 	src/appclioptions.cpp
 	src/application.cpp
