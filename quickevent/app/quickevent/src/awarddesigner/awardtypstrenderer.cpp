@@ -27,6 +27,7 @@ AwardTypstRenderer::AwardTypstRenderer(QString typ_source, QStringList image_fil
 AwardTypstRenderer::AwardTypstRenderer(const AwardDesigner::Design &design)
 	: m_typSource(design.toTypst())
 	, m_imageFiles(design.imageFiles())
+	, m_imageBlobs(design.imageBlobs())
 {
 }
 
@@ -191,6 +192,20 @@ QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::T
 void AwardTypstRenderer::copyImageFilesToDir(const QString &dir_path) const
 {
 	QSet<QString> copied; // by file name, to avoid duplicate copies / collisions
+
+	// Embedded image bytes are self-contained; write them first so a design renders
+	// even when the original file is missing on this machine.
+	for (const auto &blob : m_imageBlobs) {
+		const QString &file_name = blob.first;
+		if (file_name.isEmpty() || copied.contains(file_name))
+			continue;
+		QFile out(dir_path + QLatin1Char('/') + file_name);
+		if (out.open(QIODevice::WriteOnly) && out.write(blob.second) == blob.second.size())
+			copied.insert(file_name);
+		else
+			qfWarning() << "Cannot write embedded award image" << file_name << "for Typst rendering";
+	}
+
 	for (const QString &src : m_imageFiles) {
 		if (src.isEmpty())
 			continue;

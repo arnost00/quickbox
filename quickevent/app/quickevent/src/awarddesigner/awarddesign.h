@@ -1,4 +1,5 @@
 #pragma once
+#include <QByteArray>
 #include <QList>
 #include <QPair>
 #include <QSizeF>
@@ -26,6 +27,10 @@ struct Item {
 
 	// Image
 	QString imagePath;
+	// Image bytes embedded in the design so it renders on any machine without the
+	// original file. Populated from imagePath on save; imagePath is kept for the file
+	// name and re-browsing.
+	QByteArray imageData;
 
 	// Field
 	QString fieldId = QStringLiteral("eventName");
@@ -58,6 +63,13 @@ struct Design {
 
 	// Absolute paths of all image items, in item order.
 	QStringList imageFiles() const;
+
+	// (file name, bytes) for every image item carrying embedded data, in item order.
+	QList<QPair<QString, QByteArray>> imageBlobs() const;
+
+	// Fill imageData from imagePath for any image item that has a readable file but no
+	// embedded bytes yet, making the design self-contained.
+	void embedImages();
 
 	// Page size in mm read from a Typst award document (any .typ following the award
 	// contract), falling back to A4 when it cannot be determined.

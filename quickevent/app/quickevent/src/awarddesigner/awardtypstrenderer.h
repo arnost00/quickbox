@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QImage>
 #include <QList>
+#include <QPair>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -43,6 +44,9 @@ public:
 private:
 	QString m_typSource;
 	QStringList m_imageFiles;
+	// (file name, bytes) for images embedded in a design; written to the render dir
+	// before falling back to copying m_imageFiles by path.
+	QList<QPair<QString, QByteArray>> m_imageBlobs;
 
 	// Compile the document for all pages into out_dir/out-{p}.<ext>. Returns true on success.
 	bool compile(const QList<QVariantMap> &pages, const QString &format,

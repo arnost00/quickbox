@@ -303,7 +303,9 @@ void AwardSceneItem::ensurePixmap()
 		return;
 	}
 	m_pixmapLoaded = true;
-	if (!m_item.imagePath.isEmpty()) {
+	if (!m_item.imageData.isEmpty()) {
+		m_pixmap.loadFromData(m_item.imageData);
+	} else if (!m_item.imagePath.isEmpty()) {
 		m_pixmap.load(m_item.imagePath);
 	}
 }

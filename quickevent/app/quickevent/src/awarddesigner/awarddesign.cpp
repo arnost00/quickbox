@@ -194,6 +194,8 @@ static QString itemTag(const Item &it)
 	kv << QStringLiteral("h=") + QString::number(it.h, 'f', 3);
 	kv << QStringLiteral("zOrder=") + QString::number(it.zOrder);
 	kv << QStringLiteral("imagePath=") + enc(it.imagePath);
+	// base64 is space-free, so it survives the space-delimited tag parsing untouched
+	kv << QStringLiteral("imageData=") + QString::fromLatin1(it.imageData.toBase64());
 	kv << QStringLiteral("fieldId=") + enc(it.fieldId);
 	kv << QStringLiteral("customText=") + enc(it.customText);
 	kv << QStringLiteral("fontFamily=") + enc(it.fontFamily);
@@ -224,6 +226,7 @@ static Item itemFromTag(const QString &tag)
 	it.h = m.value(QStringLiteral("h"), QStringLiteral("15")).toDouble();
 	it.zOrder = m.value(QStringLiteral("zOrder")).toInt();
 	it.imagePath = dec(m.value(QStringLiteral("imagePath")));
+	it.imageData = QByteArray::fromBase64(m.value(QStringLiteral("imageData")).toLatin1());
 	it.fieldId = dec(m.value(QStringLiteral("fieldId"), QStringLiteral("eventName")));
 	it.customText = dec(m.value(QStringLiteral("customText")));
 	it.fontFamily = dec(m.value(QStringLiteral("fontFamily"), QStringLiteral("Arial")));
@@ -340,6 +343,27 @@ QStringList Design::imageFiles() const
 	return files;
 }
 
+QList<QPair<QString, QByteArray>> Design::imageBlobs() const
+{
+	QList<QPair<QString, QByteArray>> blobs;
+	for (const auto &item : items) {
+		if (item.kind == Item::Image && !item.imageData.isEmpty())
+			blobs << qMakePair(QFileInfo(item.imagePath).fileName(), item.imageData);
+	}
+	return blobs;
+}
+
+void Design::embedImages()
+{
+	for (auto &item : items) {
+		if (item.kind != Item::Image || !item.imageData.isEmpty() || item.imagePath.isEmpty())
+			continue;
+		QFile f(item.imagePath);
+		if (f.open(QIODevice::ReadOnly))
+			item.imageData = f.readAll();
+	}
+}
+
 QSizeF Design::pageSizeFromTypst(const QString &src)
 {
 	// Prefer the explicit designer header, fall back to the `#set page(...)` declaration.
@@ -365,7 +389,9 @@ bool Design::saveToDb() const
 		return false;
 	}
 	QString key = dbKey(name);
-	QString typ = toTypst();
+	Design self = *this;
+	self.embedImages();
+	QString typ = self.toTypst();
 	qf::core::sql::Query q_up;
 	q_up.prepare(QStringLiteral("UPDATE config SET cvalue=:val WHERE ckey=:key"));
 	q_up.bindValue(QStringLiteral(":key"), key);
