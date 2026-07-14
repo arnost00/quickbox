@@ -109,6 +109,9 @@ add_executable(quickevent
 	plugins/Event/src/services/qx/qxlateregistrationswidget.ui
 	plugins/Event/src/services/qx/runchangedialog.h plugins/Event/src/services/qx/runchangedialog.cpp plugins/Event/src/services/qx/runchangedialog.ui
 	plugins/Event/src/services/qx/runchange.h plugins/Event/src/services/qx/runchange.cpp
+	plugins/Event/src/services/punchingtest/punchingtestservice.h plugins/Event/src/services/punchingtest/punchingtestservice.cpp
+	plugins/Event/src/services/punchingtest/punchingtestservicewidget.h plugins/Event/src/services/punchingtest/punchingtestservicewidget.cpp
+	plugins/Event/src/services/punchingtest/punchingtestservicewidget.ui
 
 	plugins/Oris/src/chooseoriseventdialog.cpp
 	plugins/Oris/src/chooseoriseventdialog.ui
