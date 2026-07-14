@@ -8,6 +8,7 @@
 #include <qf/gui/toolbar.h>
 #include <qf/gui/dialogs/dialog.h>
 #include <qf/gui/dialogs/filedialog.h>
+#include <qf/gui/framework/cursoroverrider.h>
 #include <qf/core/log.h>
 
 #include <QFile>
@@ -48,6 +49,7 @@ AwardReportViewWidget::AwardReportViewWidget(const AwardDesigner::Design &design
 	setPersistentSettingsId(QStringLiteral("awardReportView"));
 
 	AwardTypstRenderer renderer(m_design);
+	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
 	const QList<QByteArray> svgs = renderer.renderToSvgs(m_pages);
 	for (const QByteArray &svg : svgs) {
 		auto r = QSharedPointer<QSvgRenderer>::create();
@@ -395,6 +397,7 @@ void AwardReportViewWidget::file_exportPdf()
 	// Use Typst's native PDF output for best (vector) quality.
 	AwardTypstRenderer renderer(m_design);
 	QTemporaryDir temp_dir;
+	qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
 	const QString pdf_path = renderer.renderToPdf(m_pages, temp_dir);
 	if (pdf_path.isEmpty()) {
 		qfWarning() << "Cannot render the award PDF document";

@@ -23,6 +23,7 @@
 #include <quickevent/core/runstatus.h>
 
 #include <qf/gui/framework/mainwindow.h>
+#include <qf/gui/framework/cursoroverrider.h>
 #include <qf/gui/framework/dockwidget.h>
 #include <qf/gui/action.h>
 #include <qf/gui/menubar.h>
@@ -39,6 +40,7 @@
 #include <qf/core/utils/treetable.h>
 #include <qf/gui/model/sqltablemodel.h>
 
+#include <QApplication>
 #include <QDesktopServices>
 #include <QFile>
 #include <QInputDialog>
@@ -949,8 +951,14 @@ QVariantMap RunsPlugin::printAwardsOptionsWithDialog(const QVariantMap &opts)
 {
 	qfInfo() << Q_FUNC_INFO;
 	QVariantMap ret;
-	auto *w = new PrintAwardsOptionsDialogWidget();
-	w->setPrintOptions(opts);
+	PrintAwardsOptionsDialogWidget *w;
+	{
+		// building the widget contacts the DB for available templates
+		qf::gui::framework::CursorOverrider cov(Qt::WaitCursor);
+		QApplication::processEvents(); // paint the wait cursor before the blocking DB query
+		w = new PrintAwardsOptionsDialogWidget();
+		w->setPrintOptions(opts);
+	}
 	qf::gui::dialogs::Dialog dlg(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, m_partWidget);
 	dlg.setCentralWidget(w);
 	if(dlg.exec()) {
