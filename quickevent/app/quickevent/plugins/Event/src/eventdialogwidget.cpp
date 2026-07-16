@@ -19,8 +19,7 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 	ui->stageStartTimesTable->verticalHeader()->hide();
-	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged),
-	        this, &EventDialogWidget::updateStageStartTimeEditors);
+	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged), this, &EventDialogWidget::updateStageStartTimeEditors);
 	updateStageStartTimeEditors(ui->ed_stageCount->value());
 
 	connect(ui->ed_iofRace, &QAbstractButton::toggled, ui->frameIofRace, &QWidget::setVisible);
@@ -77,6 +76,7 @@ void EventDialogWidget::updateStageStartTimeEditors(int stage_count)
 	const int old_count = table->rowCount();
 	if(stage_count < old_count) {
 		table->setRowCount(stage_count);
+		updateStageStartTimesTableHeight();
 		return;
 	}
 
@@ -98,6 +98,19 @@ void EventDialogWidget::updateStageStartTimeEditors(int stage_count)
 		table->setCellWidget(row, 1, editor);
 		next_start = next_start.addDays(1);
 	}
+	updateStageStartTimesTableHeight();
+}
+
+void EventDialogWidget::updateStageStartTimesTableHeight()
+{
+	QTableWidget *table = ui->stageStartTimesTable;
+	table->resizeRowsToContents();
+
+	const int visible_row_count = qMin(table->rowCount(), 5);
+	int height = table->horizontalHeader()->height() + 2 * table->frameWidth();
+	for(int row = 0; row < visible_row_count; ++row)
+		height += table->rowHeight(row);
+	table->setFixedHeight(height);
 }
 
 void EventDialogWidget::loadParams(const QVariantMap &params)

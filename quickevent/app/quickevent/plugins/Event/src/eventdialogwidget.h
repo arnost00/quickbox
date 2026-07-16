@@ -27,6 +27,7 @@ public:
 	static QString sportName(int sport_id);
 private:
 	void updateStageStartTimeEditors(int stage_count);
+	void updateStageStartTimesTableHeight();
 
 	QVariantMap m_stages;
 	Ui::EventDialogWidget *ui;
