@@ -26,6 +26,8 @@ public:
 	static QString disciplineName(int disc_id);
 	static QString sportName(int sport_id);
 private:
+	void updateStageStartTimeEditors(int stage_count);
+
 	Ui::EventDialogWidget *ui;
 };
 

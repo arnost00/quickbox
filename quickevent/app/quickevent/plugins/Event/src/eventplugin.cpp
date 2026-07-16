@@ -940,7 +940,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	bool ok = false;
 	//ConnectionSettings connection_settings;
 	event_config.setValue("event", new_params);
-	int stage_count = event_params.value("stageCount").toInt();
+	int stage_count = new_params.value("stageCount").toInt();
 	if(stage_count == 0)
 		stage_count = event_config.stageCount();
 	qfInfo() << "createEvent, stage_count:" << stage_count;
@@ -979,17 +979,20 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 			if(connection_type == ConnectionType::SqlServer) {
 				stage_table_name = event_id + '.' + stage_table_name;
 			}
-			QDateTime start_dt = event_config.eventDateTime();
+			const QDateTime default_start_dt = event_config.eventDateTime();
+			const QVariantMap stage_start_times = new_params.value("stageStartDateTimes").toMap();
 			// FIXME: handle SQL errors here and below in q.exec()
 			q.prepare("INSERT INTO " + stage_table_name + " (id, startDateTime) VALUES (:id, :startDateTime)");
 			for(int i=0; i<stage_count; i++) {
+				QDateTime start_dt = stage_start_times.value(QString::number(i + 1)).toDateTime();
+				if(!start_dt.isValid())
+					start_dt = default_start_dt.addDays(i);
 				q.bindValue(":id", i+1);
 				q.bindValue(":startDateTime", start_dt);
 				ok = q.exec();
 				if(!ok) {
 					break;
 				}
-				start_dt = start_dt.addDays(1);
 			}
 			if(!ok)
 				break;
@@ -1020,13 +1023,33 @@ void EventPlugin::editEvent()
 	event_w->setWindowTitle(tr("Edit event"));
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
-	event_w->loadParams(eventConfig()->value("event").toMap());
+	QVariantMap event_params = eventConfig()->value("event").toMap();
+	QVariantMap stage_start_times;
+	qfs::Query stage_query;
+	if(stage_query.exec("SELECT id, startDateTime FROM stages ORDER BY id")) {
+		while(stage_query.next()) {
+			stage_start_times.insert(stage_query.value(0).toString(),
+			                         stage_query.value(1).toDateTime().toLocalTime());
+		}
+	}
+	event_params.insert("stageStartDateTimes", stage_start_times);
+	event_w->loadParams(event_params);
 	dlg.setCentralWidget(event_w);
 	if(!dlg.exec())
 		return;
 
-	eventConfig()->setValue("event", event_w->saveParams());
+	event_params = event_w->saveParams();
+	eventConfig()->setValue("event", event_params);
 	eventConfig()->save("event");
+
+	stage_start_times = event_params.value("stageStartDateTimes").toMap();
+	stage_query.prepare("UPDATE stages SET startDateTime=:startDateTime WHERE id=:id");
+	for(auto it = stage_start_times.cbegin(); it != stage_start_times.cend(); ++it) {
+		stage_query.bindValue(":id", it.key().toInt());
+		stage_query.bindValue(":startDateTime", it.value().toDateTime());
+		stage_query.exec();
+	}
+	clearStageDataCache();
 }
 
 bool EventPlugin::closeEvent()

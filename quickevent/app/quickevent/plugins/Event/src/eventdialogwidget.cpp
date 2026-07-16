@@ -5,12 +5,23 @@
 
 #include <qf/core/collator.h>
 
+#include <QDateTimeEdit>
+#include <QHeaderView>
+#include <QTableWidget>
+
 EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	Super(parent),
 	ui(new Ui::EventDialogWidget)
 {
 	setPersistentSettingsId("EventDialogWidget");
 	ui->setupUi(this);
+
+	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+	ui->stageStartTimesTable->verticalHeader()->hide();
+	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged),
+	        this, &EventDialogWidget::updateStageStartTimeEditors);
+	updateStageStartTimeEditors(ui->ed_stageCount->value());
 
 	connect(ui->ed_iofRace, &QAbstractButton::toggled, ui->frameIofRace, &QWidget::setVisible);
 	ui->frameIofRace->hide();
@@ -60,10 +71,37 @@ void EventDialogWidget::setEventIdEditable(bool b)
 	ui->ed_eventId->setReadOnly(!b);
 }
 
+void EventDialogWidget::updateStageStartTimeEditors(int stage_count)
+{
+	QTableWidget *table = ui->stageStartTimesTable;
+	const int old_count = table->rowCount();
+	if(stage_count < old_count) {
+		table->setRowCount(stage_count);
+		return;
+	}
+
+	QDateTime next_start(ui->ed_date->date(), ui->ed_time->time());
+	if(old_count > 0) {
+		if(auto *last_editor = qobject_cast<QDateTimeEdit *>(table->cellWidget(old_count - 1, 1)))
+			next_start = last_editor->dateTime().addDays(1);
+	}
+
+	table->setRowCount(stage_count);
+	for(int row = old_count; row < stage_count; ++row) {
+		auto *stage_item = new QTableWidgetItem(QString::number(row + 1));
+		stage_item->setTextAlignment(Qt::AlignCenter);
+		table->setItem(row, 0, stage_item);
+
+		auto *editor = new QDateTimeEdit(next_start, table);
+		editor->setCalendarPopup(true);
+		editor->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+		table->setCellWidget(row, 1, editor);
+		next_start = next_start.addDays(1);
+	}
+}
+
 void EventDialogWidget::loadParams(const QVariantMap &params)
 {
-	ui->ed_stageCount->setValue(params.value("stageCount").toInt());
-	//ui->ed_currentStage->setValue(params.value("currentStageId").toInt());
 	ui->ed_name->setText(params.value("name").toString());
 	QDate date = params.value("date").toDate();
 	if(!date.isValid())
@@ -72,6 +110,18 @@ void EventDialogWidget::loadParams(const QVariantMap &params)
 	QTime time = params.value("time").toTime();
 	if(time.isValid())
 		ui->ed_time->setTime(time);
+
+	ui->stageStartTimesTable->setRowCount(0);
+	ui->ed_stageCount->setValue(params.value("stageCount", 1).toInt());
+	updateStageStartTimeEditors(ui->ed_stageCount->value());
+	const QVariantMap stage_start_times = params.value("stageStartDateTimes").toMap();
+	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
+		const QDateTime start_time = stage_start_times.value(QString::number(row + 1)).toDateTime();
+		if(start_time.isValid()) {
+			if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
+				editor->setDateTime(start_time);
+		}
+	}
 	ui->ed_description->setText(params.value("description").toString());
 	ui->ed_place->setText(params.value("place").toString());
 	ui->ed_mainReferee->setText(params.value("mainReferee").toString());
@@ -100,6 +150,12 @@ QVariantMap EventDialogWidget::saveParams()
 {
 	QVariantMap ret;
 	ret["stageCount"] = ui->ed_stageCount->value();
+	QVariantMap stage_start_times;
+	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
+		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
+			stage_start_times.insert(QString::number(row + 1), editor->dateTime());
+	}
+	ret["stageStartDateTimes"] = stage_start_times;
 	//ret["currentStageId"] = ui->ed_currentStage->value();
 	ret["name"] = ui->ed_name->text();
 	ret["date"] = ui->ed_date->date();
