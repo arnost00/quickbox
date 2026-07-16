@@ -397,7 +397,9 @@ void EventPlugin::onInstalled()
 	a_import->addActionBefore(m_actConnectDb);
 	a_import->addSeparatorBefore();
 
-	m_actEvent = m_actConnectDb->addMenuAfter("file.event", tr("&Event"));
+	qfw::Action *a_file = fwk->menuBar()->actionForPath("file", false);
+	Q_ASSERT(a_file);
+	m_actEvent = a_file->addMenuAfter("event", tr("&Event"));
 	m_actEvent->setEnabled(false);
 
 	m_actEvent->addActionInto(m_actCreateEvent);
