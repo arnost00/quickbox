@@ -2,10 +2,15 @@
 #include "ui_stagewidget.h"
 
 #include "stagedocument.h"
+#include "eventconfig.h"
+#include "eventplugin.h"
+
+#include <qf/gui/framework/mainwindow.h>
 
 #include <QTimeZone>
 
 using namespace Event;
+using qf::gui::framework::getPlugin;
 
 StageWidget::StageWidget(QWidget *parent) :
 	Super(parent),
@@ -26,20 +31,20 @@ StageWidget::~StageWidget()
 
 bool StageWidget::load(const QVariant &id, int mode)
 {
+	m_stageId = id.toInt();
 	bool ok  = Super::load(id, mode);
 	if(ok) {
-		QDateTime dt;
-		qf::gui::model::DataDocument *doc = dataDocument();
-		const auto START_DATE_TIME = QStringLiteral("startDateTime");
-		dt = doc->value(START_DATE_TIME).toDateTime().toLocalTime();
-		/*
-		if(!dt.isValid()) {
-			// try old DB version
-			QDate d = doc->value(QStringLiteral("startDate")).toDate();
-			QTime t = doc->value(QStringLiteral("startTime")).toTime();
-			dt = QDateTime(d, t);
+		const QString config_key = QStringLiteral("event.stage.%1.startDateTime").arg(m_stageId);
+		QDateTime dt = getPlugin<EventPlugin>()->eventConfig()->value(config_key).toDateTime();
+		if(dt.isValid()) {
+			dt = dt.toTimeZone(QTimeZone::systemTimeZone());
 		}
-		*/
+		else {
+			// Backward compatibility for events whose start time is still in stages.
+			qf::gui::model::DataDocument *doc = dataDocument();
+			dt = doc->value(QStringLiteral("startDateTime")).toDateTime().toLocalTime();
+		}
+
 		ui->dateEdit->setDate(dt.date());
 		ui->timeEdit->setTime(dt.time());
 	}
@@ -51,18 +56,12 @@ bool StageWidget::saveData()
 	QDate d = ui->dateEdit->date();
 	QTime t = ui->timeEdit->time();
 	QDateTime dt(d, t, QTimeZone::systemTimeZone());
-	qf::gui::model::DataDocument *doc = dataDocument();
-	const auto START_DATE_TIME = QStringLiteral("startDateTime");
-	doc->setValue(START_DATE_TIME, dt);
-	/*
-	if(doc->isValidFieldName(START_DATE_TIME)) {
-		doc->setValue(START_DATE_TIME, dt);
-	}
-	else {
-		// old DB version
-		doc->setValue(QStringLiteral("startDate"), d);
-		doc->setValue(QStringLiteral("startTime"), t);
-	}
-	*/
-	return Super::saveData();
+	if(!Super::saveData())
+		return false;
+
+	EventConfig *config = getPlugin<EventPlugin>()->eventConfig();
+	const QString config_key = QStringLiteral("event.stage.%1.startDateTime").arg(m_stageId);
+	config->setValue(config_key, dt);
+	config->save(config_key);
+	return true;
 }

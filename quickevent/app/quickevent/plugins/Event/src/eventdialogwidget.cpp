@@ -114,9 +114,10 @@ void EventDialogWidget::loadParams(const QVariantMap &params)
 	ui->stageStartTimesTable->setRowCount(0);
 	ui->ed_stageCount->setValue(params.value("stageCount", 1).toInt());
 	updateStageStartTimeEditors(ui->ed_stageCount->value());
-	const QVariantMap stage_start_times = params.value("stageStartDateTimes").toMap();
+	const QVariantMap stages = params.value("stage").toMap();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		const QDateTime start_time = stage_start_times.value(QString::number(row + 1)).toDateTime();
+		const QVariantMap stage = stages.value(QString::number(row + 1)).toMap();
+		const QDateTime start_time = stage.value("startDateTime").toDateTime();
 		if(start_time.isValid()) {
 			if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
 				editor->setDateTime(start_time);
@@ -150,12 +151,15 @@ QVariantMap EventDialogWidget::saveParams()
 {
 	QVariantMap ret;
 	ret["stageCount"] = ui->ed_stageCount->value();
-	QVariantMap stage_start_times;
+	QVariantMap stages;
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
-			stage_start_times.insert(QString::number(row + 1), editor->dateTime());
+		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1))) {
+			QVariantMap stage;
+			stage.insert("startDateTime", editor->dateTime());
+			stages.insert(QString::number(row + 1), stage);
+		}
 	}
-	ret["stageStartDateTimes"] = stage_start_times;
+	ret["stage"] = stages;
 	//ret["currentStageId"] = ui->ed_currentStage->value();
 	ret["name"] = ui->ed_name->text();
 	ret["date"] = ui->ed_date->date();

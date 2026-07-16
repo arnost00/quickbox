@@ -44,6 +44,7 @@
 
 #include <QInputDialog>
 #include <QDate>
+#include <QTimeZone>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -277,9 +278,13 @@ QTime EventPlugin::stageStartTime(int stage_id)
 
 QDateTime EventPlugin::stageStartDateTime(int stage_id)
 {
-	Event::StageData stage_data = stageData(stage_id);
-	QDateTime dt = stage_data.startDateTime();
-	return dt;
+	const QString config_key = QStringLiteral("event.stage.%1.startDateTime").arg(stage_id);
+	QDateTime dt = eventConfig()->value(config_key).toDateTime();
+	if(dt.isValid())
+		return dt.toTimeZone(QTimeZone::systemTimeZone());
+
+	// Events created before stage start times were moved to config keep the value in stages.
+	return stageData(stage_id).startDateTime();
 }
 
 int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
@@ -979,16 +984,10 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 			if(connection_type == ConnectionType::SqlServer) {
 				stage_table_name = event_id + '.' + stage_table_name;
 			}
-			const QDateTime default_start_dt = event_config.eventDateTime();
-			const QVariantMap stage_start_times = new_params.value("stageStartDateTimes").toMap();
-			// FIXME: handle SQL errors here and below in q.exec()
-			q.prepare("INSERT INTO " + stage_table_name + " (id, startDateTime) VALUES (:id, :startDateTime)");
+			// Stage start times are stored in config as event.stage.<id>.startDateTime.
+			q.prepare("INSERT INTO " + stage_table_name + " (id) VALUES (:id)");
 			for(int i=0; i<stage_count; i++) {
-				QDateTime start_dt = stage_start_times.value(QString::number(i + 1)).toDateTime();
-				if(!start_dt.isValid())
-					start_dt = default_start_dt.addDays(i);
 				q.bindValue(":id", i+1);
-				q.bindValue(":startDateTime", start_dt);
 				ok = q.exec();
 				if(!ok) {
 					break;
@@ -1024,15 +1023,19 @@ void EventPlugin::editEvent()
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
 	QVariantMap event_params = eventConfig()->value("event").toMap();
-	QVariantMap stage_start_times;
+	QVariantMap stages = event_params.value("stage").toMap();
 	qfs::Query stage_query;
 	if(stage_query.exec("SELECT id, startDateTime FROM stages ORDER BY id")) {
 		while(stage_query.next()) {
-			stage_start_times.insert(stage_query.value(0).toString(),
-			                         stage_query.value(1).toDateTime().toLocalTime());
+			const QString stage_id = stage_query.value(0).toString();
+			QVariantMap stage = stages.value(stage_id).toMap();
+			if(!stage.value("startDateTime").toDateTime().isValid()) {
+				stage.insert("startDateTime", stage_query.value(1).toDateTime().toLocalTime());
+				stages.insert(stage_id, stage);
+			}
 		}
 	}
-	event_params.insert("stageStartDateTimes", stage_start_times);
+	event_params.insert("stage", stages);
 	event_w->loadParams(event_params);
 	dlg.setCentralWidget(event_w);
 	if(!dlg.exec())
@@ -1041,15 +1044,6 @@ void EventPlugin::editEvent()
 	event_params = event_w->saveParams();
 	eventConfig()->setValue("event", event_params);
 	eventConfig()->save("event");
-
-	stage_start_times = event_params.value("stageStartDateTimes").toMap();
-	stage_query.prepare("UPDATE stages SET startDateTime=:startDateTime WHERE id=:id");
-	for(auto it = stage_start_times.cbegin(); it != stage_start_times.cend(); ++it) {
-		stage_query.bindValue(":id", it.key().toInt());
-		stage_query.bindValue(":startDateTime", it.value().toDateTime());
-		stage_query.exec();
-	}
-	clearStageDataCache();
 }
 
 bool EventPlugin::closeEvent()

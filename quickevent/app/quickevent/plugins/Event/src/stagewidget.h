@@ -24,6 +24,7 @@ public:
 protected:
 	bool saveData() Q_DECL_OVERRIDE;
 private:
+	int m_stageId = 0;
 	Ui::StageWidget *ui;
 };
 
