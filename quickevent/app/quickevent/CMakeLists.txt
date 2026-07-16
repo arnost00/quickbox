@@ -65,6 +65,7 @@ add_executable(quickevent
 	plugins/Event/src/connectionsettings.cpp
 	plugins/Event/src/dbschema.cpp
 	plugins/Event/src/eventconfig.cpp
+	plugins/Event/src/eventconfigdata.cpp
 	plugins/Event/src/eventdialogwidget.cpp
 	plugins/Event/src/eventdialogwidget.ui
 	plugins/Event/src/eventplugin.cpp

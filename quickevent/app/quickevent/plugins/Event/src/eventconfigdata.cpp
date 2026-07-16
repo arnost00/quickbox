@@ -1,0 +1,77 @@
+#include "eventconfigdata.h"
+
+#include <qf/core/utils.h>
+
+Event::EventConfigData Event::EventConfigData::fromVariantMap(const QVariantMap &values)
+{
+	EventConfigData data;
+	data.stageCount = values.value("stageCount", 1).toInt();
+	const QVariantMap stages = values.value("stage").toMap();
+	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
+		const int stage_id = it.key().toInt();
+		if(stage_id <= 0)
+			continue;
+		const QVariantMap stage_values = it.value().toMap();
+		StageData stage;
+		stage.startDateTime = stage_values.value("startDateTime").toDateTime();
+		stage.useAllMaps = stage_values.value("useAllMaps").toBool();
+		const QVariant drawing_config = stage_values.value("drawingConfig");
+		stage.drawingConfig = drawing_config.userType() == qMetaTypeId<QString>()
+			? qf::core::Utils::jsonToQVariant(drawing_config.toString()).toMap()
+			: drawing_config.toMap();
+		stage.qxApiToken = stage_values.value("qxApiToken").toString();
+		data.stages.insert(stage_id, stage);
+	}
+	data.name = values.value("name").toString();
+	data.date = values.value("date").toDate();
+	data.time = values.value("time").toTime();
+	data.description = values.value("description").toString();
+	data.place = values.value("place").toString();
+	data.mainReferee = values.value("mainReferee").toString();
+	data.director = values.value("director").toString();
+	data.handicapLength = values.value("handicapLength").toInt();
+	data.sportId = values.value("sportId").toInt();
+	data.disciplineId = values.value("disciplineId").toInt();
+	data.importId = values.value("importId").toInt();
+	data.orisEventKey = values.value("orisEventKey").toString();
+	data.cardCheckTimeSec = values.value("cardChechCheckTimeSec").toInt();
+	data.oneTenthSecResults = values.value("oneTenthSecResults").toInt();
+	data.iofRace = values.value("iofRace").toBool();
+	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
+	data.currentStageId = values.value("currentStageId", 1).toInt();
+	return data;
+}
+
+QVariantMap Event::EventConfigData::toVariantMap() const
+{
+	QVariantMap values;
+	values.insert("stageCount", stageCount);
+	QVariantMap stage_values;
+	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
+		QVariantMap stage;
+		stage.insert("startDateTime", it.value().startDateTime);
+		stage.insert("useAllMaps", it.value().useAllMaps);
+		stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(it.value().drawingConfig));
+		stage.insert("qxApiToken", it.value().qxApiToken);
+		stage_values.insert(QString::number(it.key()), stage);
+	}
+	values.insert("stage", stage_values);
+	values.insert("name", name);
+	values.insert("date", date);
+	values.insert("time", time);
+	values.insert("description", description);
+	values.insert("place", place);
+	values.insert("mainReferee", mainReferee);
+	values.insert("director", director);
+	values.insert("handicapLength", handicapLength);
+	values.insert("sportId", sportId);
+	values.insert("disciplineId", disciplineId);
+	values.insert("importId", importId);
+	values.insert("orisEventKey", orisEventKey);
+	values.insert("cardChechCheckTimeSec", cardCheckTimeSec);
+	values.insert("oneTenthSecResults", oneTenthSecResults);
+	values.insert("iofRace", iofRace);
+	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
+	values.insert("currentStageId", currentStageId);
+	return values;
+}
