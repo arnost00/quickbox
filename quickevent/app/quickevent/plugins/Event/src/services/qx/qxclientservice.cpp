@@ -201,7 +201,7 @@ void QxClientService::postStartListIofXml3(QObject *context, std::function<void 
 {
 	auto *ep = getPlugin<EventPlugin>();
 	int current_stage = ep->currentStageId();
-	bool is_relays = ep->eventConfig()->isRelays();
+	bool is_relays = ep->appDbConfig()->isRelays();
 	if (!is_relays) {
 		auto xml = getPlugin<RunsPlugin>()->startListStageIofXml30(current_stage, quickevent::gui::ReportOptionsDialog::VacantsOption::OnlyRunners);
 		uploadSpecFile(SpecFile::StartListIofXml3, xml.toUtf8(), context, call_back);
@@ -212,7 +212,7 @@ void QxClientService::postRuns(QObject *context, std::function<void (QString)> c
 {
 	auto *ep = getPlugin<EventPlugin>();
 	int current_stage = ep->currentStageId();
-	bool is_relays = ep->eventConfig()->isRelays();
+	bool is_relays = ep->appDbConfig()->isRelays();
 	if (!is_relays) {
 		auto runs = getPlugin<RunsPlugin>()->qxExportRunsCsvJson(current_stage);
 		auto json = qf::core::Utils::qvariantToJsonUtf8(runs, false);
@@ -483,7 +483,7 @@ void QxClientService::pollQxChanges()
 EventInfo QxClientService::eventInfo() const
 {
 	auto *event_plugin = getPlugin<EventPlugin>();
-	auto *event_config = event_plugin->eventConfig();
+	auto *event_config = event_plugin->appDbConfig();
 	EventInfo ei;
 	ei.set_stage(event_plugin->currentStageId());
 	ei.set_stage_count(event_plugin->stageCount());

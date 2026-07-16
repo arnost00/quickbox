@@ -94,7 +94,7 @@ EditCoursesWidget::EditCoursesWidget(int stage_id, QWidget *parent)
 	QHeaderView *hh = ui->tblCourses->horizontalHeader();
 	hh->setSectionHidden(CoursesTableModel::Col_runCount, true);
 
-	if (getPlugin<Event::EventPlugin>()->eventConfig()->isRelays()) {
+	if (getPlugin<Event::EventPlugin>()->appDbConfig()->isRelays()) {
 		ui->cbRunnersCount->setVisible(false);
 	} else {
 		connect (ui->cbRunnersCount,&QCheckBox::clicked,this,&EditCoursesWidget::updateQuery);
@@ -135,7 +135,7 @@ void EditCoursesWidget::updateQuery()
 
 
 	qfs::QueryBuilder qb;
-	if (getPlugin<Event::EventPlugin>()->eventConfig()->isRelays()) {
+	if (getPlugin<Event::EventPlugin>()->appDbConfig()->isRelays()) {
 		qb.select2("courses", "*")
 				.select("0 AS run_count")
 				.select(code_list_query + "AS code_list")

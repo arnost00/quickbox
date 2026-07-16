@@ -1,8 +1,8 @@
 #ifndef EVENTPLUGIN_H
 #define EVENTPLUGIN_H
 
-#include "eventconfig.h"
-#include "stage.h"
+#include "appdbconfig.h"
+#include "stagedata.h"
 
 #include <qf/gui/framework/plugin.h>
 
@@ -64,7 +64,7 @@ public:
 	static constexpr auto DBEVENT_QX_RECCHNG = "qxRecChng";
 
 	Q_INVOKABLE void initEventConfig();
-	Event::EventConfig* eventConfig(bool reload = false);
+	Event::AppDbConfig* appDbConfig(bool reload = false);
 	int stageCount();
 
 	Q_SLOT void setCurrentStageId(int stage_id);
@@ -166,7 +166,7 @@ private:
 	qf::gui::Action *m_actSetCurrentStage = nullptr;
 	qf::gui::Action *m_actExportEvent_qbe = nullptr;
 	qf::gui::Action *m_actImportEvent_qbe = nullptr;
-	Event::EventConfig *m_eventConfig = nullptr;
+	Event::AppDbConfig *m_eventConfig = nullptr;
 	bool m_sqlServerConnected = false;
 	int m_currentStageId = 0;
 	QMap<int, StageData> m_stageCache;

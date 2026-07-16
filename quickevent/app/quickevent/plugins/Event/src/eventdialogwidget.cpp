@@ -1,7 +1,7 @@
 #include "eventdialogwidget.h"
 #include "ui_eventdialogwidget.h"
 
-#include "eventconfig.h"
+#include "appdbconfig.h"
 
 #include <qf/core/collator.h>
 
@@ -30,11 +30,11 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	connect(ui->ed_orisRace, &QAbstractButton::toggled, ui->frameOrisRace, &QWidget::setVisible);
 	ui->frameOrisRace->hide();
 
-	using S = Event::EventConfig::Sport;
+	using S = Event::AppDbConfig::Sport;
 	for (S sport : {S::OB, S::LOB, S::MTBO, S::TRAIL})
 		ui->cbxSportId->addItem(sportName(static_cast<int>(sport)), static_cast<int>(sport));
 
-	using D = Event::EventConfig::Discipline;
+	using D = Event::AppDbConfig::Discipline;
 	for (D disc : {D::LongDistance, D::ShortDistance, D::UltralongDistance, D::Sprint,
 	               D::Relays, D::Teams, D::FreeOrder, D::NightRace, D::SprintRelays,
 	               D::KnocOutSprint, D::TempO, D::MultiStages, D::Indoor, D::MassStart}) {
@@ -115,7 +115,7 @@ void EventDialogWidget::updateStageStartTimesTableHeight()
 	table->setFixedHeight(height);
 }
 
-void EventDialogWidget::loadParams(const Event::EventConfigData &params)
+void EventDialogWidget::loadParams(const Event::EventConfig &params)
 {
 	m_data = params;
 	ui->ed_name->setText(params.name);
@@ -155,9 +155,9 @@ void EventDialogWidget::loadParams(const Event::EventConfigData &params)
 	ui->ed_xmlRaceNumber->setValue(params.iofXmlRaceNumber);
 }
 
-Event::EventConfigData EventDialogWidget::saveParams()
+Event::EventConfig EventDialogWidget::saveParams()
 {
-	Event::EventConfigData data = m_data;
+	Event::EventConfig data = m_data;
 	data.stageCount = ui->ed_stageCount->value();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
 		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
@@ -172,10 +172,10 @@ Event::EventConfigData EventDialogWidget::saveParams()
 	data.director = ui->ed_director->text();
 	data.handicapLength = ui->ed_handicapLength->value();
 	data.sportId = ui->cbxSportId->currentData().isNull()
-		? static_cast<int>(Event::EventConfig::Sport::OB)
+		? static_cast<int>(Event::AppDbConfig::Sport::OB)
 		: ui->cbxSportId->currentData().toInt();
 	data.disciplineId = ui->cbxDisciplineId->currentIndex() <= 0
-		? static_cast<int>(Event::EventConfig::Discipline::LongDistance)
+		? static_cast<int>(Event::AppDbConfig::Discipline::LongDistance)
 		: ui->cbxDisciplineId->currentData().toInt();
 	data.importId = ui->ed_orisImportId->text().toInt();
 	data.orisEventKey = ui->ed_orisEventKey->text();
@@ -188,7 +188,7 @@ Event::EventConfigData EventDialogWidget::saveParams()
 
 QString EventDialogWidget::disciplineName(int disc_id)
 {
-	using D = Event::EventConfig::Discipline;
+	using D = Event::AppDbConfig::Discipline;
 	switch (static_cast<D>(disc_id)) {
 	case D::LongDistance:      return tr("Long distance");
 	case D::ShortDistance:     return tr("Middle distance");
@@ -210,7 +210,7 @@ QString EventDialogWidget::disciplineName(int disc_id)
 
 QString EventDialogWidget::sportName(int sport_id)
 {
-	using S = Event::EventConfig::Sport;
+	using S = Event::AppDbConfig::Sport;
 	switch (static_cast<S>(sport_id)) {
 	case S::OB:    return QStringLiteral("OB");
 	case S::LOB:   return QStringLiteral("LOB");

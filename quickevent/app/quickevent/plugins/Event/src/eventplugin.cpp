@@ -209,17 +209,17 @@ EventPlugin::~EventPlugin()
 void EventPlugin::initEventConfig()
 {
 	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::EventConfig();
+		m_eventConfig = new Event::AppDbConfig();
 	}
 	else {
 		qfWarning() << "Event config exists already!";
 	}
 }
 
-Event::EventConfig *EventPlugin::eventConfig(bool reload)
+Event::AppDbConfig *EventPlugin::appDbConfig(bool reload)
 {
 	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::EventConfig();
+		m_eventConfig = new Event::AppDbConfig();
 		reload = true;
 	}
 	if(reload) {
@@ -233,7 +233,7 @@ int EventPlugin::stageCount()
 {
 	if(eventName().isEmpty())
 		return 0;
-	return eventConfig()->stageCount();
+	return appDbConfig()->stageCount();
 }
 
 void EventPlugin::setCurrentStageId(int stage_id)
@@ -317,7 +317,7 @@ StageData EventPlugin::stageData(int stage_id)
 
 		// Config values take precedence over legacy table values.
 		const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-		const QVariantMap config_data = eventConfig()->value(config_prefix).toMap();
+		const QVariantMap config_data = appDbConfig()->value(config_prefix).toMap();
 		if(config_data.contains(STAGE_START_DATE_TIME_KEY))
 			data.startDateTime = config_data.value(STAGE_START_DATE_TIME_KEY).toDateTime();
 		if(config_data.contains(STAGE_USE_ALL_MAPS_KEY))
@@ -335,7 +335,7 @@ StageData EventPlugin::stageData(int stage_id)
 
 void EventPlugin::setStageData(int stage_id, const StageData &data)
 {
-	EventConfig *config = eventConfig();
+	AppDbConfig *config = appDbConfig();
 	const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
 	config->setValue(config_prefix + '.' + STAGE_START_DATE_TIME_KEY, data.startDateTime);
 	config->setValue(config_prefix + '.' + STAGE_USE_ALL_MAPS_KEY, data.useAllMaps);
@@ -501,16 +501,16 @@ void EventPlugin::loadCurrentStageId()
 {
 	int stage_id = 1;
 	if(!eventName().isEmpty()) {
-		stage_id = eventConfig()->currentStageId();
+		stage_id = appDbConfig()->currentStageId();
 	}
 	setCurrentStageId(stage_id);
 }
 
 void EventPlugin::saveCurrentStageId(int current_stage)
 {
-	if(current_stage != eventConfig()->currentStageId()) {
-		eventConfig()->setValue("event.currentStageId", current_stage);
-		eventConfig()->save("event");
+	if(current_stage != appDbConfig()->currentStageId()) {
+		appDbConfig()->setValue("event.currentStageId", current_stage);
+		appDbConfig()->save("event");
 	}
 }
 
@@ -917,7 +917,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	else
 		existing_event_ids = existingSqlEventNames();
 	QString event_id = event_name;
-	EventConfigData new_params = EventConfigData::fromVariantMap(event_params);
+	EventConfig new_params = EventConfig::fromVariantMap(event_params);
 	do {
 		qfd::Dialog dlg(fwk);
 		dlg.setButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -944,7 +944,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 
 	closeEvent();
 
-	Event::EventConfig event_config;
+	Event::AppDbConfig event_config;
 	bool ok = false;
 	//ConnectionSettings connection_settings;
 	event_config.setValue("event", new_params.toVariantMap());
@@ -1025,7 +1025,7 @@ void EventPlugin::editEvent()
 	event_w->setWindowTitle(tr("Edit event"));
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
-	EventConfigData event_data = EventConfigData::fromVariantMap(eventConfig()->value("event").toMap());
+	EventConfig event_data = EventConfig::fromVariantMap(appDbConfig()->value("event").toMap());
 	for(int stage_id = 1; stage_id <= event_data.stageCount; ++stage_id)
 		event_data.stages.insert(stage_id, stageData(stage_id));
 	event_w->loadParams(event_data);
@@ -1034,8 +1034,8 @@ void EventPlugin::editEvent()
 		return;
 
 	event_data = event_w->saveParams();
-	eventConfig()->setValue("event", event_data.toVariantMap());
-	eventConfig()->save("event");
+	appDbConfig()->setValue("event", event_data.toVariantMap());
+	appDbConfig()->save("event");
 }
 
 bool EventPlugin::closeEvent()
@@ -1154,7 +1154,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 		}
 	}
 	if(ok) {
-		EventConfig *evc = eventConfig(true);
+		AppDbConfig *evc = appDbConfig(true);
 		if(evc->dbVersion() < dbVersion()) {
 			qfd::MessageBox::showError(fwk, tr("Event data version (%1) is too low, minimal version is (%2).\nUse: File --> Import --> Event (*.qbe) to convert event to current version.")
 									   .arg(qf::core::Utils::intToVersionString(evc->dbVersion()))

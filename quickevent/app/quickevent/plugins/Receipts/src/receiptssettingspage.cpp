@@ -389,7 +389,7 @@ void ReceiptsSettingsPage::load()
 	}
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->eventConfig();
+	auto *event_config = event_plugin->appDbConfig();
 	Q_ASSERT(event_config);
 	m_stageId = qMax(event_config->currentStageId(), 1);
 	ui->chkPrintReceiptQrCode->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool());
@@ -427,7 +427,7 @@ void ReceiptsSettingsPage::save()
 
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->eventConfig();
+	auto *event_config = event_plugin->appDbConfig();
 	Q_ASSERT(event_config);
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), ui->chkPrintReceiptQrCode->isChecked());
 	event_config->setValue(eventConfigKey(QStringLiteral("receiptEventLinkUrl")), ui->edReceiptQrCodeBaseUrl->text().trimmed());
@@ -445,7 +445,7 @@ QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const
 
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->eventConfig();
+	auto *event_config = event_plugin->appDbConfig();
 	Q_ASSERT(event_config);
 
 	const int stage_id = qMax(m_stageId, 1);

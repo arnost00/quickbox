@@ -63,7 +63,7 @@ QString eventConfigKey(const QString &suffix)
 
 QString configuredReceiptEventLinkUrl()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed();
 }
 
 QString defaultReceiptQrCodeCaption()
@@ -73,7 +73,7 @@ QString defaultReceiptQrCodeCaption()
 
 QString configuredReceiptQrCodeCaption()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed();
 }
 
 QString receiptLinkWithCompetitorClass(const QString &base_url, const QString &class_name)
@@ -100,28 +100,28 @@ QString receiptLinkWithCompetitorClass(const QString &base_url, const QString &c
 
 bool printReceiptImageEnabled()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool();
 }
 
 bool printReceiptQrCodeEnabled()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool();
 }
 
 QString configuredReceiptImageBase64()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString();
 }
 
 QString configuredReceiptImageFormat()
 {
-	return getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptImageFormat")), QStringLiteral("png")).toString().trimmed().toLower();
+	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageFormat")), QStringLiteral("png")).toString().trimmed().toLower();
 }
 
 int configuredReceiptImageHeightMm()
 {
 	bool ok = false;
-	int image_height_mm = getPlugin<EventPlugin>()->eventConfig()->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt(&ok);
+	int image_height_mm = getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt(&ok);
 	if(!ok)
 		return 18;
 	if(image_height_mm < 10)
@@ -403,7 +403,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 {
 	qfLogFuncFrame() << card_id;
 	QF_TIME_SCOPE("receiptTablesData()");
-	bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
 	QVariantMap ret;
 	quickevent::core::si::ReadCard read_card = getPlugin<CardReaderPlugin>()->readCard(card_id);
 	quickevent::core::si::CheckedCard checked_card = getPlugin<CardReaderPlugin>()->checkCard(read_card);

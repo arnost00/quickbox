@@ -1,7 +1,7 @@
 #ifndef EVENTDIALOGWIDGET_H
 #define EVENTDIALOGWIDGET_H
 
-#include "eventconfigdata.h"
+#include "eventconfig.h"
 
 #include <qf/gui/framework/dialogwidget.h>
 
@@ -22,8 +22,8 @@ public:
 	QString eventId() const;
 	void setEventIdEditable(bool b);
 
-	void loadParams(const Event::EventConfigData &params);
-	Event::EventConfigData saveParams();
+	void loadParams(const Event::EventConfig &params);
+	Event::EventConfig saveParams();
 
 	static QString disciplineName(int disc_id);
 	static QString sportName(int sport_id);
@@ -31,7 +31,7 @@ private:
 	void updateStageStartTimeEditors(int stage_count);
 	void updateStageStartTimesTableHeight();
 
-	Event::EventConfigData m_data;
+	Event::EventConfig m_data;
 	Ui::EventDialogWidget *ui;
 };
 
