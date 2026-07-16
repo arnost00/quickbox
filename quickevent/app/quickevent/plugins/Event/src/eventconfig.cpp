@@ -307,20 +307,4 @@ QString EventConfig::orisEventKey() const
 	return value(QStringLiteral("event.orisEventKey")).toString();
 }
 
-/*
-const QSet<QString> &EventConfig::knownKeys()
-{
-	static QSet<QString> s;
-	if(s.isEmpty()) {
-		s << "event.stageCount"
-		  << EVENT_NAME
-		  << "event.date"
-		  << "event.description"
-		  << "event.place"
-		  << "event.mainReferee"
-		  << "event.director"
-		  << "event.importId";
-	}
-	return s;
-}
-*/
+

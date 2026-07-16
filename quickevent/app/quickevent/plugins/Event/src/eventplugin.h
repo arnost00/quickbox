@@ -29,7 +29,7 @@ static constexpr auto RESULTS_IOFXML3_FILE = "results-iof3.xml";
 class EventPlugin : public qf::gui::framework::Plugin
 {
 	Q_OBJECT
-	Q_PROPERTY(QObject* eventConfig READ eventConfig)
+
 	Q_PROPERTY(int currentStageId READ currentStageId NOTIFY currentStageIdChanged)
 	Q_PROPERTY(int stageCount READ stageCount)
 	Q_PROPERTY(QString eventName READ eventName WRITE setEventName NOTIFY eventNameChanged)

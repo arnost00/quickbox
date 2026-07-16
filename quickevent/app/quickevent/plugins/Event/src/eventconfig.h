@@ -12,14 +12,6 @@ namespace Event {
 
 class EventConfig
 {
-	// Q_PROPERTY(int stageCount READ stageCount)
-	// Q_PROPERTY(bool isHandicap READ isHandicap)
-	// Q_PROPERTY(bool isRelays READ isRelays)
-	// Q_PROPERTY(bool isIofRace READ isIofRace)
-	// Q_PROPERTY(bool iofXmlRaceNumber READ iofXmlRaceNumber)
-	// Q_PROPERTY(QString director READ director)
-	// Q_PROPERTY(QString mainReferee READ mainReferee)
-	//Q_PROPERTY(QString eventName READ eventName)
 public:
 	enum class Sport {OB = 1, LOB, MTBO, TRAIL};
 	enum class Discipline {LongDistance = 1,
@@ -66,7 +58,6 @@ public:
 	bool isIofRace() const;
 	int iofXmlRaceNumber() const;
 	QString eventName() const;
-	// QString apiKey() const;
 	QString eventPlace() const;
 	QString director() const;
 	QString mainReferee() const;
@@ -76,7 +67,6 @@ public:
 	bool isOneTenthSecResults() const;
 	QString orisEventKey() const;
 private:
-	// void checkApiKey();
 	void save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val);
 	QVariantMap setValue_helper(const QVariantMap &m, const QStringList &path, const QVariant &val);
 private:
