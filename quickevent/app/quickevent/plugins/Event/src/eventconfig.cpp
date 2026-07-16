@@ -40,10 +40,6 @@ std::optional<EventConfig::Discipline> EventConfig::disciplineFromInt(int i)
 	return {};
 }
 
-EventConfig::EventConfig()
-{
-}
-
 QVariant EventConfig::value(const QStringList &path, const QVariant &default_value) const
 {
 	//QF_ASSERT(knownKeys().contains(key), "Key " + key + " is not known key!", return QVariant());

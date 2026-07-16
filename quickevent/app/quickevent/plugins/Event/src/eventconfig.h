@@ -31,7 +31,7 @@ public:
 						  };
 	static std::optional<Discipline> disciplineFromInt(int i);
 public:
-	explicit EventConfig();
+	explicit EventConfig() = default;
 public:
 	QVariantMap values() const {return m_data;}
 	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
