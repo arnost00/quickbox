@@ -536,7 +536,6 @@ void EventPlugin::setCurrentStage()
 	dialog.setLabelText(tr("Stage:"));
 	dialog.setComboBoxItems(stages);
 	dialog.setComboBoxEditable(false);
-	dialog.setOption(QInputDialog::UseListViewForComboBoxItems);
 	dialog.setTextValue(stages.value(currentStageId() - 1, stages.first()));
 	if(dialog.exec() == QDialog::Accepted)
 		setCurrentStageId(stages.indexOf(dialog.textValue()) + 1);

@@ -36,11 +36,10 @@ private:
 	QLabel *m_lblMessage;
 	QProgressBar *m_progress;
 	QLabel *m_lblEvent;
-	QPushButton *m_btStage;
+	QPushButton *m_btCurrentStage;
 
 	QString m_eventName;
 	int m_stageNo = 0;
 };
 
 }
-
