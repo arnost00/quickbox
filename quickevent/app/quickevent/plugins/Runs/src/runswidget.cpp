@@ -694,7 +694,7 @@ void RunsWidget::onDrawClicked()
 	int stage_id = selectedStageId();
 	DrawMethod draw_method = DrawMethod(ui->cbxDrawMethod->currentData().toInt());
 	Event::StageData stage_data = getPlugin<EventPlugin>()->stageData(stage_id);
-	bool use_all_maps = stage_data.isUseAllMaps();
+	bool use_all_maps = stage_data.useAllMaps;
 	qfDebug() << "DrawMethod:" << (int)draw_method << "use_all_maps:" << use_all_maps;
 	QList<int> class_ids;
 	int class_id = m_cbxClasses->currentData().toInt();

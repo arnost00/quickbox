@@ -110,6 +110,10 @@ QByteArray DbEventPayload::toJson() const
 
 namespace {
 const auto QBE_EXT = QStringLiteral(".qbe");
+const auto STAGE_START_DATE_TIME_KEY = QStringLiteral("startDateTime");
+const auto STAGE_USE_ALL_MAPS_KEY = QStringLiteral("useAllMaps");
+const auto STAGE_DRAWING_CONFIG_KEY = QStringLiteral("drawingConfig");
+const auto STAGE_QX_API_TOKEN_KEY = QStringLiteral("qxApiToken");
 
 QString singleFileStorageDir()
 {
@@ -277,7 +281,7 @@ QTime EventPlugin::stageStartTime(int stage_id)
 
 QDateTime EventPlugin::stageStartDateTime(int stage_id)
 {
-	return stageData(stage_id).startDateTime();
+	return stageData(stage_id).startDateTime;
 }
 
 int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
@@ -294,43 +298,32 @@ int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
 StageData EventPlugin::stageData(int stage_id)
 {
 	if(!m_stageCache.contains(stage_id)) {
-		static const QMap<QString, QString> config_keys {
-			{QStringLiteral("startdatetime"), QStringLiteral("startDateTime")},
-			{QStringLiteral("useallmaps"), QStringLiteral("useAllMaps")},
-			{QStringLiteral("drawingconfig"), QStringLiteral("drawingConfig")},
-			{QStringLiteral("qxapitoken"), QStringLiteral("qxApiToken")},
-		};
-
 		StageData data;
-		const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-		const QVariantMap config_data = eventConfig()->value(config_prefix).toMap();
-		for(auto it = config_keys.cbegin(); it != config_keys.cend(); ++it) {
-			if(!config_data.contains(it.value()))
-				continue;
-			QVariant value = config_data.value(it.value());
-			if(it.key() == QLatin1String("drawingconfig") && value.userType() == qMetaTypeId<QString>())
-				value = qf::core::Utils::jsonToQVariant(value.toString());
-			data.insert(it.key(), value);
-		}
 
-		// Fill keys missing from config from the legacy stages table.
+		// Load defaults from the legacy stages table.
 		qfs::Query q;
 		q.prepare("SELECT * FROM stages WHERE id=:id");
 		q.bindValue(":id", stage_id);
 		if(q.exec() && q.next()) {
-			const QSqlRecord record = q.record();
-			for(auto it = config_keys.cbegin(); it != config_keys.cend(); ++it) {
-				if(data.contains(it.key()))
-					continue;
-				const int field_index = record.indexOf(it.value());
-				if(field_index < 0)
-					continue;
-				QVariant value = q.value(field_index);
-				if(it.key() == QLatin1String("drawingconfig") && value.userType() == qMetaTypeId<QString>())
-					value = qf::core::Utils::jsonToQVariant(value.toString());
-				data.insert(it.key(), value);
-			}
+			data.startDateTime = q.value(STAGE_START_DATE_TIME_KEY).toDateTime();
+			data.useAllMaps = q.value(STAGE_USE_ALL_MAPS_KEY).toBool();
+			data.drawingConfig = qf::core::Utils::jsonToQVariant(q.value(STAGE_DRAWING_CONFIG_KEY).toString()).toMap();
+			data.qxApiToken = q.value(STAGE_QX_API_TOKEN_KEY).toString();
 		}
+
+		// Config values take precedence over legacy table values.
+		const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
+		const QVariantMap config_data = eventConfig()->value(config_prefix).toMap();
+		if(config_data.contains(STAGE_START_DATE_TIME_KEY))
+			data.startDateTime = config_data.value(STAGE_START_DATE_TIME_KEY).toDateTime();
+		if(config_data.contains(STAGE_USE_ALL_MAPS_KEY))
+			data.useAllMaps = config_data.value(STAGE_USE_ALL_MAPS_KEY).toBool();
+		if(config_data.contains(STAGE_DRAWING_CONFIG_KEY))
+			data.drawingConfig = qf::core::Utils::jsonToQVariant(config_data.value(STAGE_DRAWING_CONFIG_KEY).toString()).toMap();
+		if(config_data.contains(STAGE_QX_API_TOKEN_KEY))
+			data.qxApiToken = config_data.value(STAGE_QX_API_TOKEN_KEY).toString();
+
+		data.startDateTime = data.startDateTime.toTimeZone(QTimeZone::systemTimeZone());
 		m_stageCache[stage_id] = data;
 	}
 	return m_stageCache.value(stage_id);
@@ -338,23 +331,12 @@ StageData EventPlugin::stageData(int stage_id)
 
 void EventPlugin::setStageData(int stage_id, const StageData &data)
 {
-	static const QMap<QString, QString> config_keys {
-		{QStringLiteral("startdatetime"), QStringLiteral("startDateTime")},
-		{QStringLiteral("useallmaps"), QStringLiteral("useAllMaps")},
-		{QStringLiteral("drawingconfig"), QStringLiteral("drawingConfig")},
-		{QStringLiteral("qxapitoken"), QStringLiteral("qxApiToken")},
-	};
-
 	EventConfig *config = eventConfig();
 	const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-	for(auto it = config_keys.cbegin(); it != config_keys.cend(); ++it) {
-		if(!data.contains(it.key()))
-			continue;
-		QVariant value = data.value(it.key());
-		if(it.key() == QLatin1String("drawingconfig") && value.userType() != qMetaTypeId<QString>())
-			value = qf::core::Utils::qvariantToJson(value);
-		config->setValue(config_prefix + '.' + it.value(), value);
-	}
+	config->setValue(config_prefix + '.' + STAGE_START_DATE_TIME_KEY, data.startDateTime);
+	config->setValue(config_prefix + '.' + STAGE_USE_ALL_MAPS_KEY, data.useAllMaps);
+	config->setValue(config_prefix + '.' + STAGE_DRAWING_CONFIG_KEY, qf::core::Utils::qvariantToJson(data.drawingConfig));
+	config->setValue(config_prefix + '.' + STAGE_QX_API_TOKEN_KEY, data.qxApiToken);
 	config->save(config_prefix);
 	m_stageCache.remove(stage_id);
 }
@@ -1037,14 +1019,14 @@ void EventPlugin::editEvent()
 		const QString stage_key = QString::number(stage_id);
 		QVariantMap stage = stages.value(stage_key).toMap();
 		const StageData stage_data = stageData(stage_id);
-		if(!stage.contains("startDateTime") && stage_data.contains("startdatetime"))
-			stage.insert("startDateTime", stage_data.value("startdatetime"));
-		if(!stage.contains("useAllMaps") && stage_data.contains("useallmaps"))
-			stage.insert("useAllMaps", stage_data.value("useallmaps"));
-		if(!stage.contains("drawingConfig") && stage_data.contains("drawingconfig"))
-			stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(stage_data.value("drawingconfig")));
-		if(!stage.contains("qxApiToken") && stage_data.contains("qxapitoken"))
-			stage.insert("qxApiToken", stage_data.value("qxapitoken"));
+		if(!stage.contains(STAGE_START_DATE_TIME_KEY) && stage_data.startDateTime.isValid())
+			stage.insert(STAGE_START_DATE_TIME_KEY, stage_data.startDateTime);
+		if(!stage.contains(STAGE_USE_ALL_MAPS_KEY))
+			stage.insert(STAGE_USE_ALL_MAPS_KEY, stage_data.useAllMaps);
+		if(!stage.contains(STAGE_DRAWING_CONFIG_KEY))
+			stage.insert(STAGE_DRAWING_CONFIG_KEY, qf::core::Utils::qvariantToJson(stage_data.drawingConfig));
+		if(!stage.contains(STAGE_QX_API_TOKEN_KEY))
+			stage.insert(STAGE_QX_API_TOKEN_KEY, stage_data.qxApiToken);
 		stages.insert(stage_key, stage);
 	}
 	event_params.insert("stage", stages);
@@ -1640,4 +1622,3 @@ const qf::core::utils::Table &EventPlugin::registrationsTable()
 }
 
 }
-

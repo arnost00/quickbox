@@ -98,7 +98,7 @@ bool QxClientServiceWidget::saveSettings()
 
 		auto current_stage = event_plugin->currentStageId();
 		auto stage_data = event_plugin->stageData(current_stage);
-		stage_data.setQxApiToken(ui->edApiToken->text());
+		stage_data.qxApiToken = ui->edApiToken->text();
 		event_plugin->setStageData(current_stage, stage_data);
 	}
 	return true;

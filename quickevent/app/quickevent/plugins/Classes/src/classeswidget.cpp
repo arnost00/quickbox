@@ -157,7 +157,7 @@ ClassesWidget::ClassesWidget(QWidget *parent) :
 	connect(ui->chkUseAllMaps, &QCheckBox::toggled, this, [this](bool checked) {
 		auto evplugin = getPlugin<EventPlugin>();
 		auto data = evplugin->stageData(selectedStageId());
-		data.setUseAllMaps(checked);
+		data.useAllMaps = checked;
 		evplugin->setStageData(selectedStageId(), data);
 	});
 }
@@ -353,7 +353,7 @@ void ClassesWidget::reload()
 		}
 		m_courseItemDelegate->setCourses(courses);
 	}
-	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->stageData(stage_id).isUseAllMaps());
+	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->stageData(stage_id).useAllMaps);
 	reloadCourseCodes();
 }
 
