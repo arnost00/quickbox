@@ -917,7 +917,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	else
 		existing_event_ids = existingSqlEventNames();
 	QString event_id = event_name;
-	QVariantMap new_params = event_params;
+	EventConfigData new_params = EventConfigData::fromVariantMap(event_params);
 	do {
 		qfd::Dialog dlg(fwk);
 		dlg.setButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -947,8 +947,8 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	Event::EventConfig event_config;
 	bool ok = false;
 	//ConnectionSettings connection_settings;
-	event_config.setValue("event", new_params);
-	int stage_count = new_params.value("stageCount").toInt();
+	event_config.setValue("event", new_params.toVariantMap());
+	int stage_count = new_params.stageCount;
 	if(stage_count == 0)
 		stage_count = event_config.stageCount();
 	qfInfo() << "createEvent, stage_count:" << stage_count;
@@ -1025,31 +1025,16 @@ void EventPlugin::editEvent()
 	event_w->setWindowTitle(tr("Edit event"));
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
-	QVariantMap event_params = eventConfig()->value("event").toMap();
-	QVariantMap stages = event_params.value("stage").toMap();
-	const int stage_count = event_params.value("stageCount").toInt();
-	for(int stage_id = 1; stage_id <= stage_count; ++stage_id) {
-		const QString stage_key = QString::number(stage_id);
-		QVariantMap stage = stages.value(stage_key).toMap();
-		const StageData stage_data = stageData(stage_id);
-		if(!stage.contains(STAGE_START_DATE_TIME_KEY) && stage_data.startDateTime.isValid())
-			stage.insert(STAGE_START_DATE_TIME_KEY, stage_data.startDateTime);
-		if(!stage.contains(STAGE_USE_ALL_MAPS_KEY))
-			stage.insert(STAGE_USE_ALL_MAPS_KEY, stage_data.useAllMaps);
-		if(!stage.contains(STAGE_DRAWING_CONFIG_KEY))
-			stage.insert(STAGE_DRAWING_CONFIG_KEY, qf::core::Utils::qvariantToJson(stage_data.drawingConfig));
-		if(!stage.contains(STAGE_QX_API_TOKEN_KEY))
-			stage.insert(STAGE_QX_API_TOKEN_KEY, stage_data.qxApiToken);
-		stages.insert(stage_key, stage);
-	}
-	event_params.insert("stage", stages);
-	event_w->loadParams(event_params);
+	EventConfigData event_data = EventConfigData::fromVariantMap(eventConfig()->value("event").toMap());
+	for(int stage_id = 1; stage_id <= event_data.stageCount; ++stage_id)
+		event_data.stages.insert(stage_id, stageData(stage_id));
+	event_w->loadParams(event_data);
 	dlg.setCentralWidget(event_w);
 	if(!dlg.exec())
 		return;
 
-	event_params = event_w->saveParams();
-	eventConfig()->setValue("event", event_params);
+	event_data = event_w->saveParams();
+	eventConfig()->setValue("event", event_data.toVariantMap());
 	eventConfig()->save("event");
 }
 

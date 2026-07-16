@@ -4,10 +4,85 @@
 #include "eventconfig.h"
 
 #include <qf/core/collator.h>
+#include <qf/core/utils.h>
 
 #include <QDateTimeEdit>
 #include <QHeaderView>
 #include <QTableWidget>
+
+Event::EventConfigData Event::EventConfigData::fromVariantMap(const QVariantMap &values)
+{
+	EventConfigData data;
+	data.stageCount = values.value("stageCount", 1).toInt();
+	const QVariantMap stages = values.value("stage").toMap();
+	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
+		const int stage_id = it.key().toInt();
+		if(stage_id <= 0)
+			continue;
+		const QVariantMap stage_values = it.value().toMap();
+		StageData stage;
+		stage.startDateTime = stage_values.value("startDateTime").toDateTime();
+		stage.useAllMaps = stage_values.value("useAllMaps").toBool();
+		const QVariant drawing_config = stage_values.value("drawingConfig");
+		stage.drawingConfig = drawing_config.userType() == qMetaTypeId<QString>()
+			? qf::core::Utils::jsonToQVariant(drawing_config.toString()).toMap()
+			: drawing_config.toMap();
+		stage.qxApiToken = stage_values.value("qxApiToken").toString();
+		data.stages.insert(stage_id, stage);
+	}
+	data.name = values.value("name").toString();
+	data.date = values.value("date").toDate();
+	data.time = values.value("time").toTime();
+	data.description = values.value("description").toString();
+	data.place = values.value("place").toString();
+	data.mainReferee = values.value("mainReferee").toString();
+	data.director = values.value("director").toString();
+	data.handicapLength = values.value("handicapLength").toInt();
+	data.sportId = values.value("sportId").toInt();
+	data.disciplineId = values.value("disciplineId").toInt();
+	data.importId = values.value("importId").toInt();
+	data.orisEventKey = values.value("orisEventKey").toString();
+	data.cardCheckTimeSec = values.value("cardChechCheckTimeSec").toInt();
+	data.oneTenthSecResults = values.value("oneTenthSecResults").toInt();
+	data.iofRace = values.value("iofRace").toBool();
+	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
+	data.currentStageId = values.value("currentStageId", 1).toInt();
+	return data;
+}
+
+QVariantMap Event::EventConfigData::toVariantMap() const
+{
+	QVariantMap values;
+	values.insert("stageCount", stageCount);
+	QVariantMap stage_values;
+	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
+		QVariantMap stage;
+		stage.insert("startDateTime", it.value().startDateTime);
+		stage.insert("useAllMaps", it.value().useAllMaps);
+		stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(it.value().drawingConfig));
+		stage.insert("qxApiToken", it.value().qxApiToken);
+		stage_values.insert(QString::number(it.key()), stage);
+	}
+	values.insert("stage", stage_values);
+	values.insert("name", name);
+	values.insert("date", date);
+	values.insert("time", time);
+	values.insert("description", description);
+	values.insert("place", place);
+	values.insert("mainReferee", mainReferee);
+	values.insert("director", director);
+	values.insert("handicapLength", handicapLength);
+	values.insert("sportId", sportId);
+	values.insert("disciplineId", disciplineId);
+	values.insert("importId", importId);
+	values.insert("orisEventKey", orisEventKey);
+	values.insert("cardChechCheckTimeSec", cardCheckTimeSec);
+	values.insert("oneTenthSecResults", oneTenthSecResults);
+	values.insert("iofRace", iofRace);
+	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
+	values.insert("currentStageId", currentStageId);
+	return values;
+}
 
 EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	Super(parent),
@@ -113,91 +188,75 @@ void EventDialogWidget::updateStageStartTimesTableHeight()
 	table->setFixedHeight(height);
 }
 
-void EventDialogWidget::loadParams(const QVariantMap &params)
+void EventDialogWidget::loadParams(const Event::EventConfigData &params)
 {
-	ui->ed_name->setText(params.value("name").toString());
-	QDate date = params.value("date").toDate();
-	if(!date.isValid())
-		date = QDate::currentDate();
-	ui->ed_date->setDate(date);
-	QTime time = params.value("time").toTime();
-	if(time.isValid())
-		ui->ed_time->setTime(time);
+	m_data = params;
+	ui->ed_name->setText(params.name);
+	ui->ed_date->setDate(params.date.isValid() ? params.date : QDate::currentDate());
+	if(params.time.isValid())
+		ui->ed_time->setTime(params.time);
 
 	ui->stageStartTimesTable->setRowCount(0);
-	ui->ed_stageCount->setValue(params.value("stageCount", 1).toInt());
+	ui->ed_stageCount->setValue(params.stageCount);
 	updateStageStartTimeEditors(ui->ed_stageCount->value());
-	m_stages = params.value("stage").toMap();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		const QVariantMap stage = m_stages.value(QString::number(row + 1)).toMap();
-		const QDateTime start_time = stage.value("startDateTime").toDateTime();
+		const QDateTime start_time = params.stages.value(row + 1).startDateTime;
 		if(start_time.isValid()) {
 			if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
 				editor->setDateTime(start_time);
 		}
 	}
-	ui->ed_description->setText(params.value("description").toString());
-	ui->ed_place->setText(params.value("place").toString());
-	ui->ed_mainReferee->setText(params.value("mainReferee").toString());
-	ui->ed_director->setText(params.value("director").toString());
-	ui->ed_handicapLength->setValue(params.value("handicapLength").toInt());
-	if (auto ix = ui->cbxSportId->findData(params.value("sportId").toInt()); ix < 0) {
+	ui->ed_description->setText(params.description);
+	ui->ed_place->setText(params.place);
+	ui->ed_mainReferee->setText(params.mainReferee);
+	ui->ed_director->setText(params.director);
+	ui->ed_handicapLength->setValue(params.handicapLength);
+	if(auto ix = ui->cbxSportId->findData(params.sportId); ix < 0)
 		ui->cbxSportId->setCurrentIndex(0);
-	} else {
+	else
 		ui->cbxSportId->setCurrentIndex(ix);
-	}
-	if (auto ix = ui->cbxDisciplineId->findData(params.value("disciplineId").toInt()); ix < 0) {
+	if(auto ix = ui->cbxDisciplineId->findData(params.disciplineId); ix < 0)
 		ui->cbxDisciplineId->setCurrentIndex(0);
-	} else {
+	else
 		ui->cbxDisciplineId->setCurrentIndex(ix);
-	}
-	ui->ed_orisImportId->setText(params.value("importId").toString());
-	ui->ed_orisRace->setChecked(!ui->ed_orisImportId->text().isEmpty());
-	ui->ed_orisEventKey->setText(params.value("orisEventKey").toString());
-	ui->ed_cardChecCheckTimeSec->setValue(params.value("cardChechCheckTimeSec").toInt());
-	ui->ed_oneTenthSecResults->setCurrentIndex(params.value("oneTenthSecResults").toInt());
-	ui->ed_iofRace->setChecked(params.value("iofRace").toInt() != 0);
-	ui->ed_xmlRaceNumber->setValue(params.value("iofXmlRaceNumber").toInt());
+	ui->ed_orisImportId->setText(params.importId > 0 ? QString::number(params.importId) : QString());
+	ui->ed_orisRace->setChecked(params.importId > 0);
+	ui->ed_orisEventKey->setText(params.orisEventKey);
+	ui->ed_cardChecCheckTimeSec->setValue(params.cardCheckTimeSec);
+	ui->ed_oneTenthSecResults->setCurrentIndex(params.oneTenthSecResults);
+	ui->ed_iofRace->setChecked(params.iofRace);
+	ui->ed_xmlRaceNumber->setValue(params.iofXmlRaceNumber);
 }
 
-QVariantMap EventDialogWidget::saveParams()
+Event::EventConfigData EventDialogWidget::saveParams()
 {
-	QVariantMap ret;
-	ret["stageCount"] = ui->ed_stageCount->value();
-	QVariantMap stages = m_stages;
+	Event::EventConfigData data = m_data;
+	data.stageCount = ui->ed_stageCount->value();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1))) {
-			const QString stage_id = QString::number(row + 1);
-			QVariantMap stage = stages.value(stage_id).toMap();
-			stage.insert("startDateTime", editor->dateTime());
-			if(!stage.contains("useAllMaps"))
-				stage.insert("useAllMaps", false);
-			if(!stage.contains("drawingConfig"))
-				stage.insert("drawingConfig", QStringLiteral("{}"));
-			if(!stage.contains("qxApiToken"))
-				stage.insert("qxApiToken", QString());
-			stages.insert(stage_id, stage);
-		}
+		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
+			data.stages[row + 1].startDateTime = editor->dateTime();
 	}
-	ret["stage"] = stages;
-	//ret["currentStageId"] = ui->ed_currentStage->value();
-	ret["name"] = ui->ed_name->text();
-	ret["date"] = ui->ed_date->date();
-	ret["time"] = ui->ed_time->time();
-	ret["description"] = ui->ed_description->text();
-	ret["place"] = ui->ed_place->text();
-	ret["mainReferee"] = ui->ed_mainReferee->text();
-	ret["director"] = ui->ed_director->text();
-	ret["handicapLength"] = ui->ed_handicapLength->value();
-	ret["sportId"] = ui->cbxSportId->currentData().isNull() ? static_cast<int>(Event::EventConfig::Sport::OB) : ui->cbxSportId->currentData().toInt();
-	ret["disciplineId"] = (ui->cbxDisciplineId->currentIndex() <= 0) ? static_cast<int>(Event::EventConfig::Discipline::LongDistance) : ui->cbxDisciplineId->currentData();
-	ret["importId"] = ui->ed_orisImportId->text().toInt();
-	ret["orisEventKey"] = ui->ed_orisEventKey->text();
-	ret["cardChechCheckTimeSec"] = ui->ed_cardChecCheckTimeSec->value();
-	ret["oneTenthSecResults"] = ui->ed_oneTenthSecResults->currentIndex();
-	ret["iofRace"] = (int)ui->ed_iofRace->isChecked();
-	ret["iofXmlRaceNumber"] = ui->ed_xmlRaceNumber->value();
-	return ret;
+	data.name = ui->ed_name->text();
+	data.date = ui->ed_date->date();
+	data.time = ui->ed_time->time();
+	data.description = ui->ed_description->text();
+	data.place = ui->ed_place->text();
+	data.mainReferee = ui->ed_mainReferee->text();
+	data.director = ui->ed_director->text();
+	data.handicapLength = ui->ed_handicapLength->value();
+	data.sportId = ui->cbxSportId->currentData().isNull()
+		? static_cast<int>(Event::EventConfig::Sport::OB)
+		: ui->cbxSportId->currentData().toInt();
+	data.disciplineId = ui->cbxDisciplineId->currentIndex() <= 0
+		? static_cast<int>(Event::EventConfig::Discipline::LongDistance)
+		: ui->cbxDisciplineId->currentData().toInt();
+	data.importId = ui->ed_orisImportId->text().toInt();
+	data.orisEventKey = ui->ed_orisEventKey->text();
+	data.cardCheckTimeSec = ui->ed_cardChecCheckTimeSec->value();
+	data.oneTenthSecResults = ui->ed_oneTenthSecResults->currentIndex();
+	data.iofRace = ui->ed_iofRace->isChecked();
+	data.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
+	return data;
 }
 
 QString EventDialogWidget::disciplineName(int disc_id)
