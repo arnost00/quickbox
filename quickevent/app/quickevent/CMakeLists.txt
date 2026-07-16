@@ -71,9 +71,6 @@ add_executable(quickevent
 	plugins/Event/src/openeventdialog.cpp
 	plugins/Event/src/openeventdialog.ui
 	plugins/Event/src/stage.cpp
-	plugins/Event/src/stagedocument.cpp
-	plugins/Event/src/stagewidget.cpp
-	plugins/Event/src/stagewidget.ui
 	plugins/Event/src/findregistrationedit.cpp
 	plugins/Event/src/lentcardssettingspage.cpp
 	plugins/Event/src/lentcardssettingspage.ui

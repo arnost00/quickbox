@@ -6,8 +6,6 @@
 #include "dbschema.h"
 #include "registrationswidget.h"
 #include "lentcardssettingspage.h"
-#include "stagewidget.h"
-#include "stagedocument.h"
 #include "../../Core/src/widgets/appstatusbar.h"
 
 #include "services/serviceswidget.h"
@@ -32,6 +30,7 @@
 #include <qf/gui/statusbar.h>
 #include <qf/gui/toolbar.h>
 #include <qf/gui/style.h>
+#include <qf/gui/model/sqltablemodel.h>
 
 #include <qf/core/log.h>
 #include <qf/core/assert.h>
@@ -301,33 +300,55 @@ int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
 StageData EventPlugin::stageData(int stage_id)
 {
 	if(!m_stageCache.contains(stage_id)) {
-		StageDocument doc;
-		doc.load(stage_id);
 		StageData data;
-		for (const auto &[k, v] : doc.values().asKeyValueRange()) {
-			auto key = k.toLower();
-			if (key == "drawingconfig" && v.userType() == qMetaTypeId<QString>()) {
-				// convert json to variantmap
-				data[key] = qf::core::Utils::jsonToQVariant(v.toString());
-			}
-			else {
-				data[key] = v;
+		qfs::Query q;
+		q.prepare("SELECT * FROM stages WHERE id=:id");
+		q.bindValue(":id", stage_id);
+		if(q.exec() && q.next()) {
+			const QSqlRecord record = q.record();
+			for(int i = 0; i < record.count(); ++i) {
+				const QString key = record.fieldName(i).toLower();
+				const QVariant value = q.value(i);
+				if(key == QLatin1String("drawingconfig") && value.userType() == qMetaTypeId<QString>())
+					data[key] = qf::core::Utils::jsonToQVariant(value.toString());
+				else
+					data[key] = value;
 			}
 		}
-		m_stageCache[stage_id] = StageData(data);
+		m_stageCache[stage_id] = data;
 	}
 	return m_stageCache.value(stage_id);
 }
 
 void EventPlugin::setStageData(int stage_id, const StageData &data)
 {
-	StageDocument doc;
-	doc.load(stage_id);
-	for (const auto &[k, v] : data.asKeyValueRange()) {
-		doc.setValue(k, v);
-		m_stageCache[stage_id][k.toLower()] = v;
+	static const QMap<QString, QString> columns {
+		{QStringLiteral("useallmaps"), QStringLiteral("useAllMaps")},
+		{QStringLiteral("drawingconfig"), QStringLiteral("drawingConfig")},
+		{QStringLiteral("qxapitoken"), QStringLiteral("qxApiToken")},
+	};
+
+	QStringList assignments;
+	QVariantMap values;
+	for(auto it = columns.cbegin(); it != columns.cend(); ++it) {
+		if(!data.contains(it.key()))
+			continue;
+		assignments.append(it.value() + "=:" + it.key());
+		QVariant value = data.value(it.key());
+		if(it.key() == QLatin1String("drawingconfig") && value.userType() != qMetaTypeId<QString>())
+			value = qf::core::Utils::qvariantToJson(value);
+		values.insert(it.key(), value);
 	}
-	doc.save();
+	if(assignments.isEmpty())
+		return;
+
+	qfs::Query q;
+	q.prepare("UPDATE stages SET " + assignments.join(", ") + " WHERE id=:id");
+	q.bindValue(":id", stage_id);
+	for(auto it = values.cbegin(); it != values.cend(); ++it)
+		q.bindValue(':' + it.key(), it.value());
+	if(q.exec())
+		m_stageCache.remove(stage_id);
 }
 
 void EventPlugin::clearStageDataCache()
@@ -417,16 +438,8 @@ void EventPlugin::onInstalled()
 		QAction *act_stage = tb->addWidget(m_cbxStage);
 		act_stage->setVisible(false);
 
-
-		QIcon ico(qf::gui::Style::icon("settings"));
-		m_actEditStage = new qfw::Action(ico, "Stage settings");
-		m_actEditStage->setVisible(false);
-		connect(m_actEditStage, &QAction::triggered, this, &EventPlugin::editStage);
-		tb->addAction(m_actEditStage);
-
-		connect(bt_stage, &QPushButton::clicked, this, [this, act_stage](bool checked) {
+		connect(bt_stage, &QPushButton::clicked, this, [act_stage](bool checked) {
 			act_stage->setVisible(checked);
-			m_actEditStage->setVisible(checked);
 		});
 	}
 	fwk->menuBar()->actionForPath("view/toolbar")->addActionInto(tb->toggleViewAction());
@@ -505,20 +518,7 @@ void EventPlugin::saveCurrentStageId(int current_stage)
 	}
 }
 
-void EventPlugin::editStage()
-{
-	//qfLogFuncFrame();// << "id:" << id << "mode:" << mode;
-	int stage_id = currentStageId();
-	auto *w = new Event::StageWidget();
-	auto *fwk = qf::gui::framework::MainWindow::frameWork();
-	qfd::Dialog dlg(QDialogButtonBox::Save | QDialogButtonBox::Cancel, fwk);
-	dlg.setDefaultButton(QDialogButtonBox::Save);
-	dlg.setCentralWidget(w);
-	w->load(stage_id);
-	if(dlg.exec()) {
-		emitDbEvent(Event::EventPlugin::DBEVENT_STAGE_START_CHANGED, stage_id, true);
-	}
-}
+
 
 void EventPlugin::emitDbEvent(const QString &domain, const QVariant &data, bool loopback)
 {
@@ -876,7 +876,7 @@ void EventPlugin::connectToSqlServer()
 	m_actEvent->setEnabled(connect_ok);
 	m_actExport->setEnabled(connect_ok);
 	m_actImport->setEnabled(connect_ok);
-	m_actEditStage->setEnabled(connect_ok);
+
 	if(connect_ok) {
 		closeEvent();
 		openEvent(conn_w->eventName());
@@ -1180,7 +1180,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 		setEventName(event_name);
 		//emit reloadDataRequest();
 	}
-	m_actEditStage->setEnabled(ok);
+
 	m_actOpenEvent->setEnabled(ok || !db_event_names.isEmpty());
 	m_actEditEvent->setEnabled(ok);
 	m_actExportEvent_qbe->setEnabled(ok);
