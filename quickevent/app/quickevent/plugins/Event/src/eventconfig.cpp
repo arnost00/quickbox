@@ -40,8 +40,7 @@ std::optional<EventConfig::Discipline> EventConfig::disciplineFromInt(int i)
 	return {};
 }
 
-EventConfig::EventConfig(QObject *parent)
-	: QObject(parent)
+EventConfig::EventConfig()
 {
 }
 
@@ -325,4 +324,3 @@ const QSet<QString> &EventConfig::knownKeys()
 	return s;
 }
 */
-

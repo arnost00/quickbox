@@ -202,10 +202,15 @@ EventPlugin::EventPlugin(QObject *parent)
 	connect(qf::gui::framework::Application::instance(), &qf::gui::framework::Application::qxRecChng, this, &EventPlugin::onRecChng);
 }
 
+EventPlugin::~EventPlugin()
+{
+    QF_SAFE_DELETE(m_eventConfig);
+}
+
 void EventPlugin::initEventConfig()
 {
 	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::EventConfig(this);
+		m_eventConfig = new Event::EventConfig();
 	}
 	else {
 		qfWarning() << "Event config exists already!";
@@ -215,7 +220,7 @@ void EventPlugin::initEventConfig()
 Event::EventConfig *EventPlugin::eventConfig(bool reload)
 {
 	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::EventConfig(this);
+		m_eventConfig = new Event::EventConfig();
 		reload = true;
 	}
 	if(reload) {

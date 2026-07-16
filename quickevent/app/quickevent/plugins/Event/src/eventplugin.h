@@ -41,6 +41,7 @@ public:
 	enum class ConnectionType : int {SqlServer = 0, SingleFile};
 public:
 	EventPlugin(QObject *parent = nullptr);
+	~EventPlugin() override;
 
 	QF_PROPERTY_BOOL_IMPL(e, E, ventOpen)
 	QF_PROPERTY_IMPL(QString, e, E, ventName)

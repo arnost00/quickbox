@@ -10,16 +10,15 @@
 
 namespace Event {
 
-class EventConfig : public QObject
+class EventConfig
 {
-	Q_OBJECT
-	Q_PROPERTY(int stageCount READ stageCount)
-	Q_PROPERTY(bool isHandicap READ isHandicap)
-	Q_PROPERTY(bool isRelays READ isRelays)
-	Q_PROPERTY(bool isIofRace READ isIofRace)
-	Q_PROPERTY(bool iofXmlRaceNumber READ iofXmlRaceNumber)
-	Q_PROPERTY(QString director READ director)
-	Q_PROPERTY(QString mainReferee READ mainReferee)
+	// Q_PROPERTY(int stageCount READ stageCount)
+	// Q_PROPERTY(bool isHandicap READ isHandicap)
+	// Q_PROPERTY(bool isRelays READ isRelays)
+	// Q_PROPERTY(bool isIofRace READ isIofRace)
+	// Q_PROPERTY(bool iofXmlRaceNumber READ iofXmlRaceNumber)
+	// Q_PROPERTY(QString director READ director)
+	// Q_PROPERTY(QString mainReferee READ mainReferee)
 	//Q_PROPERTY(QString eventName READ eventName)
 public:
 	enum class Sport {OB = 1, LOB, MTBO, TRAIL};
@@ -40,7 +39,7 @@ public:
 						  };
 	static std::optional<Discipline> disciplineFromInt(int i);
 public:
-	explicit EventConfig(QObject *parent = nullptr);
+	explicit EventConfig();
 public:
 	QVariantMap values() const {return m_data;}
 	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
