@@ -135,6 +135,7 @@ private:
 	void connectToSqlServer();
 	void loadCurrentStageId();
 	void saveCurrentStageId(int current_stage);
+	void setCurrentStage();
 	void onDbEvent(const QString & name, QSqlDriver::NotificationSource source, const QVariant & payload);
 
 	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
@@ -163,6 +164,7 @@ private:
 	qf::gui::Action *m_actCreateEvent = nullptr;
 	qf::gui::Action *m_actOpenEvent = nullptr;
 	qf::gui::Action *m_actEditEvent = nullptr;
+	qf::gui::Action *m_actSetCurrentStage = nullptr;
 	qf::gui::Action *m_actExportEvent_qbe = nullptr;
 	qf::gui::Action *m_actImportEvent_qbe = nullptr;
 	Event::EventConfig *m_eventConfig = nullptr;

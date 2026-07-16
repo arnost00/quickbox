@@ -1,6 +1,7 @@
 #include "appstatusbar.h"
 
 #include <QProgressBar>
+#include <QPushButton>
 #include <QLabel>
 
 namespace Core {
@@ -16,10 +17,10 @@ AppStatusBar::AppStatusBar(QWidget *parent)
 	m_lblEvent->setFrameShadow(QFrame::Plain);
 	addPermanentWidget(m_lblEvent);
 
-	m_lblStage = new QLabel(this);
-	m_lblStage->setFrameShape(QFrame::Panel);
-	m_lblStage->setFrameShadow(QFrame::Plain);
-	addPermanentWidget(m_lblStage);
+	m_btStage = new QPushButton(this);
+	m_btStage->setToolTip(tr("Set current stage"));
+	connect(m_btStage, &QPushButton::clicked, this, &AppStatusBar::stageClicked);
+	addPermanentWidget(m_btStage);
 
 	m_progress = new QProgressBar(this);
 	m_progress->setMinimumWidth(200);
@@ -46,7 +47,7 @@ void AppStatusBar::setEventName(const QString &event_name)
 void AppStatusBar::setStageNo(int stage_no)
 {
 	m_stageNo = stage_no;
-	m_lblStage->setText(tr("E%1").arg(m_stageNo));
+	m_btStage->setText(tr("E%1").arg(m_stageNo));
 }
 
 void AppStatusBar::showProgress(const QString &msg, int completed, int total)

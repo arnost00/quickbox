@@ -376,6 +376,11 @@ void EventPlugin::onInstalled()
 		this->m_actEditEvent->setEnabled(!event_name.isEmpty());
 	});
 
+	m_actSetCurrentStage = new qfw::Action(tr("Set current &stage"));
+	m_actSetCurrentStage->setEnabled(false);
+	connect(m_actSetCurrentStage, &QAction::triggered, this, &EventPlugin::setCurrentStage);
+	connect(this, &EventPlugin::eventOpenChanged, m_actSetCurrentStage, &QAction::setEnabled);
+
 	m_actExportEvent_qbe = new qfw::Action(tr("Event (*.qbe)"));
 	m_actExportEvent_qbe->setEnabled(false);
 	connect(m_actExportEvent_qbe, &QAction::triggered, this, &EventPlugin::exportEvent_qbe);
@@ -386,6 +391,7 @@ void EventPlugin::onInstalled()
 	if(auto *sb = qobject_cast<Core::AppStatusBar*>(fwk->statusBar())) {
 		connect(this, &EventPlugin::eventNameChanged, sb, &Core::AppStatusBar::setEventName);
 		connect(this, &EventPlugin::currentStageIdChanged, sb, &Core::AppStatusBar::setStageNo);
+		connect(sb, &Core::AppStatusBar::stageClicked, this, &EventPlugin::setCurrentStage);
 	}
 	connect(this, &EventPlugin::eventNameChanged, this, &EventPlugin::updateWindowTitle);
 	connect(this, &EventPlugin::currentStageIdChanged, this, &EventPlugin::updateWindowTitle);
@@ -405,6 +411,8 @@ void EventPlugin::onInstalled()
 	m_actEvent->addActionInto(m_actCreateEvent);
 	m_actEvent->addActionInto(m_actOpenEvent);
 	m_actEvent->addActionInto(m_actEditEvent);
+	m_actEvent->addActionInto(m_actSetCurrentStage);
+	m_actSetCurrentStage->addSeparatorBefore();
 
 	m_actImport = fwk->menuBar()->actionForPath("file/import");
 	m_actImport->addActionInto(m_actImportEvent_qbe);
@@ -515,7 +523,24 @@ void EventPlugin::saveCurrentStageId(int current_stage)
 	}
 }
 
+void EventPlugin::setCurrentStage()
+{
+	QStringList stages;
+	for(int stage_id = 1; stage_id <= stageCount(); ++stage_id)
+		stages.append(QStringLiteral("E%1").arg(stage_id));
+	if(stages.isEmpty())
+		return;
 
+	QInputDialog dialog(qff::MainWindow::frameWork());
+	dialog.setWindowTitle(tr("Set current stage"));
+	dialog.setLabelText(tr("Stage:"));
+	dialog.setComboBoxItems(stages);
+	dialog.setComboBoxEditable(false);
+	dialog.setOption(QInputDialog::UseListViewForComboBoxItems);
+	dialog.setTextValue(stages.value(currentStageId() - 1, stages.first()));
+	if(dialog.exec() == QDialog::Accepted)
+		setCurrentStageId(stages.indexOf(dialog.textValue()) + 1);
+}
 
 void EventPlugin::emitDbEvent(const QString &domain, const QVariant &data, bool loopback)
 {
