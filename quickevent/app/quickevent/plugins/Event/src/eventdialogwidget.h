@@ -28,6 +28,7 @@ public:
 private:
 	void updateStageStartTimeEditors(int stage_count);
 
+	QVariantMap m_stages;
 	Ui::EventDialogWidget *ui;
 };
 

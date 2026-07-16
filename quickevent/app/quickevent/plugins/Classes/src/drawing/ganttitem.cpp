@@ -163,15 +163,8 @@ void GanttItem::save(int stage_id)
 			start_slots << sd;
 		}
 		dc.setStartSlots(start_slots);
-		auto dc_str = qf::core::Utils::qvariantToJson(dc);
-
-		QString qs = "UPDATE stages SET drawingConfig=:drawingConfig WHERE id=:id";
-		qfs::Query q(qfs::Connection::forName());
-		q.prepare(qs, qf::core::Exception::Throw);
-		q.bindValue(":drawingConfig", dc_str);
-		q.bindValue(":id", stage_id);
-		q.exec(qf::core::Exception::Throw);
-		getPlugin<EventPlugin>()->clearStageDataCache();
+		stage.setDrawingConfig(dc);
+		getPlugin<EventPlugin>()->setStageData(stage_id, stage);
 	}
 	{
 		QString qs = "UPDATE classdefs SET"
