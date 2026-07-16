@@ -17,7 +17,6 @@ namespace qf::gui { class Action; }
 namespace qf::gui::framework { class DockWidget; }
 namespace qf::gui::model { class SqlTableModel; }
 
-class QComboBox;
 class DbSchema;
 
 namespace Event {
@@ -169,7 +168,6 @@ private:
 	qf::gui::Action *m_actImportEvent_qbe = nullptr;
 	Event::EventConfig *m_eventConfig = nullptr;
 	bool m_sqlServerConnected = false;
-	QComboBox *m_cbxStage = nullptr;
 	int m_currentStageId = 0;
 	QMap<int, StageData> m_stageCache;
 	QMap<int, QString> m_classNameCache;

@@ -49,7 +49,6 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QSqlError>
-#include <QComboBox>
 #include <QLabel>
 #include <QMetaObject>
 #include <QSqlDriver>
@@ -425,26 +424,18 @@ void EventPlugin::onInstalled()
 	qfw::ToolBar *tb = fwk->toolBar("Event", true);
 	tb->setObjectName("EventToolbar");
 	tb->setWindowTitle(tr("Event"));
+	if(auto *part_switch = fwk->findChild<QToolBar *>(QStringLiteral("partSwitch")))
+		fwk->insertToolBar(part_switch, tb);
 	{
 		auto *bt_stage = new QToolButton();
-		//bt_stage->setFlat(true);
 		bt_stage->setAutoRaise(true);
-		bt_stage->setCheckable(true);
+		bt_stage->setEnabled(false);
+		bt_stage->setToolTip(tr("Set current stage"));
 		tb->addWidget(bt_stage);
-		m_cbxStage = new QComboBox();
-		connect(m_cbxStage, &QComboBox::activated, this, [this](int ix) {
-			setCurrentStageId(ix + 1);
-		});
-		connect(this, &EventPlugin::currentStageIdChanged, bt_stage, [this, bt_stage](int stage_id) {
-			QSignalBlocker b(m_cbxStage);
-			m_cbxStage->setCurrentIndex(stage_id - 1);
+		connect(bt_stage, &QToolButton::clicked, this, &EventPlugin::setCurrentStage);
+		connect(this, &EventPlugin::eventOpenChanged, bt_stage, &QToolButton::setEnabled);
+		connect(this, &EventPlugin::currentStageIdChanged, bt_stage, [bt_stage](int stage_id) {
 			bt_stage->setText(tr("Current stage E%1").arg(stage_id));
-		});
-		QAction *act_stage = tb->addWidget(m_cbxStage);
-		act_stage->setVisible(false);
-
-		connect(bt_stage, &QPushButton::clicked, this, [act_stage](bool checked) {
-			act_stage->setVisible(checked);
 		});
 	}
 	fwk->menuBar()->actionForPath("view/toolbar")->addActionInto(tb->toggleViewAction());
@@ -742,15 +733,6 @@ void EventPlugin::onEventOpened()
 	if(!isEventOpen())
 		return;
 	qfLogFuncFrame() << "stage count:" << stageCount();
-	{
-		QSignalBlocker b(m_cbxStage);
-		m_cbxStage->clear();
-		int stage_cnt = stageCount();
-		for (int i = 0; i < stage_cnt; ++i) {
-			m_cbxStage->addItem("E" + QString::number(i + 1), i + 1);
-		}
-		m_cbxStage->setCurrentIndex(-1);
-	}
 	loadCurrentStageId();
 }
 
