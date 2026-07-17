@@ -1025,7 +1025,7 @@ void EventPlugin::editEvent()
 	event_w->setWindowTitle(tr("Edit event"));
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
-	EventConfig event_data = EventConfig::fromVariantMap(appDbConfig()->value("event").toMap());
+	auto event_data = appDbConfig()->eventConfig();
 	for(int stage_id = 1; stage_id <= event_data.stageCount; ++stage_id)
 		event_data.stages.insert(stage_id, stageData(stage_id));
 	event_w->loadParams(event_data);

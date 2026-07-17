@@ -29,11 +29,6 @@ class AppDbConfig
 public:
 	explicit AppDbConfig() = default;
 public:
-	QVariantMap values() const {return m_data;}
-	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
-	QVariant value(const QString &path, const QVariant &default_value = QVariant()) const {
-		return value(path.split('.'), default_value);
-	}
 	void setValue(const QStringList &path, const QVariant &val);
 	void setValue(const QString &path, const QVariant &val) {setValue(path.split('.'), val);}
 	void load();
@@ -50,6 +45,11 @@ public:
 	OFeedConfig ofeedConfig(int stage_id) const;
 	void setOfeedConfig(int stage_id, const OFeedConfig &config);
 private:
+    QVariantMap values() const {return m_data;}
+	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
+	QVariant value(const QString &path, const QVariant &default_value = QVariant()) const {
+		return value(path.split('.'), default_value);
+	}
 	void save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val);
 	QVariantMap setValue_helper(const QVariantMap &m, const QStringList &path, const QVariant &val);
 private:

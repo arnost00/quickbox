@@ -108,9 +108,9 @@ private:
 	void onExportTimerTimeOut();
 	void init();
 	void ensureEventImageCachedAtStartup();
-	QString receiptConfigKey(const QString &suffix) const;
-	QVariant receiptConfigValue(const QString &suffix, const QVariant &default_value = QVariant()) const;
-	void setReceiptConfigValue(const QString &suffix, const QVariant &value);
+	// QString receiptConfigKey(const QString &suffix) const;
+	// QVariant receiptConfigValue(const QString &suffix, const QVariant &default_value = QVariant()) const;
+	// void setReceiptConfigValue(const QString &suffix, const QVariant &value);
 	void setCachedEventImage(const QByteArray &raw_data, const QString &format);
 	void clearCachedEventImage();
 	void checkCredentials();
