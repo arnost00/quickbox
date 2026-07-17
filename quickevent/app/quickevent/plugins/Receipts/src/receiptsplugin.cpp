@@ -66,10 +66,6 @@ QString configuredReceiptEventLinkUrl()
 	return currentReceiptsConfig().linkUrl;
 }
 
-QString defaultReceiptQrCodeCaption()
-{
-	return QStringLiteral("Live Results");
-}
 
 QString configuredReceiptQrCodeCaption()
 {

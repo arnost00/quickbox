@@ -275,7 +275,7 @@ QByteArray QxClientService::apiToken() const
 	// always to current stage event on qxhttpd
 	auto *event_plugin = getPlugin<EventPlugin>();
 	auto current_stage = event_plugin->currentStageId();
-	return event_plugin->stageData(current_stage).qxApiToken.toUtf8();
+	return event_plugin->appDbConfig()->eventConfig().stageData(current_stage).qxApiToken.toUtf8();
 }
 
 QUrl QxClientService::exchangeServerUrl() const

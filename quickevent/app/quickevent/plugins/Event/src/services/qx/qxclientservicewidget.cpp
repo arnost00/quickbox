@@ -97,9 +97,13 @@ bool QxClientServiceWidget::saveSettings()
 		auto *event_plugin = getPlugin<EventPlugin>();
 
 		auto current_stage = event_plugin->currentStageId();
-		auto stage_data = event_plugin->stageData(current_stage);
+		auto *config = event_plugin->appDbConfig();
+		auto event_config = config->eventConfig();
+		auto stage_data = event_config.stageData(current_stage);
 		stage_data.qxApiToken = ui->edApiToken->text();
-		event_plugin->setStageData(current_stage, stage_data);
+		event_config.setStageData(current_stage, stage_data);
+		config->setEventConfig(event_config);
+		config->save(QStringLiteral("event"));
 	}
 	return true;
 }

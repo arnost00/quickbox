@@ -70,6 +70,16 @@ bool EventConfig::isRelays() const
 	return disciplineId == 5 || disciplineId == 6 || disciplineId == 15;
 }
 
+StageData EventConfig::stageData(int stage_id) const
+{
+	return stages.value(stage_id);
+}
+
+void EventConfig::setStageData(int stage_id, const StageData &data)
+{
+	stages.insert(stage_id, data);
+}
+
 QVariantMap EventConfig::toVariantMap() const
 {
 	QVariantMap values;

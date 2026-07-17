@@ -80,9 +80,7 @@ public:
 	//Q_INVOKABLE int currentStageStartMsec();
 	int msecToStageStartAM(int si_am_time_sec, int msec = 0, int stage_id = 0);
 
-	StageData stageData(int stage_id);
-	void setStageData(int stage_id, const StageData &data);
-	Q_SLOT void clearStageDataCache();
+
 
 	Q_SLOT bool createEvent(const QString &event_name = QString(), const QVariantMap &event_params = QVariantMap());
 	Q_SLOT void editEvent();
@@ -169,7 +167,6 @@ private:
 	Event::AppDbConfig *m_eventConfig = nullptr;
 	bool m_sqlServerConnected = false;
 	int m_currentStageId = 0;
-	QMap<int, StageData> m_stageCache;
 	QMap<int, QString> m_classNameCache;
 
 	qf::gui::framework::DockWidget *m_servicesDockWidget = nullptr;

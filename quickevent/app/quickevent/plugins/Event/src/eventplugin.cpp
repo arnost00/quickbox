@@ -43,7 +43,6 @@
 
 #include <QInputDialog>
 #include <QDate>
-#include <QTimeZone>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -109,10 +108,7 @@ QByteArray DbEventPayload::toJson() const
 
 namespace {
 const auto QBE_EXT = QStringLiteral(".qbe");
-const auto STAGE_START_DATE_TIME_KEY = QStringLiteral("startDateTime");
-const auto STAGE_USE_ALL_MAPS_KEY = QStringLiteral("useAllMaps");
-const auto STAGE_DRAWING_CONFIG_KEY = QStringLiteral("drawingConfig");
-const auto STAGE_QX_API_TOKEN_KEY = QStringLiteral("qxApiToken");
+
 
 QString singleFileStorageDir()
 {
@@ -285,7 +281,7 @@ QTime EventPlugin::stageStartTime(int stage_id)
 
 QDateTime EventPlugin::stageStartDateTime(int stage_id)
 {
-	return stageData(stage_id).startDateTime;
+	return appDbConfig()->eventConfig().stageData(stage_id).startDateTime;
 }
 
 int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
@@ -299,56 +295,7 @@ int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
 	return time_msec;
 }
 
-StageData EventPlugin::stageData(int stage_id)
-{
-	if(!m_stageCache.contains(stage_id)) {
-		StageData data;
 
-		// Load defaults from the legacy stages table.
-		qfs::Query q;
-		q.prepare("SELECT * FROM stages WHERE id=:id");
-		q.bindValue(":id", stage_id);
-		if(q.exec() && q.next()) {
-			data.startDateTime = q.value(STAGE_START_DATE_TIME_KEY).toDateTime();
-			data.useAllMaps = q.value(STAGE_USE_ALL_MAPS_KEY).toBool();
-			data.drawingConfig = qf::core::Utils::jsonToQVariant(q.value(STAGE_DRAWING_CONFIG_KEY).toString()).toMap();
-			data.qxApiToken = q.value(STAGE_QX_API_TOKEN_KEY).toString();
-		}
-
-		// Config values take precedence over legacy table values.
-		// Default values: startDateTime=invalid, useAllMaps=false, drawingConfig=empty, qxApiToken=empty
-		const StageData cfg_stage = appDbConfig()->eventConfig().stages.value(stage_id);
-		if (cfg_stage.startDateTime.isValid())
-			data.startDateTime = cfg_stage.startDateTime;
-		if (cfg_stage.useAllMaps)
-			data.useAllMaps = cfg_stage.useAllMaps;
-		if (!cfg_stage.drawingConfig.isEmpty())
-			data.drawingConfig = cfg_stage.drawingConfig;
-		if (!cfg_stage.qxApiToken.isEmpty())
-			data.qxApiToken = cfg_stage.qxApiToken;
-
-		data.startDateTime = data.startDateTime.toTimeZone(QTimeZone::systemTimeZone());
-		m_stageCache[stage_id] = data;
-	}
-	return m_stageCache.value(stage_id);
-}
-
-void EventPlugin::setStageData(int stage_id, const StageData &data)
-{
-	AppDbConfig *config = appDbConfig();
-	auto event_cfg = config->eventConfig();
-	event_cfg.stages.insert(stage_id, data);
-	config->setEventConfig(event_cfg);
-	const QString save_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-	config->save(save_prefix);
-	m_stageCache.remove(stage_id);
-}
-
-void EventPlugin::clearStageDataCache()
-{
-	qfInfo() << "stages data cache cleared";
-	m_stageCache.clear();
-}
 
 void EventPlugin::onInstalled()
 {
@@ -1027,8 +974,6 @@ void EventPlugin::editEvent()
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
 	auto event_data = appDbConfig()->eventConfig();
-	for(int stage_id = 1; stage_id <= event_data.stageCount; ++stage_id)
-		event_data.stages.insert(stage_id, stageData(stage_id));
 	event_w->loadParams(event_data);
 	dlg.setCentralWidget(event_w);
 	if(!dlg.exec())
@@ -1042,7 +987,6 @@ void EventPlugin::editEvent()
 bool EventPlugin::closeEvent()
 {
 	qfLogFuncFrame();
-	clearStageDataCache();
 	m_classNameCache.clear();
 	setEventName(QString());
 	QF_SAFE_DELETE(m_eventConfig)
@@ -1553,11 +1497,7 @@ void EventPlugin::onDbEventNotify(const QString &domain, int connection_id, cons
 {
 	Q_UNUSED(connection_id)
 	qfLogFuncFrame() << "domain:" << domain << "payload:" << data;
-	if(domain == QLatin1String(Event::EventPlugin::DBEVENT_STAGE_START_CHANGED)) {
-		//int stage_id = data.toInt();
-		clearStageDataCache();
-	}
-	else if(domain == QLatin1String(Event::EventPlugin::DBEVENT_REGISTRATIONS_IMPORTED)) {
+	if(domain == QLatin1String(Event::EventPlugin::DBEVENT_REGISTRATIONS_IMPORTED)) {
 		reloadRegistrationsModel();
 	}
 }

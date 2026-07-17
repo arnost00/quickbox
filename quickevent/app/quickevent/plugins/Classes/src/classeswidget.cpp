@@ -156,9 +156,13 @@ ClassesWidget::ClassesWidget(QWidget *parent) :
 	connect(ui->tblClasses, &qf::gui::TableView::currentRowChanged, this, &ClassesWidget::reloadCourseCodes);
 	connect(ui->chkUseAllMaps, &QCheckBox::toggled, this, [this](bool checked) {
 		auto evplugin = getPlugin<EventPlugin>();
-		auto data = evplugin->stageData(selectedStageId());
+		auto *config = evplugin->appDbConfig();
+		auto event_config = config->eventConfig();
+		auto data = event_config.stageData(selectedStageId());
 		data.useAllMaps = checked;
-		evplugin->setStageData(selectedStageId(), data);
+		event_config.setStageData(selectedStageId(), data);
+		config->setEventConfig(event_config);
+		config->save(QStringLiteral("event"));
 	});
 }
 
@@ -353,7 +357,7 @@ void ClassesWidget::reload()
 		}
 		m_courseItemDelegate->setCourses(courses);
 	}
-	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->stageData(stage_id).useAllMaps);
+	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id).useAllMaps);
 	reloadCourseCodes();
 }
 

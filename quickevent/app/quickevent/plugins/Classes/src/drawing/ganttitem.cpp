@@ -63,7 +63,7 @@ StartSlotItem *GanttItem::addStartSlotItem()
 void GanttItem::load(int stage_id)
 {
 	qfLogFuncFrame();
-	Event::StageData stage_data = getPlugin<EventPlugin>()->stageData(stage_id);
+	Event::StageData stage_data = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id);
 	DrawingConfig dc(stage_data.drawingConfig);
 	QVariantList start_slot_list = dc.startSlots();
 
@@ -154,7 +154,9 @@ void GanttItem::save(int stage_id)
 {
 	qfLogFuncFrame();
 	{
-		Event::StageData stage = getPlugin<EventPlugin>()->stageData(stage_id);
+		auto *config = getPlugin<EventPlugin>()->appDbConfig();
+		auto event_config = config->eventConfig();
+		Event::StageData stage = event_config.stageData(stage_id);
 		DrawingConfig dc(stage.drawingConfig);
 		QVariantList start_slots;
 		for (int i = 0; i < startSlotItemCount(); ++i) {
@@ -164,7 +166,9 @@ void GanttItem::save(int stage_id)
 		}
 		dc.setStartSlots(start_slots);
 		stage.drawingConfig = dc;
-		getPlugin<EventPlugin>()->setStageData(stage_id, stage);
+		event_config.setStageData(stage_id, stage);
+		config->setEventConfig(event_config);
+		config->save(QStringLiteral("event"));
 	}
 	{
 		QString qs = "UPDATE classdefs SET"

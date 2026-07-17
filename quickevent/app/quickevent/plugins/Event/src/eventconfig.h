@@ -33,6 +33,8 @@ struct EventConfig
 	static EventConfig fromVariantMap(const QVariantMap &values);
 	QVariantMap toVariantMap() const;
 	bool isRelays() const;
+	StageData stageData(int stage_id) const;
+	void setStageData(int stage_id, const StageData &data);
 
 	int stageCount = 1;
 	QMap<int, StageData> stages;

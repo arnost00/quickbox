@@ -109,10 +109,6 @@ namespace Event::services {
 			return base_url.toString();
 		}
 
-		QString stageConfigKey(const QString &prefix, const QString &suffix, int stage)
-		{
-			return prefix + QLatin1Char('.') + suffix + QStringLiteral(".E") + QString::number(stage);
-		}
 	}
 
 OFeedClient::OFeedClient(QObject *parent)
