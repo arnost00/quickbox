@@ -8,29 +8,22 @@
 #include <QDateTime>
 
 #include <optional>
+#include <qhashfunctions.h>
 
 namespace Event {
 
+struct QxConfig
+{
+	QString apiToken;
+};
+
+struct OResultsConfig
+{
+	QMap<int, QString> apiKeys;
+};
+
 class AppDbConfig
 {
-public:
-	enum class Sport {OB = 1, LOB, MTBO, TRAIL};
-	enum class Discipline {LongDistance = 1,
-						   ShortDistance = 2,
-						   Sprint = 3,
-						   UltralongDistance = 4,
-						   Relays = 5,
-						   Teams = 6,
-						   FreeOrder = 7,
-						   NightRace = 9,
-						   TempO = 11,
-						   MultiStages = 13,
-						   MassStart = 14,
-						   SprintRelays = 15,
-						   KnocOutSprint = 16,
-						   Indoor = 19,
-						  };
-	static std::optional<Discipline> disciplineFromInt(int i);
 public:
 	explicit AppDbConfig() = default;
 public:
@@ -44,29 +37,11 @@ public:
 	void load();
 	void save(const QString &path_to_save = QString());
 
-	int stageCount() const;
-	int currentStageId() const;
-	int sportId() const;
-	Discipline discipline() const;
-	int importId() const;
-	int handicapLength() const;
-	bool isHandicap() const {return handicapLength() > 0;}
-	bool isRelays() const {
-		return discipline() == Discipline::Relays
-				|| discipline() == Discipline::Teams
-				|| discipline() == Discipline::SprintRelays;
-	}
-	bool isIofRace() const;
-	int iofXmlRaceNumber() const;
-	QString eventName() const;
-	QString eventPlace() const;
-	QString director() const;
-	QString mainReferee() const;
-	QDateTime eventDateTime() const;
+	bool isHandicap() const {return eventConfig().handicapLength > 0;}
+
+
 	int dbVersion() const;
 	std::optional<int> maximumCardCheckAdvanceSec() const;
-	bool isOneTenthSecResults() const;
-	QString orisEventKey() const;
 	EventConfig eventConfig() const;
 private:
 	void save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val);
@@ -76,4 +51,3 @@ private:
 };
 
 }
-

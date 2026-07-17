@@ -164,7 +164,7 @@ void OFeedClient::exportResultsIofXml3()
 	m_resultsExportInProgress = true;
 
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 
 	QString str = is_relays
 					  ? getPlugin<RelaysPlugin>()->resultsIofXml30()
@@ -184,7 +184,7 @@ void OFeedClient::exportStartListIofXml3(std::function<void()> on_success)
 	m_startListExportInProgress = true;
 
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 
 	QString str = is_relays
 					  ? getPlugin<RelaysPlugin>()->startListIofXml30()

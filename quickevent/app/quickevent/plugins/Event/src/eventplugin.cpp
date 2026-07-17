@@ -233,7 +233,7 @@ int EventPlugin::stageCount()
 {
 	if(eventName().isEmpty())
 		return 0;
-	return appDbConfig()->stageCount();
+	return appDbConfig()->eventConfig().stageCount;
 }
 
 void EventPlugin::setCurrentStageId(int stage_id)
@@ -501,14 +501,14 @@ void EventPlugin::loadCurrentStageId()
 {
 	int stage_id = 1;
 	if(!eventName().isEmpty()) {
-		stage_id = appDbConfig()->currentStageId();
+		stage_id = appDbConfig()->eventConfig().currentStageId;
 	}
 	setCurrentStageId(stage_id);
 }
 
 void EventPlugin::saveCurrentStageId(int current_stage)
 {
-	if(current_stage != appDbConfig()->currentStageId()) {
+	if(current_stage != appDbConfig()->eventConfig().currentStageId) {
 		appDbConfig()->setValue("event.currentStageId", current_stage);
 		appDbConfig()->save("event");
 	}
@@ -590,7 +590,7 @@ QString EventPlugin::classNameById(int class_id)
 
 QString EventPlugin::shvApiEventId() const
 {
-	return eventName() + "-" + QString::number(m_eventConfig->importId());
+	return eventName() + "-" + QString::number(m_eventConfig->eventConfig().importId);
 }
 
 QString EventPlugin::createApiKey(int length)
@@ -950,7 +950,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	event_config.setValue("event", new_params.toVariantMap());
 	int stage_count = new_params.stageCount;
 	if(stage_count == 0)
-		stage_count = event_config.stageCount();
+		stage_count = event_config.eventConfig().stageCount;
 	qfInfo() << "createEvent, stage_count:" << stage_count;
 	QF_ASSERT(stage_count > 0, "Stage count have to be greater than 0", return false);
 

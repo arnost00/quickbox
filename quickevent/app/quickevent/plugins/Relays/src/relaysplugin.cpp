@@ -26,6 +26,7 @@
 
 #include <QFile>
 #include <QQmlEngine>
+#include <algorithm>
 
 #include <qf/core/utils/timescope.h>
 
@@ -81,7 +82,7 @@ void RelaysPlugin::onInstalled()
 		auto *ep = getPlugin<EventPlugin>();
 		bool event_open = ep->isEventOpen();
 		auto *cfg = event_open ? ep->appDbConfig() : nullptr;
-		bool is_relays = cfg && cfg->isRelays();
+		bool is_relays = cfg && cfg->eventConfig().isRelays();
 		scw->setPartVisible(featureId(), is_relays);
 		if(event_open && !is_relays && m_partWidget && m_partWidget->isActive())
 			scw->setActivePart(QStringLiteral("Runs"), true);
@@ -248,8 +249,7 @@ qf::core::utils::TreeTable RelaysPlugin::nLegsClassResultsTable(int class_id, in
 		qfError() << "Leg count not defined for class id:" << class_id;
 		return qf::core::utils::TreeTable();
 	}
-	if(leg_count > max_leg)
-		leg_count = max_leg;
+	leg_count = std::min(leg_count, max_leg);
 
 	QList<Relay> relays;
 	//QStringList relay_ids;
@@ -579,8 +579,8 @@ QString RelaysPlugin::resultsIofXml30()
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(1);
 	qfDebug() << "creating table";
-	Event::AppDbConfig *event_config = getPlugin<EventPlugin>()->appDbConfig();
-	bool is_iof_race = event_config->isIofRace();
+	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	bool is_iof_race = event_config.iofRace;
 	//auto tt_classes = getPlugin<RelaysPlugin>()->nLegsResultsTable("classes.name='D105'", 999, 999999, false);
 	auto tt_classes = getPlugin<RelaysPlugin>()->nLegsResultsTable(QString(), 999, 999999, false);
 	QVariantList result_list{
@@ -863,8 +863,8 @@ QString RelaysPlugin::startListIofXml30()
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(1);
 	qfDebug() << "creating table";
-	Event::AppDbConfig *event_config = getPlugin<EventPlugin>()->appDbConfig();
-	bool is_iof_race = event_config->isIofRace();
+	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	bool is_iof_race = event_config.iofRace;
 	qf::core::utils::TreeTable tt_classes = startListByClassesTableData(QString(), false);
 	QVariantList start_list{
 		"StartList",

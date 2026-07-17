@@ -2,7 +2,30 @@
 
 #include <qf/core/utils.h>
 
-Event::EventConfig Event::EventConfig::fromVariantMap(const QVariantMap &values)
+namespace Event {
+
+std::optional<EventConfig::Discipline> EventConfig::disciplineFromInt(int i)
+{
+	switch (static_cast<Discipline>(i)) {
+	case Discipline::LongDistance: return Discipline::LongDistance;
+	case Discipline::ShortDistance: return Discipline::ShortDistance;
+	case Discipline::Sprint: return Discipline::Sprint;
+	case Discipline::Relays: return Discipline::Relays;
+	case Discipline::Teams: return Discipline::Teams;
+	case Discipline::NightRace: return Discipline::NightRace;
+	case Discipline::SprintRelays: return Discipline::SprintRelays;
+	case Discipline::UltralongDistance: return Discipline::UltralongDistance;
+	case Discipline::FreeOrder: return Discipline::FreeOrder;
+	case Discipline::KnocOutSprint: return Discipline::KnocOutSprint;
+	case Discipline::TempO: return Discipline::TempO;
+	case Discipline::MultiStages: return Discipline::MultiStages;
+	case Discipline::MassStart: return Discipline::MassStart;
+	case Discipline::Indoor: return Discipline::Indoor;
+	}
+	return {};
+}
+
+EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 {
 	EventConfig data;
 	data.stageCount = values.value("stageCount", 1).toInt();
@@ -42,7 +65,12 @@ Event::EventConfig Event::EventConfig::fromVariantMap(const QVariantMap &values)
 	return data;
 }
 
-QVariantMap Event::EventConfig::toVariantMap() const
+bool EventConfig::isRelays() const
+{
+	return disciplineId == 5 || disciplineId == 6 || disciplineId == 15;
+}
+
+QVariantMap EventConfig::toVariantMap() const
 {
 	QVariantMap values;
 	values.insert("stageCount", stageCount);
@@ -74,4 +102,6 @@ QVariantMap Event::EventConfig::toVariantMap() const
 	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
 	values.insert("currentStageId", currentStageId);
 	return values;
+}
+
 }

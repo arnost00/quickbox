@@ -391,7 +391,7 @@ void ReceiptsSettingsPage::load()
 	Q_ASSERT(event_plugin);
 	auto *event_config = event_plugin->appDbConfig();
 	Q_ASSERT(event_config);
-	m_stageId = qMax(event_config->currentStageId(), 1);
+	m_stageId = qMax(event_config->eventConfig().currentStageId, 1);
 	ui->chkPrintReceiptQrCode->setChecked(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool());
 	ui->edReceiptQrCodeBaseUrl->setText(event_config->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed());
 	ui->edReceiptQrCodeCaption->setText(event_config->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed());
@@ -514,7 +514,7 @@ QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const
 
 	int stage_start_time_ms = event_plugin->stageStartMsec(stage_id);
 	if(stage_start_time_ms <= 0) {
-		QTime tm = event_config->eventDateTime().time();
+		QTime tm = event_config->eventConfig().time;
 		stage_start_time_ms = tm.isValid() ? tm.msecsSinceStartOfDay() : (10 * 60 * 60 * 1000);
 	}
 

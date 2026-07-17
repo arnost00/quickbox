@@ -43,6 +43,7 @@
 #include <QTextStream>
 #include <QSqlField>
 
+#include <algorithm>
 #include <numbers>
 
 namespace qff = qf::gui::framework;
@@ -168,7 +169,7 @@ int RunsPlugin::courseForRun(int run_id)
 {
 	// TODO: implementation should be dependend on event type and exposed to QML
 	// see: CardCheck pattern
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 	if(is_relays) {
 		return courseForRun_Relays(run_id);
 	}
@@ -959,9 +960,9 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 {
 	QDateTime stage_start_date_time = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
 	qf::core::utils::TreeTable tt1 = stageResultsTable(stage_id, QString(), 0, false, true);
-	Event::AppDbConfig *event_config = getPlugin<EventPlugin>()->appDbConfig();
-	bool is_iof_race = event_config->isIofRace();
-	int iof_xml_race_number = event_config->iofXmlRaceNumber();
+	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	bool is_iof_race = event_config.iofRace;
+	int iof_xml_race_number = event_config.iofXmlRaceNumber;
 
 	QVariantList result_list{
 		"ResultList",
@@ -1009,7 +1010,7 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			event_lst.insert(event_lst.count(),
 				QVariantList{"Race",
 					QVariantList{"RaceNumber", iof_xml_race_number},
-					QVariantList{"Name", event_config->eventName()}
+					QVariantList{"Name", event_config.name}
 				}
 			);
 		}
@@ -1178,17 +1179,17 @@ void RunsPlugin::writeCSOSHeader(QTextStream &ts) const
 	auto *evp = getPlugin<EventPlugin>();
 	int stage_id = selectedStageId();
 	QDateTime start_dt = evp->stageStartDateTime(stage_id);
-	Event::AppDbConfig *ec = evp->appDbConfig();
+	const auto ec = evp->appDbConfig()->eventConfig();
 	static constexpr int HWIDTH = -19;
-	ts << make_width("Kod zavodu", HWIDTH) << ": " << ec->importId() << "\r\n";
-	ts << make_width("Nazev zavodu", HWIDTH) << ": " << ec->eventName() << "\r\n";
+	ts << make_width("Kod zavodu", HWIDTH) << ": " << ec.importId << "\r\n";
+	ts << make_width("Nazev zavodu", HWIDTH) << ": " << ec.name << "\r\n";
 	ts << make_width("Zarazeni do soutezi", HWIDTH) << ": " << "" << "\r\n";
 	ts << make_width("Datum konani", HWIDTH) << ": " << start_dt.toString(Qt::ISODate) << "\r\n";
-	ts << make_width("Misto konani", HWIDTH) << ": " << ec->eventPlace() << "\r\n";
+	ts << make_width("Misto konani", HWIDTH) << ": " << ec.place << "\r\n";
 	ts << make_width("Poradatel", HWIDTH) << ": " << "" << "\r\n";
 	ts << make_width("Mapa", HWIDTH) << ": " << "" << "\r\n";
-	ts << make_width("Reditel zavodu", HWIDTH) << ": " << ec->director() << "\r\n";
-	ts << make_width("Hlavni rozhodci", HWIDTH) << ": " << ec->mainReferee() << "\r\n";
+	ts << make_width("Reditel zavodu", HWIDTH) << ": " << ec.director << "\r\n";
+	ts << make_width("Hlavni rozhodci", HWIDTH) << ": " << ec.mainReferee << "\r\n";
 	ts << make_width("Stavitel trati", HWIDTH) << ": " << "" << "\r\n";
 	ts << make_width("JURY", HWIDTH) << ": " << "" << "\r\n";
 	ts << make_width("Protokol", HWIDTH) << ": " << "\r\n";
@@ -1294,7 +1295,7 @@ bool RunsPlugin::exportResultsCsosOverall(int stage_count, const QString &file_n
 
 qf::core::sql::QueryBuilder RunsPlugin::runsQuery(int stage_id, int class_id, bool show_offrace)
 {
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 	qfs::QueryBuilder qb;
 	qb.select2("runs", "*")
 			.select2("classes", "name")
@@ -1527,9 +1528,7 @@ qf::core::utils::TreeTable RunsPlugin::startListClassesTable(const QString &wher
 			int mapCount = tt_row.value(QStringLiteral("mapCount")).toInt();
 			int cnt = tt2.rowCount();
 			int total_vacants = mapCount - cnt;
-			if (total_vacants < 0) {
-				total_vacants = 0;
-			}
+			total_vacants = std::max(total_vacants, 0);
 			for (int k = 0; k < total_vacants; ++k) {
 				int ix = tt2.appendRow();
 				qf::core::utils::TreeTableRow tt2_row = tt2.row(ix);
@@ -2738,11 +2737,11 @@ QString RunsPlugin::getClubAbbrFromName(QString name)
 QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option)
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);
-	Event::AppDbConfig *event_config = getPlugin<EventPlugin>()->appDbConfig();
+	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	//console.debug("print_vacants", print_vacants);
 	auto tt1 = startListClassesTable("", vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::RelativeToClassStart);
-	bool is_iof_race = event_config->isIofRace();
-	int iof_xml_race_number = event_config->iofXmlRaceNumber();
+	bool is_iof_race = event_config.iofRace;
+	int iof_xml_race_number = event_config.iofXmlRaceNumber;
 
 	QVariantList xml_root{"StartList" ,
 		QVariantMap {
@@ -2756,7 +2755,7 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 	QVariantMap event = tt1.value("event").toMap();
 	QVariantList xml_event{"Event"};
 	append_list(xml_event, QVariantList{"Id", QVariantMap{{"type", "ORIS"}}, event.value("importId")});
-	append_list(xml_event, QVariantList{"Name", event_config->eventName()});
+	append_list(xml_event, QVariantList{"Name", event_config.name});
 	append_list(xml_event,
 		QVariantList{"StartTime",
 			QVariantList{"Date", start00.date().toString(Qt::ISODate)},
@@ -2786,11 +2785,11 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 		}
 	);
 
-	if (iof_xml_race_number != 0) {
-		append_list(xml_event,
+	if(iof_xml_race_number != 0) {
+		xml_event.insert(xml_event.count(),
 			QVariantList{"Race",
 				QVariantList{"RaceNumber", iof_xml_race_number},
-				QVariantList{"Name", event_config->eventName()}
+				QVariantList{"Name", event_config.name}
 			}
 		);
 	}

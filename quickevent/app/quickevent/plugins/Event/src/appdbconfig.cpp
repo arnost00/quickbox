@@ -19,27 +19,6 @@ namespace {
 const auto EVENT_NAME = QStringLiteral("event.name");
 }
 
-std::optional<AppDbConfig::Discipline> AppDbConfig::disciplineFromInt(int i)
-{
-	switch (static_cast<Discipline>(i)) {
-	case Discipline::LongDistance: return Discipline::LongDistance;
-	case Discipline::ShortDistance: return Discipline::ShortDistance;
-	case Discipline::Sprint: return Discipline::Sprint;
-	case Discipline::Relays: return Discipline::Relays;
-	case Discipline::Teams: return Discipline::Teams;
-	case Discipline::NightRace: return Discipline::NightRace;
-	case Discipline::SprintRelays: return Discipline::SprintRelays;
-	case Discipline::UltralongDistance: return Discipline::UltralongDistance;
-	case Discipline::FreeOrder: return Discipline::FreeOrder;
-	case Discipline::KnocOutSprint: return Discipline::KnocOutSprint;
-	case Discipline::TempO: return Discipline::TempO;
-	case Discipline::MultiStages: return Discipline::MultiStages;
-	case Discipline::MassStart: return Discipline::MassStart;
-	case Discipline::Indoor: return Discipline::Indoor;
-	}
-	return {};
-}
-
 QVariant AppDbConfig::value(const QStringList &path, const QVariant &default_value) const
 {
 	//QF_ASSERT(knownKeys().contains(key), "Key " + key + " is not known key!", return QVariant());
@@ -180,44 +159,7 @@ QVariantMap AppDbConfig::setValue_helper(const QVariantMap &m, const QStringList
 	return ret;
 }
 
-int AppDbConfig::stageCount() const
-{
-	return value(QStringLiteral("event.stageCount")).toInt();
-}
 
-int AppDbConfig::currentStageId() const
-{
-	int ret = value(QStringLiteral("event.currentStageId")).toInt();
-	if(ret == 0)
-		ret = 1;
-	return ret;
-}
-
-int AppDbConfig::sportId() const
-{
-	return value(QStringLiteral("event.sportId")).toInt();
-}
-
-AppDbConfig::Discipline AppDbConfig::discipline() const
-{
-	auto di = value(QStringLiteral("event.disciplineId")).toInt();
-	return disciplineFromInt(di).value_or(Discipline::LongDistance);
-}
-
-int AppDbConfig::importId() const
-{
-	return value(QStringLiteral("event.importId")).toInt();
-}
-
-int AppDbConfig::handicapLength() const
-{
-	return value(QStringLiteral("event.handicapLength")).toInt();
-}
-
-QString AppDbConfig::eventName() const
-{
-	return value(QStringLiteral("event.name")).toString();
-}
 
 // namespace {
 // auto const API_KEY_CONFIG_PATH = QStringLiteral("event.apiKey");
@@ -236,40 +178,7 @@ QString AppDbConfig::eventName() const
 // 	}
 // }
 
-QString AppDbConfig::eventPlace() const
-{
-	return value(QStringLiteral("event.place")).toString();
-}
 
-QString AppDbConfig::director() const
-{
-	return value(QStringLiteral("event.director")).toString();
-}
-
-QString AppDbConfig::mainReferee() const
-{
-	return value(QStringLiteral("event.mainReferee")).toString();
-}
-
-QDateTime AppDbConfig::eventDateTime() const
-{
-	QDateTime dt;
-	QVariant v = value(QStringLiteral("event.dateTime"));
-	if(v.isValid()) {
-		dt = v.toDateTime();
-	}
-	else {
-		QVariant v = value(QStringLiteral("event.date"));
-		dt.setDate(v.toDate());
-		v = value(QStringLiteral("event.time"));
-		QTime tm = v.toTime();
-		if(tm.isValid())
-			dt.setTime(tm);
-		else
-			dt = dt.addSecs(10 * 60 * 60); // start at 10:00 if not specified
-	}
-	return dt;
-}
 
 int AppDbConfig::dbVersion() const
 {
@@ -278,35 +187,12 @@ int AppDbConfig::dbVersion() const
 
 std::optional<int> AppDbConfig::maximumCardCheckAdvanceSec() const
 {
-	if(auto sec = value(QStringLiteral("event.cardChechCheckTimeSec")).toInt(); sec > 0)
+	if(auto sec = eventConfig().cardCheckTimeSec; sec > 0)
 		return sec;
 	return {};
-}
-
-bool AppDbConfig::isOneTenthSecResults() const
-{
-	return static_cast<bool>(value(QStringLiteral("oneTenthSecResults")).toInt());
-}
-
-bool AppDbConfig::isIofRace() const
-{
-	return value(QStringLiteral("event.iofRace")).toInt() != 0;
-}
-
-int AppDbConfig::iofXmlRaceNumber() const
-{
-	return value(QStringLiteral("event.iofXmlRaceNumber")).toInt();
-}
-
-QString AppDbConfig::orisEventKey() const
-{
-	return value(QStringLiteral("event.orisEventKey")).toString();
 }
 
 EventConfig AppDbConfig::eventConfig() const
 {
 	return EventConfig::fromVariantMap(value(QStringLiteral("event")).toMap());
 }
-
-
-

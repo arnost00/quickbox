@@ -73,7 +73,7 @@ bool ResultsExporter::exportResults() const
 	if(ss.outputFormat() == static_cast<int>(ResultsExporterSettings::OutputFormat::IofXml3)) {
 		int current_stage = getPlugin<EventPlugin>()->currentStageId();
 		QString file_name = ss.exportDir() + "/" + getPlugin<EventPlugin>()->eventName() + "." + Event::RESULTS_IOFXML3_FILE;
-		bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+		bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 
 		QString str = is_relays
 				? getPlugin<RelaysPlugin>()->resultsIofXml30()
@@ -94,7 +94,7 @@ bool ResultsExporter::exportResults() const
 		return true;
 	}
 	if(ss.outputFormat() == static_cast<int>(ResultsExporterSettings::OutputFormat::CSVMulti)) {
-		bool is_iof_race = getPlugin<EventPlugin>()->appDbConfig()->isIofRace();
+		bool is_iof_race = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().iofRace;
 		quickevent::core::exporters::StageResultsCsvExporter exp(is_iof_race);
 		exp.setOutDir(ss.exportDir());
 		if (!ss.csvSeparator().isNull())
@@ -106,7 +106,7 @@ bool ResultsExporter::exportResults() const
 		return true;
 	}
 	if(ss.outputFormat() == static_cast<int>(ResultsExporterSettings::OutputFormat::CSV)) {
-		bool is_iof_race = getPlugin<EventPlugin>()->appDbConfig()->isIofRace();
+		bool is_iof_race = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().iofRace;
 		quickevent::core::exporters::StageResultsCsvExporter exp(is_iof_race);
 		exp.setOutDir(ss.exportDir());
 		if (!ss.csvSeparator().isNull())

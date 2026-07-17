@@ -30,11 +30,11 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	connect(ui->ed_orisRace, &QAbstractButton::toggled, ui->frameOrisRace, &QWidget::setVisible);
 	ui->frameOrisRace->hide();
 
-	using S = Event::AppDbConfig::Sport;
+	using S = Event::EventConfig::Sport;
 	for (S sport : {S::OB, S::LOB, S::MTBO, S::TRAIL})
 		ui->cbxSportId->addItem(sportName(static_cast<int>(sport)), static_cast<int>(sport));
 
-	using D = Event::AppDbConfig::Discipline;
+	using D = Event::EventConfig::Discipline;
 	for (D disc : {D::LongDistance, D::ShortDistance, D::UltralongDistance, D::Sprint,
 	               D::Relays, D::Teams, D::FreeOrder, D::NightRace, D::SprintRelays,
 	               D::KnocOutSprint, D::TempO, D::MultiStages, D::Indoor, D::MassStart}) {
@@ -172,10 +172,10 @@ Event::EventConfig EventDialogWidget::saveParams()
 	data.director = ui->ed_director->text();
 	data.handicapLength = ui->ed_handicapLength->value();
 	data.sportId = ui->cbxSportId->currentData().isNull()
-		? static_cast<int>(Event::AppDbConfig::Sport::OB)
+		? static_cast<int>(Event::EventConfig::Sport::OB)
 		: ui->cbxSportId->currentData().toInt();
 	data.disciplineId = ui->cbxDisciplineId->currentIndex() <= 0
-		? static_cast<int>(Event::AppDbConfig::Discipline::LongDistance)
+		? static_cast<int>(Event::EventConfig::Discipline::LongDistance)
 		: ui->cbxDisciplineId->currentData().toInt();
 	data.importId = ui->ed_orisImportId->text().toInt();
 	data.orisEventKey = ui->ed_orisEventKey->text();
@@ -188,7 +188,7 @@ Event::EventConfig EventDialogWidget::saveParams()
 
 QString EventDialogWidget::disciplineName(int disc_id)
 {
-	using D = Event::AppDbConfig::Discipline;
+	using D = Event::EventConfig::Discipline;
 	switch (static_cast<D>(disc_id)) {
 	case D::LongDistance:      return tr("Long distance");
 	case D::ShortDistance:     return tr("Middle distance");
@@ -210,7 +210,7 @@ QString EventDialogWidget::disciplineName(int disc_id)
 
 QString EventDialogWidget::sportName(int sport_id)
 {
-	using S = Event::AppDbConfig::Sport;
+	using S = Event::EventConfig::Sport;
 	switch (static_cast<S>(sport_id)) {
 	case S::OB:    return QStringLiteral("OB");
 	case S::LOB:   return QStringLiteral("LOB");

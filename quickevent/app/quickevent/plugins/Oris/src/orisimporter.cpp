@@ -1,4 +1,5 @@
 #include "chooseoriseventdialog.h"
+#include "plugins/Event/src/eventconfig.h"
 #include "orisimporter.h"
 
 #include <plugins/Event/src/eventplugin.h>
@@ -140,7 +141,7 @@ void OrisImporter::syncCurrentEventEntries(std::function<void ()> success_callba
 {
 	qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 	//if(!qf::gui::dialogs::MessageBox::askYesNo(fwk, tr("All runners entries imported from Oris will be synchronized, manual changes will be lost!")))
-	int oris_id = getPlugin<EventPlugin>()->appDbConfig()->importId();
+	int oris_id = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().importId;
 	if(oris_id == 0) {
 		qf::gui::dialogs::MessageBox::showError(fwk, tr("Cannot find Oris import ID."));
 		return;
@@ -348,11 +349,11 @@ void OrisImporter::importEvent(int event_id, std::function<void ()> success_call
 				stage_count = 1;
 			int sport_id = data.value(QStringLiteral("Sport")).toObject().value(QStringLiteral("ID")).toString().toInt();
 			int di = data.value(QStringLiteral("Discipline")).toObject().value(QStringLiteral("ID")).toString().toInt();
-			auto discipline_id_opt = Event::AppDbConfig::disciplineFromInt(di);//.value_or(Event::EventConfig::Discipline::Classic);
+			auto discipline_id_opt = Event::EventConfig::disciplineFromInt(di);//.value_or(Event::EventConfig::Discipline::Classic);
 			if (!discipline_id_opt.has_value()) {
 				qfError() << "OrisImporter: Unknown discipline ID:" << di;
 			}
-			auto discipline = discipline_id_opt.value_or(Event::AppDbConfig::Discipline::LongDistance);
+			auto discipline = discipline_id_opt.value_or(Event::EventConfig::Discipline::LongDistance);
 			qfInfo() << "pocet etap:" << stage_count << "sport id:" << sport_id << "discipline id:" << di;
 			QVariantMap ecfg;
 			ecfg["stageCount"] = stage_count;
@@ -369,7 +370,7 @@ void OrisImporter::importEvent(int event_id, std::function<void ()> success_call
 			if(!getPlugin<EventPlugin>()->createEvent(QString(), ecfg))
 				return;
 
-			bool is_relay = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+			bool is_relay = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 			//QString event_name = getPlugin<EventPlugin>()->eventName();
 			qfLogScope("importEvent");
 			qf::core::sql::Transaction transaction;
@@ -467,7 +468,7 @@ const char KEY_ORIG_RUNS[] = "origRuns";
 
 void OrisImporter::syncEventEntries(int event_id, std::function<void ()> success_callback)
 {
-	if(getPlugin<EventPlugin>()->appDbConfig()->isRelays()) {
+	if(getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays()) {
 		syncRelaysEntries(event_id, success_callback);
 		return;
 	}
@@ -769,7 +770,7 @@ void OrisImporter::syncEventEntries(int event_id, std::function<void ()> success
 
 void OrisImporter::importRegistrations(std::function<void ()> success_callback)
 {
-	int sport_id = getPlugin<EventPlugin>()->appDbConfig()->sportId();
+	int sport_id = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().sportId;
 	int year = QDate::currentDate().addMonths(-2).year();
 
 	bool ok;
@@ -898,7 +899,7 @@ void OrisImporter::getAndImportClub(const QString &club, const QString &key)
 void OrisImporter::importMissingOneTimeClubs()
 {
 	auto *fwk = qf::gui::framework::MainWindow::frameWork();
-	auto event_key = getPlugin<EventPlugin>()->appDbConfig()->orisEventKey();
+	auto event_key = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().orisEventKey;
 	if (event_key.isEmpty()) {
 		QMessageBox::warning(fwk,tr("Warning"),tr("For import one-time clubs, you need to fill ORIS Event Key in File->Event->Edit event"));
 		return;
@@ -925,7 +926,7 @@ void OrisImporter::importMissingOneTimeClubs()
 			}
 		}
 
-		if (getPlugin<EventPlugin>()->appDbConfig()->isRelays()) {
+		if (getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays()) {
 			// also from relays table
 			q.exec("SELECT id, club FROM relays ORDER BY id", qf::core::Exception::Throw);
 			while(q.next()) {
@@ -959,5 +960,3 @@ void OrisImporter::importMissingOneTimeClubs()
 		qf::gui::dialogs::MessageBox::showException(fwk, e);
 	}
 }
-
-

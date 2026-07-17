@@ -185,8 +185,8 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 		}
 	}
 
-	Event::AppDbConfig *event_config = getPlugin<EventPlugin>()->appDbConfig();
-	int selected_race = event_config->iofXmlRaceNumber(); // if entries has more races in (defined in Event), selected race
+	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	int selected_race = event_config.iofXmlRaceNumber; // if entries has more races in (defined in Event), selected race
 	// load from XML & insert to db
 	int items_processed = 0;
 	int relays_processed = 0;
@@ -476,7 +476,7 @@ bool XmlImporter::importStartlist(QXmlStreamReader &reader, const XmlCreators cr
 bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators creator)
 {
 	// load data from XML
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 	qf::core::sql::Transaction transaction;
 	int items_processed = 0;
 	while(reader.readNextStartElement()) {
@@ -752,7 +752,7 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 	QString race_name;
 	int event_id = -1;
 	QMap <QString, SRace> races;
-	auto discipline = Event::AppDbConfig::Discipline::LongDistance;
+	auto discipline = Event::EventConfig::Discipline::LongDistance;
 
 	while(reader.readNextStartElement()) {
 		if(reader.name().toString() == "Event") {
@@ -764,9 +764,9 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 				else if (reader.name().toString() == "Form") {
 					auto form = reader.readElementText();
 					if (form == "Relay")
-						discipline = Event::AppDbConfig::Discipline::Relays;
+						discipline = Event::EventConfig::Discipline::Relays;
 					else if (form == "Team")
-						discipline = Event::AppDbConfig::Discipline::Teams;
+						discipline = Event::EventConfig::Discipline::Teams;
 				}
 				else if (reader.name().toString() == "Race") {
 					SRace race;
@@ -814,7 +814,7 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 		ecfg["place"] = QString();
 		ecfg["mainReferee"] = QString();
 		ecfg["director"] = QString();
-		ecfg["sportId"] = static_cast<int>(Event::AppDbConfig::Sport::OB);
+		ecfg["sportId"] = static_cast<int>(Event::EventConfig::Sport::OB);
 		ecfg["disciplineId"] = static_cast<int>(discipline);
 		ecfg["importId"] = event_id;
 		ecfg["time"] = event_race.datetime.time();
