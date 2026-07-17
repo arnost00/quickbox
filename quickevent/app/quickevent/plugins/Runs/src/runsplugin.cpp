@@ -960,7 +960,7 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 {
 	QDateTime stage_start_date_time = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
 	qf::core::utils::TreeTable tt1 = stageResultsTable(stage_id, QString(), 0, false, true);
-	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	bool is_iof_race = event_config.iofRace;
 	int iof_xml_race_number = event_config.iofXmlRaceNumber;
 
@@ -1179,7 +1179,7 @@ void RunsPlugin::writeCSOSHeader(QTextStream &ts) const
 	auto *evp = getPlugin<EventPlugin>();
 	int stage_id = selectedStageId();
 	QDateTime start_dt = evp->stageStartDateTime(stage_id);
-	const auto ec = evp->appDbConfig()->eventConfig();
+	const auto &ec = evp->appDbConfig()->eventConfig();
 	static constexpr int HWIDTH = -19;
 	ts << make_width("Kod zavodu", HWIDTH) << ": " << ec.importId << "\r\n";
 	ts << make_width("Nazev zavodu", HWIDTH) << ": " << ec.name << "\r\n";
@@ -2737,7 +2737,7 @@ QString RunsPlugin::getClubAbbrFromName(QString name)
 QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option)
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);
-	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	//console.debug("print_vacants", print_vacants);
 	auto tt1 = startListClassesTable("", vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::RelativeToClassStart);
 	bool is_iof_race = event_config.iofRace;

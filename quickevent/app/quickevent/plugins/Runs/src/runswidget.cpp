@@ -693,7 +693,7 @@ void RunsWidget::onDrawClicked()
 	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
 	int stage_id = selectedStageId();
 	DrawMethod draw_method = DrawMethod(ui->cbxDrawMethod->currentData().toInt());
-	Event::StageData stage_data = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id);
+	const auto &stage_data = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id);
 	bool use_all_maps = stage_data.useAllMaps;
 	qfDebug() << "DrawMethod:" << (int)draw_method << "use_all_maps:" << use_all_maps;
 	QList<int> class_ids;

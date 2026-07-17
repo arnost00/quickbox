@@ -103,7 +103,6 @@ bool QxClientServiceWidget::saveSettings()
 		stage_data.qxApiToken = ui->edApiToken->text();
 		event_config.setStageData(current_stage, stage_data);
 		config->setEventConfig(event_config);
-		config->save(QStringLiteral("event"));
 	}
 	return true;
 }
@@ -188,4 +187,3 @@ void QxClientServiceWidget::exportRuns()
 }
 
 }
-

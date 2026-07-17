@@ -9,8 +9,8 @@
 class QTimer;
 class QNetworkAccessManager;
 
-namespace Event {
-namespace services {
+
+namespace Event::services {
 
 class OFeedClientSettings : public ServiceSettings
 {
@@ -134,6 +134,6 @@ private:
 	QByteArray zlibCompress(QByteArray data);
 };
 
-}}
+}
 
 #endif // OFEEDCLIENT_H

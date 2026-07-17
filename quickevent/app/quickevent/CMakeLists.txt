@@ -83,7 +83,10 @@ add_executable(quickevent
 	plugins/Event/src/services/oresultsclient.cpp
 	plugins/Event/src/services/oresultsclientwidget.cpp
 	plugins/Event/src/services/oresultsclientwidget.ui
+	plugins/Event/src/services/oresultsconfig.cpp plugins/Event/src/services/oresultsconfig.h
+
 	plugins/Event/src/services/ofeed/ofeedclient.cpp
+	plugins/Event/src/services/ofeed/ofeedconfig.cpp plugins/Event/src/services/ofeed/ofeedconfig.h
 	plugins/Event/src/services/ofeed/ofeedclientwidget.cpp
 	plugins/Event/src/services/ofeed/ofeedclientwidget.ui
 	plugins/Event/src/services/ofeed/ofeedwelcomedialog.h
@@ -118,6 +121,7 @@ add_executable(quickevent
 	plugins/Oris/src/txtimporter.cpp
 	plugins/Oris/src/xmlimporter.cpp
 
+	plugins/Receipts/src/receiptsconfig.cpp plugins/Receipts/src/receiptsconfig.h
 	plugins/Receipts/src/receiptsplugin.cpp
 	plugins/Receipts/src/receiptsprinter.cpp
 	plugins/Receipts/src/receiptsprinteroptions.cpp

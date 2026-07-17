@@ -127,7 +127,7 @@ void EventDialogWidget::loadParams(const Event::EventConfig &params)
 	ui->ed_stageCount->setValue(params.stageCount);
 	updateStageStartTimeEditors(ui->ed_stageCount->value());
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		const QDateTime start_time = params.stages.value(row + 1).startDateTime;
+		const QDateTime start_time = params.stageData(row + 1).startDateTime;
 		if(start_time.isValid()) {
 			if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
 				editor->setDateTime(start_time);

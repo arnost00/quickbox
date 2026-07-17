@@ -461,7 +461,6 @@ void OFeedClient::setReceiptImageHeightMm(int height_mm)
 	auto rc = config->receiptsConfig(current_stage);
 	rc.imageHeightMm = height_mm;
 	config->setReceiptsConfig(current_stage, rc);
-	config->save(QStringLiteral("event"));
 }
 
 QString OFeedClient::receiptEventLinkUrl() const
@@ -495,7 +494,6 @@ void OFeedClient::setReceiptEventLinkUrl(QString link_url)
 	auto rc = config->receiptsConfig(current_stage);
 	rc.linkUrl = link_url;
 	config->setReceiptsConfig(current_stage, rc);
-	config->save(QStringLiteral("event"));
 }
 
 QString OFeedClient::receiptEventQrCodeCaption() const
@@ -518,7 +516,6 @@ void OFeedClient::setReceiptEventQrCodeCaption(QString caption)
 	auto rc = config->receiptsConfig(current_stage);
 	rc.qrCodeCaption = caption;
 	config->setReceiptsConfig(current_stage, rc);
-	config->save(QStringLiteral("event"));
 }
 
 bool OFeedClient::hasCachedEventImage() const
@@ -548,7 +545,6 @@ void OFeedClient::setCachedEventImage(const QByteArray &raw_data, const QString 
 	rc.imageBase64 = QString::fromLatin1(raw_data.toBase64());
 	rc.imageFormat = format.toLower();
 	config->setReceiptsConfig(current_stage, rc);
-	config->save(QStringLiteral("event"));
 }
 
 void OFeedClient::clearCachedEventImage()
@@ -559,7 +555,6 @@ void OFeedClient::clearCachedEventImage()
 	rc.imageBase64.clear();
 	rc.imageFormat.clear();
 	config->setReceiptsConfig(current_stage, rc);
-	config->save(QStringLiteral("event"));
 }
 
 void OFeedClient::ensureEventImageCachedAtStartup()
@@ -681,7 +676,6 @@ void OFeedClient::setHostUrl(QString hostUrl)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.hostUrl = hostUrl;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 	m_eventImageStartupAttempted = false;
 }
 
@@ -692,7 +686,6 @@ void OFeedClient::setEventId(QString eventId)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.eventId = eventId;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 	m_eventImageStartupAttempted = false;
 }
 
@@ -703,7 +696,6 @@ void OFeedClient::setEventPassword(QString eventPassword)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.eventPassword = eventPassword;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 	m_eventImageStartupAttempted = false;
 }
 
@@ -714,7 +706,6 @@ void OFeedClient::setChangelogOrigin(QString changelogOrigin)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.changelogOrigin = changelogOrigin;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 }
 
 void OFeedClient::setLastChangelogCall(QDateTime lastChangelogCall)
@@ -724,7 +715,6 @@ void OFeedClient::setLastChangelogCall(QDateTime lastChangelogCall)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.lastChangelogCall = lastChangelogCall;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 }
 
 void OFeedClient::setRunXmlValidation(bool runXmlValidation)
@@ -734,7 +724,6 @@ void OFeedClient::setRunXmlValidation(bool runXmlValidation)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.runXmlValidation = runXmlValidation;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 }
 
 void OFeedClient::setRunChangesProcessing(bool runChangesProcessing)
@@ -744,7 +733,6 @@ void OFeedClient::setRunChangesProcessing(bool runChangesProcessing)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.runChangesProcessing = runChangesProcessing;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 }
 
 bool OFeedClient::introTourShowed() const
@@ -761,7 +749,6 @@ void OFeedClient::setIntroTourShowed(bool shown)
 	auto cfg = config->ofeedConfig(current_stage);
 	cfg.introTourShowed = shown;
 	config->setOfeedConfig(current_stage, cfg);
-	config->save(serviceName().toLower());
 }
 
 void OFeedClient::testConnection(const QString &host_url,

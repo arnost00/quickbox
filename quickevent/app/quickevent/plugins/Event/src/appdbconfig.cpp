@@ -1,6 +1,9 @@
 #include "appdbconfig.h"
-#include "eventplugin.h"
 
+#include "eventplugin.h"
+#include "eventconfig.h"
+
+#include <qcontainerfwd.h>
 #include <qf/core/assert.h>
 #include <qf/core/utils.h>
 #include <qf/core/sql/connection.h>
@@ -16,269 +19,172 @@
 using namespace Event;
 
 namespace {
-const auto EVENT_NAME = QStringLiteral("event.name");
+
+constexpr auto EVENT = "event";
+constexpr auto RECEIPTS = "receipts";
+constexpr auto OFEED = "ofeed";
+constexpr auto ORESULTS = "oresults";
+constexpr auto QX = "qx";
+
 }
 
-QVariant AppDbConfig::value(const QStringList &path, const QVariant &default_value) const
+QxConfig QxConfig::fromVariantMap(const QVariantMap &map)
 {
-	//QF_ASSERT(knownKeys().contains(key), "Key " + key + " is not known key!", return QVariant());
-	QVariant ret = default_value;
-	if(!path.isEmpty()) {
-		QVariantMap m = m_data;
-		for (int i = 0; i < path.count() - 1; ++i) {
-			const QString &key = path[i];
-			m = m.value(key).toMap();
-		}
-		ret = m.value(path.last(), default_value);
-	}
+	QxConfig ret;
+	ret.apiToken = map.value("apiToken").toString();
 	return ret;
 }
 
-void AppDbConfig::setValue(const QStringList &path, const QVariant &val)
+QVariantMap QxConfig::toVariantMap() const
 {
-	QF_ASSERT(!path.isEmpty(), "Empty path!", return);
-	m_data = setValue_helper(m_data, path, val);
+	QVariantMap ret;
+	ret["apiToken"] = apiToken;
+	return ret;
 }
 
 void AppDbConfig::load()
 {
 	using namespace qf::core::sql;
 	Connection conn = Connection::forName();
-
-	// Check connection existence / validity
 	Q_ASSERT(conn.isOpen());
-	// if(!conn.isOpen()) {
-	// 	qfWarning() << "EventConfig::load(): database connection is not open:"
-	// 	            << conn.errorString();
-	// 	return;
-	// }
+
+	QVariantMap config;
+	const auto set_group_value = [&config](const QString &group, const QStringList &path, const QVariant &value) {
+		auto m = config.value(group).toMap();
+		m[path.mid(1).join('.')] = value;
+		config[group] = m;
+	};
+	const auto set_gropu_stage_value = [&config](const QString &group, const QStringList &path, const QVariant &value) {
+		auto stage = path.value(1);
+		auto m1 = config.value(group).toMap();
+		auto m2 = m1.value(stage).toMap();
+		m2[path.mid(2).join('.')] = value;
+		m1[stage] = m2;
+		config[group] = m1;
+	};
 
 	Query q(conn);
 	QueryBuilder qb;
-	qb.select("ckey, cvalue, ctype").from("config").orderBy("ckey");
+	qb.select("ckey, cvalue, ctype").from("config");
 	if(q.exec(qb.toString(), qf::core::Exception::Throw)) {
 		while(q.next()) {
 			QString key = q.value(0).toString();
-			/*
-			if(!knownKeys().contains(key)) {
-				qfWarning() << "Config key" << key << "is not known to the QuickEvent config system";
-			}
-			*/
 			QVariant val = q.value(1);
 			QString type = q.value(2).toString();
 			QVariant v = qf::core::Utils::retypeStringValue(val.toString(), type);
-			setValue(key, v);
+			auto path = key.split('.');
+			const auto group = path.value(0);
+			if (group == EVENT || group == QX) {
+				set_group_value(group, path, v);
+			} else if (group == RECEIPTS || group == ORESULTS || group == OFEED) {
+				set_gropu_stage_value(group, path, v);
+			} else {
+				config[key] = v;
+			}
+
 		}
 	}
-	// checkApiKey();
+	m_dbVersion = config.value("db.version", 0).toInt();
+	Q_ASSERT(m_dbVersion > 0);
+
+	m_qxConfig = QxConfig::fromVariantMap(config.value(QX).toMap());
+	m_eventConfig = EventConfig::fromVariantMap(config.value(EVENT).toMap());
+
+	const auto load_stage_config = [&config](const QString &group, auto &target, auto fromVariantMap) {
+		for ( const auto &[stage, val] : config.value(group).toMap().asKeyValueRange()) {
+			target[stage.toInt()] = fromVariantMap(val.toMap());
+		}
+	};
+	load_stage_config(RECEIPTS, m_receiptsConfig, Receipts::ReceiptsConfig::fromVariantMap);
+	load_stage_config(ORESULTS, m_oresultsConfig, services::OResultsConfig::fromVariantMap);
+	load_stage_config(OFEED, m_ofeedConfig, services::OFeedConfig::fromVariantMap);
 }
 
-void AppDbConfig::save(const QString &path_to_save)
+void AppDbConfig::save(const QString &prefix, int stage_id, const QVariantMap &data)
 {
-	QVariantMap m;
-	save_helper(m, QString(), m_data);
+	save(prefix + "." + QString::number(stage_id), data);
+}
+
+void AppDbConfig::save(const QString &prefix, const QVariantMap &data)
+{
 	using namespace qf::core::sql;
 	Connection conn = Connection::forName();
 
-	try {
-		Query q_up(conn);
-		q_up.prepare("UPDATE config SET cvalue=:val WHERE ckey=:key", qf::core::Exception::Throw);
-		Query q_ins(conn);
-		q_ins.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :val, :type)", qf::core::Exception::Throw);
-		QMapIterator<QString, QVariant> it(m);
-		while(it.hasNext()) {
-			it.next();
-			QString key = it.key();
-			if(!path_to_save.isEmpty()) {
-				if(!key.startsWith(path_to_save))
-					continue;
-				if(key.length() > path_to_save.length() && key[path_to_save.length()] != '.')
-					continue;
-			}
-			QVariant val = it.value();
-			QString val_str;
-			if(val.typeId() == qMetaTypeId<QDate>())
-				val_str = val.toDate().toString(Qt::ISODate);
-			else if(val.typeId() == qMetaTypeId<QTime>())
-				val_str = val.toTime().toString(Qt::ISODate);
-			else if(val.typeId() == qMetaTypeId<QDateTime>())
-				val_str = val.toDateTime().toString(Qt::ISODate);
-			else
-				val_str = val.toString();
-			q_up.bindValue(":key", key);
-			q_up.bindValue(":val", val_str);
-			q_up.exec(qf::core::Exception::Throw);
-			if(q_up.numRowsAffected() < 1) {
-				QString type = val.typeName();
-				q_ins.bindValue(":key", key);
-				q_ins.bindValue(":type", type);
-				q_ins.bindValue(":val", val_str);
-				q_ins.exec(qf::core::Exception::Throw);
-			}
+	Query q_up(conn);
+	q_up.prepare("UPDATE config SET cvalue=:val WHERE ckey=:key", qf::core::Exception::Throw);
+	Query q_ins(conn);
+	q_ins.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :val, :type)", qf::core::Exception::Throw);
+	for (const auto &[key, val] : data.asKeyValueRange()) {
+		QString val_str;
+		if(val.typeId() == qMetaTypeId<QDate>())
+			val_str = val.toDate().toString(Qt::ISODate);
+		else if(val.typeId() == qMetaTypeId<QTime>())
+			val_str = val.toTime().toString(Qt::ISODate);
+		else if(val.typeId() == qMetaTypeId<QDateTime>())
+			val_str = val.toDateTime().toString(Qt::ISODate);
+		else
+			val_str = val.toString();
+		auto full_key = prefix.isEmpty() ? key : prefix + "." + key;
+		q_up.bindValue(":key", full_key);
+		q_up.bindValue(":val", val_str);
+		q_up.exec(qf::core::Exception::Throw);
+		if(q_up.numRowsAffected() < 1) {
+			QString type = val.typeName();
+			q_ins.bindValue(":key", full_key);
+			q_ins.bindValue(":type", type);
+			q_ins.bindValue(":val", val_str);
+			q_ins.exec(qf::core::Exception::Throw);
 		}
 	}
-	catch(const qf::core::Exception &e) {
-		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
-		qf::gui::dialogs::MessageBox::showException(fwk, e);
-	}
-
-}
-
-void AppDbConfig::save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val)
-{
-	if(val.typeId() == qMetaTypeId<QVariantMap>()) {
-		QVariantMap m = val.toMap();
-		QMapIterator<QString, QVariant> it(m);
-		while(it.hasNext()) {
-			it.next();
-			QString cp = it.key();
-			if(!current_path.isEmpty())
-				cp = current_path + '.' + cp;
-			save_helper(ret, cp, it.value());
-		}
-	}
-	else {
-		ret[current_path] = val;
-	}
-}
-
-QVariantMap AppDbConfig::setValue_helper(const QVariantMap &m, const QStringList &path, const QVariant &val)
-{
-	QVariantMap ret;
-	QF_ASSERT(!path.isEmpty(), "Empty path!", return ret);
-	if(path.count() == 1) {
-		ret = m;
-		ret[path.first()] = val;
-	}
-	else {
-		QStringList p = path;
-		QString key = p.takeFirst();
-		ret = m;
-		ret[key] = setValue_helper(m.value(key).toMap(), p, val);
-	}
-	return ret;
-}
-
-
-
-// namespace {
-// auto const API_KEY_CONFIG_PATH = QStringLiteral("event.apiKey");
-// }
-// QString EventConfig::apiKey() const
-// {
-// 	return value(API_KEY_CONFIG_PATH).toString();
-// }
-
-// void AppDbConfig::checkApiKey()
-// {
-// 	if (apiKey().isEmpty()) {
-// 		auto api_key = EventPlugin::createApiKey(10);
-// 		setValue(API_KEY_CONFIG_PATH, api_key);
-// 		save(API_KEY_CONFIG_PATH);
-// 	}
-// }
-
-
-
-int AppDbConfig::dbVersion() const
-{
-	return value(QStringLiteral("db.version")).toInt();
-}
-
-std::optional<int> AppDbConfig::maximumCardCheckAdvanceSec() const
-{
-	if(auto sec = eventConfig().cardCheckTimeSec; sec > 0)
-		return sec;
-	return {};
-}
-
-EventConfig AppDbConfig::eventConfig() const
-{
-	return EventConfig::fromVariantMap(value(QStringLiteral("event")).toMap());
 }
 
 void AppDbConfig::setEventConfig(const EventConfig &config)
 {
-	setValue(QStringLiteral("event"), config.toVariantMap());
+	m_eventConfig = config;
+	save(EVENT, config.toVariantMap());
 }
 
-OResultsConfig AppDbConfig::oresultsConfig(int stage_id) const
+const services::OResultsConfig& AppDbConfig::oresultsConfig(int stage_id) const
 {
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	OResultsConfig cfg;
-	cfg.apiKey = value(QStringLiteral("oresults.apiKey") + e).toString();
-	cfg.eventName = value(QStringLiteral("oresults.eventName") + e).toString();
-	return cfg;
+	if (m_oresultsConfig.contains(stage_id)) {
+		return m_oresultsConfig.at(stage_id);
+	}
+	static services::OResultsConfig defaultCfg;
+	return defaultCfg;
 }
 
-void AppDbConfig::setOresultsConfig(int stage_id, const OResultsConfig &cfg)
+void AppDbConfig::setOresultsConfig(int stage_id, const services::OResultsConfig &cfg)
 {
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	setValue(QStringLiteral("oresults.apiKey") + e, cfg.apiKey);
-	setValue(QStringLiteral("oresults.eventName") + e, cfg.eventName);
+	m_oresultsConfig[stage_id] = cfg;
+	save(ORESULTS, stage_id, cfg.toVariantMap());
 }
 
-ReceiptsConfig AppDbConfig::receiptsConfig(int stage_id) const
+const Receipts::ReceiptsConfig& AppDbConfig::receiptsConfig(int stage_id) const
 {
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	ReceiptsConfig cfg;
-	cfg.printQrCode = value(QStringLiteral("event.receiptPrintEventQrCode") + e, false).toBool();
-	cfg.linkUrl = value(QStringLiteral("event.receiptEventLinkUrl") + e).toString().trimmed();
-	const QString caption = value(QStringLiteral("event.receiptPrintEventQrCodeCaption") + e).toString().trimmed();
-	cfg.qrCodeCaption = caption.isEmpty() ? QStringLiteral("Live Results") : caption;
-	cfg.printImage = value(QStringLiteral("event.receiptPrintEventImage") + e, false).toBool();
-	const int h = value(QStringLiteral("event.receiptImageHeightMm") + e, 18).toInt();
-	cfg.imageHeightMm = (h < 10) ? 10 : (h > 60) ? 60 : h;
-	cfg.imageBase64 = value(QStringLiteral("event.receiptImageDataBase64") + e).toString();
-	const QString fmt = value(QStringLiteral("event.receiptImageFormat") + e).toString().trimmed().toLower();
-	cfg.imageFormat = fmt.isEmpty() ? QStringLiteral("png") : fmt;
-	return cfg;
+	if (m_receiptsConfig.contains(stage_id)) {
+		return m_receiptsConfig.at(stage_id);
+	}
+	static Receipts::ReceiptsConfig defaultCfg;
+	return defaultCfg;
 }
 
-void AppDbConfig::setReceiptsConfig(int stage_id, const ReceiptsConfig &cfg)
+void AppDbConfig::setReceiptsConfig(int stage_id, const Receipts::ReceiptsConfig &cfg)
 {
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	setValue(QStringLiteral("event.receiptPrintEventQrCode") + e, cfg.printQrCode);
-	setValue(QStringLiteral("event.receiptEventLinkUrl") + e, cfg.linkUrl);
-	setValue(QStringLiteral("event.receiptPrintEventQrCodeCaption") + e, cfg.qrCodeCaption);
-	setValue(QStringLiteral("event.receiptPrintEventImage") + e, cfg.printImage);
-	setValue(QStringLiteral("event.receiptImageHeightMm") + e, cfg.imageHeightMm);
-	setValue(QStringLiteral("event.receiptImageDataBase64") + e, cfg.imageBase64);
-	setValue(QStringLiteral("event.receiptImageFormat") + e, cfg.imageFormat);
+	m_receiptsConfig[stage_id] = cfg;
+	save(RECEIPTS, stage_id, cfg.toVariantMap());
 }
 
-OFeedConfig AppDbConfig::ofeedConfig(int stage_id) const
+const services::OFeedConfig& AppDbConfig::ofeedConfig(int stage_id) const
 {
-	const QString prefix = QStringLiteral("ofeed.");
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	OFeedConfig cfg;
-	const QString default_host = QStringLiteral("https://api.orienteerfeed.com");
-	cfg.hostUrl = value(prefix + QStringLiteral("hostUrl") + e, default_host).toString();
-	cfg.eventId = value(prefix + QStringLiteral("eventId") + e).toString();
-	cfg.eventPassword = value(prefix + QStringLiteral("eventPassword") + e).toString();
-	const QString origin = value(prefix + QStringLiteral("changelogOrigin") + e).toString();
-	cfg.changelogOrigin = origin.isEmpty() ? QStringLiteral("START") : origin;
-	const QString lcc = value(prefix + QStringLiteral("lastChangelogCall") + e).toString();
-	cfg.lastChangelogCall = lcc.isEmpty() ? QDateTime::fromSecsSinceEpoch(0)
-	                                        : QDateTime::fromString(lcc, Qt::ISODate);
-	if (!cfg.lastChangelogCall.isValid())
-		cfg.lastChangelogCall = QDateTime::fromSecsSinceEpoch(0);
-	cfg.runXmlValidation = value(prefix + QStringLiteral("runXmlValidation") + e, true).toBool();
-	cfg.runChangesProcessing = value(prefix + QStringLiteral("runChangesProcessing") + e, false).toBool();
-	cfg.introTourShowed = value(prefix + QStringLiteral("introTourShowed"), false).toBool();
-	return cfg;
+	if (m_ofeedConfig.contains(stage_id)) {
+		return m_ofeedConfig.at(stage_id);
+	}
+	static services::OFeedConfig defaultCfg;
+	return defaultCfg;
 }
 
-void AppDbConfig::setOfeedConfig(int stage_id, const OFeedConfig &cfg)
+void AppDbConfig::setOfeedConfig(int stage_id, const services::OFeedConfig &cfg)
 {
-	const QString prefix = QStringLiteral("ofeed.");
-	const QString e = QStringLiteral(".E") + QString::number(stage_id);
-	setValue(prefix + QStringLiteral("hostUrl") + e, cfg.hostUrl);
-	setValue(prefix + QStringLiteral("eventId") + e, cfg.eventId);
-	setValue(prefix + QStringLiteral("eventPassword") + e, cfg.eventPassword);
-	setValue(prefix + QStringLiteral("changelogOrigin") + e, cfg.changelogOrigin);
-	setValue(prefix + QStringLiteral("lastChangelogCall") + e, cfg.lastChangelogCall.toString(Qt::ISODate));
-	setValue(prefix + QStringLiteral("runXmlValidation") + e, cfg.runXmlValidation);
-	setValue(prefix + QStringLiteral("runChangesProcessing") + e, cfg.runChangesProcessing);
-	setValue(prefix + QStringLiteral("introTourShowed"), cfg.introTourShowed);
+	m_ofeedConfig[stage_id] = cfg;
+	save(OFEED, stage_id, cfg.toVariantMap());
 }

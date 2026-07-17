@@ -185,7 +185,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 		}
 	}
 
-	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	int selected_race = event_config.iofXmlRaceNumber; // if entries has more races in (defined in Event), selected race
 	// load from XML & insert to db
 	int items_processed = 0;
@@ -806,20 +806,20 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 	else
 		return false;
 	try {
-		QVariantMap ecfg;
-		ecfg["stageCount"] = 1;
-		ecfg["name"] = (event_race.name.isEmpty()) ? race_name : event_race.name;
-		ecfg["description"] = (event_race.name.isEmpty())? QString() : race_name;
-		ecfg["date"] = event_race.datetime.date();
-		ecfg["place"] = QString();
-		ecfg["mainReferee"] = QString();
-		ecfg["director"] = QString();
-		ecfg["sportId"] = static_cast<int>(Event::EventConfig::Sport::OB);
-		ecfg["disciplineId"] = static_cast<int>(discipline);
-		ecfg["importId"] = event_id;
-		ecfg["time"] = event_race.datetime.time();
-		ecfg["iofRace"] = 1;
-		ecfg["iofXmlRaceNumber"] = (races.size() > 1) ? event_race.number : 0;
+		Event::EventConfig ecfg;
+		ecfg.stageCount = 1;
+		ecfg.name = (event_race.name.isEmpty()) ? race_name : event_race.name;
+		ecfg.description = (event_race.name.isEmpty())? QString() : race_name;
+		ecfg.date = event_race.datetime.date();
+		ecfg.place = QString();
+		ecfg.mainReferee = QString();
+		ecfg.director = QString();
+		ecfg.sportId = static_cast<int>(Event::EventConfig::Sport::OB);
+		ecfg.disciplineId = static_cast<int>(discipline);
+		ecfg.importId = event_id;
+		ecfg.time = event_race.datetime.time();
+		ecfg.iofRace = 1;
+		ecfg.iofXmlRaceNumber = (races.size() > 1) ? event_race.number : 0;
 		return getPlugin<EventPlugin>()->createEvent(QString(), ecfg);
 	}
 	catch (qf::core::Exception &e) {

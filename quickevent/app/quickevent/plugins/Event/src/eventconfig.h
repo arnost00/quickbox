@@ -28,16 +28,21 @@ struct EventConfig
 						   KnocOutSprint = 16,
 						   Indoor = 19,
 						  };
+
 	static std::optional<Discipline> disciplineFromInt(int i);
+
+	bool isHandicap() const {return handicapLength > 0;}
+	std::optional<int> maximumCardCheckAdvanceSec() const;
+
+	bool isRelays() const;
+	const StageData& stageData(int stage_id) const;
+	void setStageData(int stage_id, const StageData &data);
 
 	static EventConfig fromVariantMap(const QVariantMap &values);
 	QVariantMap toVariantMap() const;
-	bool isRelays() const;
-	StageData stageData(int stage_id) const;
-	void setStageData(int stage_id, const StageData &data);
 
 	int stageCount = 1;
-	QMap<int, StageData> stages;
+	std::map<int, StageData> stages;
 	QString name;
 	QDate date;
 	QTime time;

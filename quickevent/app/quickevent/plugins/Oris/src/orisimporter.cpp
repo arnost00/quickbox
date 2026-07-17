@@ -355,18 +355,18 @@ void OrisImporter::importEvent(int event_id, std::function<void ()> success_call
 			}
 			auto discipline = discipline_id_opt.value_or(Event::EventConfig::Discipline::LongDistance);
 			qfInfo() << "pocet etap:" << stage_count << "sport id:" << sport_id << "discipline id:" << di;
-			QVariantMap ecfg;
-			ecfg["stageCount"] = stage_count;
-			ecfg["name"] = data.value(QStringLiteral("Name")).toString();
-			ecfg["description"] = QString();
-			ecfg["date"] = QDate::fromString(data.value(QStringLiteral("Date")).toString(), Qt::ISODate);
-			ecfg["place"] = data.value(QStringLiteral("Place")).toString();
-			ecfg["mainReferee"] = jsonObjectToFullName(data, QStringLiteral("MainReferee"));
-			ecfg["director"] = jsonObjectToFullName(data, QStringLiteral("Director"));
-			ecfg["sportId"] = sport_id;
-			ecfg["disciplineId"] = static_cast<int>(discipline);
-			ecfg["importId"] = event_id;
-			ecfg["time"] = QTime::fromString(data.value(QStringLiteral("StartTime")).toString(), QStringLiteral("hh:mm"));
+			Event::EventConfig ecfg;
+			ecfg.stageCount = stage_count;
+			ecfg.name = data.value(QStringLiteral("Name")).toString();
+			ecfg.description = QString();
+			ecfg.date = QDate::fromString(data.value(QStringLiteral("Date")).toString(), Qt::ISODate);
+			ecfg.place = data.value(QStringLiteral("Place")).toString();
+			ecfg.mainReferee = jsonObjectToFullName(data, QStringLiteral("MainReferee"));
+			ecfg.director = jsonObjectToFullName(data, QStringLiteral("Director"));
+			ecfg.sportId = sport_id;
+			ecfg.disciplineId = static_cast<int>(discipline);
+			ecfg.importId = event_id;
+			ecfg.time = QTime::fromString(data.value(QStringLiteral("StartTime")).toString(), QStringLiteral("hh:mm"));
 			if(!getPlugin<EventPlugin>()->createEvent(QString(), ecfg))
 				return;
 

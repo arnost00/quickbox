@@ -43,7 +43,7 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 			? qf::core::Utils::jsonToQVariant(drawing_config.toString()).toMap()
 			: drawing_config.toMap();
 		stage.qxApiToken = stage_values.value("qxApiToken").toString();
-		data.stages.insert(stage_id, stage);
+		data.stages[stage_id] = stage;
 	}
 	data.name = values.value("name").toString();
 	data.date = values.value("date").toDate();
@@ -65,19 +65,30 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	return data;
 }
 
+std::optional<int> EventConfig::maximumCardCheckAdvanceSec() const
+{
+	if(auto sec = cardCheckTimeSec; sec > 0)
+		return sec;
+	return {};
+}
+
 bool EventConfig::isRelays() const
 {
 	return disciplineId == 5 || disciplineId == 6 || disciplineId == 15;
 }
 
-StageData EventConfig::stageData(int stage_id) const
+const StageData& EventConfig::stageData(int stage_id) const
 {
-	return stages.value(stage_id);
+	if (stages.contains(stage_id)) {
+		return stages.at(stage_id);
+	}
+	static StageData sd;
+	return sd;
 }
 
 void EventConfig::setStageData(int stage_id, const StageData &data)
 {
-	stages.insert(stage_id, data);
+	stages[stage_id] = data;
 }
 
 QVariantMap EventConfig::toVariantMap() const
@@ -85,13 +96,13 @@ QVariantMap EventConfig::toVariantMap() const
 	QVariantMap values;
 	values.insert("stageCount", stageCount);
 	QVariantMap stage_values;
-	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
+	for(const auto &[key, val] : stages) {
 		QVariantMap stage;
-		stage.insert("startDateTime", it.value().startDateTime);
-		stage.insert("useAllMaps", it.value().useAllMaps);
-		stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(it.value().drawingConfig));
-		stage.insert("qxApiToken", it.value().qxApiToken);
-		stage_values.insert(QString::number(it.key()), stage);
+		stage.insert("startDateTime", val.startDateTime);
+		stage.insert("useAllMaps", val.useAllMaps);
+		stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(val.drawingConfig));
+		stage.insert("qxApiToken", val.qxApiToken);
+		stage_values.insert(QString::number(key), stage);
 	}
 	values.insert("stage", stage_values);
 	values.insert("name", name);

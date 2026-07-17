@@ -221,7 +221,7 @@ qf::core::utils::TreeTable RelaysPlugin::nLegsResultsTable(const QString &where_
 	qfDebug() << "nLegsResultsTable table:" << wt();
 	return tt;
 }
-
+namespace {
 QPair <int, QString> getClubFromName(QString name)
 {
 	qf::core::sql::Query q;
@@ -230,7 +230,7 @@ QPair <int, QString> getClubFromName(QString name)
 		return qMakePair(q.value(0).toInt(), q.value(1).toString());
 	return qMakePair<int, QString>(0,"");
 }
-
+}
 
 qf::core::utils::TreeTable RelaysPlugin::nLegsClassResultsTable(int class_id, int leg_count, int max_places, bool exclude_not_finish)
 {
@@ -579,7 +579,7 @@ QString RelaysPlugin::resultsIofXml30()
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(1);
 	qfDebug() << "creating table";
-	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	bool is_iof_race = event_config.iofRace;
 	//auto tt_classes = getPlugin<RelaysPlugin>()->nLegsResultsTable("classes.name='D105'", 999, 999999, false);
 	auto tt_classes = getPlugin<RelaysPlugin>()->nLegsResultsTable(QString(), 999, 999999, false);
@@ -863,7 +863,7 @@ QString RelaysPlugin::startListIofXml30()
 {
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(1);
 	qfDebug() << "creating table";
-	const auto event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
 	bool is_iof_race = event_config.iofRace;
 	qf::core::utils::TreeTable tt_classes = startListByClassesTableData(QString(), false);
 	QVariantList start_list{

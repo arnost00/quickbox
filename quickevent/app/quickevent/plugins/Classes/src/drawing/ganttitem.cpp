@@ -168,7 +168,6 @@ void GanttItem::save(int stage_id)
 		stage.drawingConfig = dc;
 		event_config.setStageData(stage_id, stage);
 		config->setEventConfig(event_config);
-		config->save(QStringLiteral("event"));
 	}
 	{
 		QString qs = "UPDATE classdefs SET"
@@ -301,8 +300,3 @@ void GanttItem::moveStartSlotItem(int from_slot_ix, int to_slot_ix)
 		checkClassClash();
 	}
 }
-
-
-
-
-

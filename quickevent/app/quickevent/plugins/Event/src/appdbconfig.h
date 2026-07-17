@@ -1,63 +1,55 @@
 #pragma once
 
 #include "eventconfig.h"
-#include "receiptsconfig.h"
-#include "ofeedconfig.h"
+#include "services/oresultsconfig.h"
+#include "services/ofeed/ofeedconfig.h"
+#include <plugins/Receipts/src/receiptsconfig.h>
 
-#include <QObject>
-#include <QVariantMap>
-#include <QSet>
 #include <QDateTime>
-
-#include <optional>
-#include <qhashfunctions.h>
+#include <QObject>
+#include <QSet>
+#include <QVariantMap>
+#include <qcontainerfwd.h>
 
 namespace Event {
 
-struct QxConfig
-{
+struct QxConfig {
+	static QxConfig fromVariantMap(const QVariantMap &map);
+	QVariantMap toVariantMap() const;
+
 	QString apiToken;
 };
 
-struct OResultsConfig
-{
-	QString apiKey;
-	QString eventName;
-};
-
-class AppDbConfig
-{
+class AppDbConfig {
 public:
 	explicit AppDbConfig() = default;
+
 public:
 	void load();
-	void save(const QString &path_to_save = QString());
 
-	bool isHandicap() const {return eventConfig().handicapLength > 0;}
-
-
-	int dbVersion() const;
-	std::optional<int> maximumCardCheckAdvanceSec() const;
-	EventConfig eventConfig() const;
+	int dbVersion() const { return m_dbVersion; }
+	const EventConfig &eventConfig() const { return m_eventConfig; }
 	void setEventConfig(const EventConfig &config);
-	OResultsConfig oresultsConfig(int stage_id) const;
-	void setOresultsConfig(int stage_id, const OResultsConfig &config);
-	ReceiptsConfig receiptsConfig(int stage_id) const;
-	void setReceiptsConfig(int stage_id, const ReceiptsConfig &config);
-	OFeedConfig ofeedConfig(int stage_id) const;
-	void setOfeedConfig(int stage_id, const OFeedConfig &config);
+	const services::OResultsConfig &oresultsConfig(int stage_id) const;
+	void setOresultsConfig(int stage_id, const services::OResultsConfig &config);
+	const Receipts::ReceiptsConfig &receiptsConfig(int stage_id) const;
+	void setReceiptsConfig(int stage_id, const Receipts::ReceiptsConfig &config);
+	const services::OFeedConfig &ofeedConfig(int stage_id) const;
+	void setOfeedConfig(int stage_id, const services::OFeedConfig &config);
+	const QxConfig &qxConfig() const { return m_qxConfig; }
+	void setQxConfig(const QxConfig &config);
+
 private:
-	void setValue(const QStringList &path, const QVariant &val);
-	void setValue(const QString &path, const QVariant &val) {setValue(path.split('.'), val);}
-	QVariantMap values() const {return m_data;}
-	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
-	QVariant value(const QString &path, const QVariant &default_value = QVariant()) const {
-		return value(path.split('.'), default_value);
-	}
-	void save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val);
-	QVariantMap setValue_helper(const QVariantMap &m, const QStringList &path, const QVariant &val);
+	void save(const QString &prefix, const QVariantMap &data);
+	void save(const QString &prefix, int stage_id, const QVariantMap &data);
+
 private:
-	QVariantMap m_data;
+	std::map<int, services::OFeedConfig> m_ofeedConfig;
+	std::map<int, Receipts::ReceiptsConfig> m_receiptsConfig;
+	std::map<int, services::OResultsConfig> m_oresultsConfig;
+	EventConfig m_eventConfig;
+	QxConfig m_qxConfig;
+	int m_dbVersion = 0;
 };
 
-}
+} // namespace Event

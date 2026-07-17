@@ -2,7 +2,6 @@
 #define EVENTPLUGIN_H
 
 #include "appdbconfig.h"
-#include "stagedata.h"
 
 #include <qf/gui/framework/plugin.h>
 
@@ -65,6 +64,7 @@ public:
 
 	Q_INVOKABLE void initEventConfig();
 	Event::AppDbConfig* appDbConfig(bool reload = false);
+	const Event::EventConfig& eventConfig();
 	int stageCount();
 
 	Q_SLOT void setCurrentStageId(int stage_id);
@@ -82,12 +82,12 @@ public:
 
 
 
-	Q_SLOT bool createEvent(const QString &event_name = QString(), const QVariantMap &event_params = QVariantMap());
-	Q_SLOT void editEvent();
-	Q_SLOT bool closeEvent();
-	Q_SLOT bool openEvent(const QString &event_name = QString());
-	Q_SLOT void exportEvent_qbe();
-	Q_SLOT void importEvent_qbe();
+	bool createEvent(const QString &event_name, const EventConfig &event_params);
+	void editEvent();
+	bool closeEvent();
+	bool openEvent(const QString &event_name = QString());
+	void exportEvent_qbe();
+	void importEvent_qbe();
 
 	void emitReloadDataRequest() { emit reloadDataRequest(); }
 	Q_SIGNAL void reloadDataRequest();

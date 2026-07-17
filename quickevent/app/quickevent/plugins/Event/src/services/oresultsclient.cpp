@@ -179,7 +179,6 @@ void OResultsClient::setApiKey(QString apiKey)
 	auto cfg = db->oresultsConfig(current_stage);
 	cfg.apiKey = apiKey;
 	db->setOresultsConfig(current_stage, cfg);
-	db->save("oresults");
 }
 
 QString OResultsClient::eventName() const
@@ -195,7 +194,6 @@ void OResultsClient::setEventName(const QString &name)
 	auto cfg = db->oresultsConfig(current_stage);
 	cfg.eventName = name;
 	db->setOresultsConfig(current_stage, cfg);
-	db->save("oresults");
 }
 
 void OResultsClient::sendCompetitorChange(QString xml) {
@@ -220,20 +218,20 @@ void OResultsClient::sendCompetitorChange(QString xml) {
 		reply->deleteLater();
 	});
 }
-
-static void append_list(QVariantList &lst, const QVariantList &new_lst)
+namespace {
+void append_list(QVariantList &lst, const QVariantList &new_lst)
 {
 	lst.insert(lst.count(), new_lst);
 }
 
-static int mop_start(int runner_start_ms) {
+int mop_start(int runner_start_ms) {
 	int stage_id = getPlugin<EventPlugin>()->currentStageId();
 	QDateTime event_start = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);
 	QDateTime runner_start = event_start.addMSecs(runner_start_ms);
 	return event_start.date().startOfDay().msecsTo(runner_start) / 100;
 }
 
-static int mop_run_status_code(
+int mop_run_status_code(
 		int time,
 		bool isDisq,
 		bool isDisqByOrganizer,
@@ -257,7 +255,7 @@ static int mop_run_status_code(
 		return 1; // OK
 	return 0; // Unknown
 }
-
+}
 
 void OResultsClient::onCompetitorChanged(int competitor_id)
 {

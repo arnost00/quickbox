@@ -425,7 +425,7 @@ void ReceiptsSettingsPage::save()
 	Q_ASSERT(event_plugin);
 	auto *event_config = event_plugin->appDbConfig();
 	Q_ASSERT(event_config);
-	Event::ReceiptsConfig rc;
+	ReceiptsConfig rc;
 	rc.printQrCode = ui->chkPrintReceiptQrCode->isChecked();
 	rc.linkUrl = ui->edReceiptQrCodeBaseUrl->text().trimmed();
 	rc.qrCodeCaption = ui->edReceiptQrCodeCaption->text().trimmed();
@@ -434,7 +434,6 @@ void ReceiptsSettingsPage::save()
 	rc.imageBase64 = m_receiptImageBase64;
 	rc.imageFormat = m_receiptImageFormat;
 	event_config->setReceiptsConfig(m_stageId, rc);
-	event_config->save(QStringLiteral("event"));
 }
 
 QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const

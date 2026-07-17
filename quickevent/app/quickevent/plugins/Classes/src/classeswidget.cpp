@@ -50,6 +50,8 @@ using qf::gui::framework::getPlugin;
 using Event::EventPlugin;
 using Classes::ClassesPlugin;
 
+namespace {
+
 class CourseCodesTableModel : public qfm::SqlTableModel
 {
 	Q_OBJECT
@@ -98,6 +100,7 @@ public:
 		return Super::data(index, role);
 	}
 };
+}
 
 ClassesWidget::ClassesWidget(QWidget *parent) :
 	Super(parent),
@@ -162,7 +165,6 @@ ClassesWidget::ClassesWidget(QWidget *parent) :
 		data.useAllMaps = checked;
 		event_config.setStageData(selectedStageId(), data);
 		config->setEventConfig(event_config);
-		config->save(QStringLiteral("event"));
 	});
 }
 
@@ -396,7 +398,8 @@ void ClassesWidget::importCourses(const QList<ImportCourseDef> &course_defs, con
 	reload();
 }
 
-static QString normalize_course_name(const QString &course_name)
+namespace {
+QString normalize_course_name(const QString &course_name)
 {
 	QString ret = qf::core::Collator::toAscii7(QLocale::Czech, course_name, false);
 	ret.replace(' ', QString());
@@ -405,6 +408,7 @@ static QString normalize_course_name(const QString &course_name)
 	ret.replace(':', '+');
 	ret.replace('-', '+');
 	return ret;
+}
 }
 
 void ClassesWidget::import_ocad_txt()
@@ -572,7 +576,8 @@ void ClassesWidget::import_ocad_v8()
 	}
 }
 
-static QString element_text(const QDomElement &parent, const QString &tag_name)
+namespace {
+QString element_text(const QDomElement &parent, const QString &tag_name)
 {
 	QDomElement el = parent.firstChildElement(tag_name);
 	if(el.isNull())
@@ -580,12 +585,13 @@ static QString element_text(const QDomElement &parent, const QString &tag_name)
 	return el.text();
 }
 
-static QString dump_element(const QDomElement &el)
+QString dump_element(const QDomElement &el)
 {
 	QString ret;
 	QTextStream s(&ret);
 	el.save(s, QDomNode::EncodingFromDocument);
 	return ret;
+}
 }
 
 void ClassesWidget::import_ocad_iofxml_2()

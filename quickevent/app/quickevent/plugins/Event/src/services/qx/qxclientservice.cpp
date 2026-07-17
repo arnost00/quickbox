@@ -483,7 +483,7 @@ void QxClientService::pollQxChanges()
 EventInfo QxClientService::eventInfo() const
 {
 	auto *event_plugin = getPlugin<EventPlugin>();
-	const auto event_config = event_plugin->appDbConfig()->eventConfig();
+	const auto &event_config = event_plugin->appDbConfig()->eventConfig();
 	EventInfo ei;
 	ei.set_stage(event_plugin->currentStageId());
 	ei.set_stage_count(event_plugin->stageCount());

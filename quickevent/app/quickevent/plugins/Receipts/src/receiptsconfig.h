@@ -2,10 +2,14 @@
 
 #include <QString>
 
-namespace Event {
+namespace Receipts {
 
 struct ReceiptsConfig
 {
+	ReceiptsConfig();
+	static ReceiptsConfig fromVariantMap(const QVariantMap &map);
+	QVariantMap toVariantMap() const;
+
 	bool printQrCode = false;
 	QString linkUrl;
 	QString qrCodeCaption;   // Default "Live Results" applied by AppDbConfig::receiptsConfig()
