@@ -169,27 +169,33 @@ void OResultsClient::onDbEventNotify(const QString &domain, int connection_id, c
 QString OResultsClient::apiKey() const
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	return getPlugin<EventPlugin>()->appDbConfig()->value("oresults.apiKey.E" + QString::number(current_stage)).toString();
+	return getPlugin<EventPlugin>()->appDbConfig()->oresultsConfig(current_stage).apiKey;
 }
 
 void OResultsClient::setApiKey(QString apiKey)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	getPlugin<EventPlugin>()->appDbConfig()->setValue("oresults.apiKey.E" + QString::number(current_stage), apiKey);
-	getPlugin<EventPlugin>()->appDbConfig()->save("oresults");
+	auto *db = getPlugin<EventPlugin>()->appDbConfig();
+	auto cfg = db->oresultsConfig(current_stage);
+	cfg.apiKey = apiKey;
+	db->setOresultsConfig(current_stage, cfg);
+	db->save("oresults");
 }
 
 QString OResultsClient::eventName() const
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	return getPlugin<EventPlugin>()->appDbConfig()->value("oresults.eventName.E" + QString::number(current_stage)).toString();
+	return getPlugin<EventPlugin>()->appDbConfig()->oresultsConfig(current_stage).eventName;
 }
 
 void OResultsClient::setEventName(const QString &name)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	getPlugin<EventPlugin>()->appDbConfig()->setValue("oresults.eventName.E" + QString::number(current_stage), name);
-	getPlugin<EventPlugin>()->appDbConfig()->save("oresults");
+	auto *db = getPlugin<EventPlugin>()->appDbConfig();
+	auto cfg = db->oresultsConfig(current_stage);
+	cfg.eventName = name;
+	db->setOresultsConfig(current_stage, cfg);
+	db->save("oresults");
 }
 
 void OResultsClient::sendCompetitorChange(QString xml) {

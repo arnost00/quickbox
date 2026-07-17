@@ -21,7 +21,8 @@ struct QxConfig
 
 struct OResultsConfig
 {
-	QMap<int, QString> apiKeys;
+	QString apiKey;
+	QString eventName;
 };
 
 class AppDbConfig
@@ -29,8 +30,6 @@ class AppDbConfig
 public:
 	explicit AppDbConfig() = default;
 public:
-	void setValue(const QStringList &path, const QVariant &val);
-	void setValue(const QString &path, const QVariant &val) {setValue(path.split('.'), val);}
 	void load();
 	void save(const QString &path_to_save = QString());
 
@@ -40,12 +39,17 @@ public:
 	int dbVersion() const;
 	std::optional<int> maximumCardCheckAdvanceSec() const;
 	EventConfig eventConfig() const;
+	void setEventConfig(const EventConfig &config);
+	OResultsConfig oresultsConfig(int stage_id) const;
+	void setOresultsConfig(int stage_id, const OResultsConfig &config);
 	ReceiptsConfig receiptsConfig(int stage_id) const;
 	void setReceiptsConfig(int stage_id, const ReceiptsConfig &config);
 	OFeedConfig ofeedConfig(int stage_id) const;
 	void setOfeedConfig(int stage_id, const OFeedConfig &config);
 private:
-    QVariantMap values() const {return m_data;}
+	void setValue(const QStringList &path, const QVariant &val);
+	void setValue(const QString &path, const QVariant &val) {setValue(path.split('.'), val);}
+	QVariantMap values() const {return m_data;}
 	QVariant value(const QStringList &path, const QVariant &default_value = QVariant()) const;
 	QVariant value(const QString &path, const QVariant &default_value = QVariant()) const {
 		return value(path.split('.'), default_value);

@@ -197,6 +197,27 @@ EventConfig AppDbConfig::eventConfig() const
 	return EventConfig::fromVariantMap(value(QStringLiteral("event")).toMap());
 }
 
+void AppDbConfig::setEventConfig(const EventConfig &config)
+{
+	setValue(QStringLiteral("event"), config.toVariantMap());
+}
+
+OResultsConfig AppDbConfig::oresultsConfig(int stage_id) const
+{
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	OResultsConfig cfg;
+	cfg.apiKey = value(QStringLiteral("oresults.apiKey") + e).toString();
+	cfg.eventName = value(QStringLiteral("oresults.eventName") + e).toString();
+	return cfg;
+}
+
+void AppDbConfig::setOresultsConfig(int stage_id, const OResultsConfig &cfg)
+{
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	setValue(QStringLiteral("oresults.apiKey") + e, cfg.apiKey);
+	setValue(QStringLiteral("oresults.eventName") + e, cfg.eventName);
+}
+
 ReceiptsConfig AppDbConfig::receiptsConfig(int stage_id) const
 {
 	const QString e = QStringLiteral(".E") + QString::number(stage_id);

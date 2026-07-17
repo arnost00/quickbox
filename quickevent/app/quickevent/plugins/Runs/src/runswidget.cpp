@@ -1140,7 +1140,7 @@ void RunsWidget::report_competitorsStatistics()
 	m.setQueryBuilder(qb);
 	m.reload();
 	qfu::TreeTable tt = m.toTreeTable();
-	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->value("event"));
+	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->eventConfig().toVariantMap());
 	for (int stage_id = 1; stage_id <= stage_cnt; ++stage_id) {
 		QString prefix = "e" + QString::number(stage_id) + "_";
 		QString col_runs_count = prefix + "runCount";

@@ -55,15 +55,15 @@ using CardReader::CardReaderPlugin;
 namespace Receipts {
 
 namespace {
-QString eventConfigKey(const QString &suffix)
+Event::ReceiptsConfig currentReceiptsConfig()
 {
 	const int current_stage = qMax(getPlugin<EventPlugin>()->currentStageId(), 1);
-	return QStringLiteral("event.") + suffix + QStringLiteral(".E") + QString::number(current_stage);
+	return getPlugin<EventPlugin>()->appDbConfig()->receiptsConfig(current_stage);
 }
 
 QString configuredReceiptEventLinkUrl()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptEventLinkUrl"))).toString().trimmed();
+	return currentReceiptsConfig().linkUrl;
 }
 
 QString defaultReceiptQrCodeCaption()
@@ -73,7 +73,7 @@ QString defaultReceiptQrCodeCaption()
 
 QString configuredReceiptQrCodeCaption()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCodeCaption")), defaultReceiptQrCodeCaption()).toString().trimmed();
+	return currentReceiptsConfig().qrCodeCaption;
 }
 
 QString receiptLinkWithCompetitorClass(const QString &base_url, const QString &class_name)
@@ -100,35 +100,27 @@ QString receiptLinkWithCompetitorClass(const QString &base_url, const QString &c
 
 bool printReceiptImageEnabled()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventImage")), false).toBool();
+	return currentReceiptsConfig().printImage;
 }
 
 bool printReceiptQrCodeEnabled()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptPrintEventQrCode")), false).toBool();
+	return currentReceiptsConfig().printQrCode;
 }
 
 QString configuredReceiptImageBase64()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageDataBase64"))).toString();
+	return currentReceiptsConfig().imageBase64;
 }
 
 QString configuredReceiptImageFormat()
 {
-	return getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageFormat")), QStringLiteral("png")).toString().trimmed().toLower();
+	return currentReceiptsConfig().imageFormat;
 }
 
 int configuredReceiptImageHeightMm()
 {
-	bool ok = false;
-	int image_height_mm = getPlugin<EventPlugin>()->appDbConfig()->value(eventConfigKey(QStringLiteral("receiptImageHeightMm")), 18).toInt(&ok);
-	if(!ok)
-		return 18;
-	if(image_height_mm < 10)
-		return 10;
-	if(image_height_mm > 60)
-		return 60;
-	return image_height_mm;
+	return currentReceiptsConfig().imageHeightMm;
 }
 
 QString receiptImageCacheDirPath()

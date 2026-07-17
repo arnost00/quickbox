@@ -189,7 +189,7 @@ qf::core::utils::TreeTable RelaysPlugin::nLegsResultsTable(const QString &where_
 {
 	qfLogFuncFrame() << "leg cnt:" << leg_count;
 	qf::core::utils::TreeTable tt;
-	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->value("event"));
+	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->eventConfig().toVariantMap());
 	tt.setValue("stageStart", getPlugin<EventPlugin>()->stageStartDateTime(1));
 	tt.appendColumn("className", QMetaType(QMetaType::QString));
 	qfs::QueryBuilder qb;
@@ -513,7 +513,7 @@ QVariant RelaysPlugin::startListByClassesTableData(const QString &class_filter, 
 	//console.info("currentStageTable query:", reportModel.effectiveQuery());
 	model.reload();
 	qf::core::utils::TreeTable tt = model.toTreeTable();
-	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->value("event"));
+	tt.setValue("event", getPlugin<EventPlugin>()->appDbConfig()->eventConfig().toVariantMap());
 	tt.setValue("stageStart", getPlugin<EventPlugin>()->stageStartDateTime(1));
 	{
 		qf::core::sql::QueryBuilder qb;

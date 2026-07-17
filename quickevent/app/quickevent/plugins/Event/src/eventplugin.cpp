@@ -316,16 +316,16 @@ StageData EventPlugin::stageData(int stage_id)
 		}
 
 		// Config values take precedence over legacy table values.
-		const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-		const QVariantMap config_data = appDbConfig()->value(config_prefix).toMap();
-		if(config_data.contains(STAGE_START_DATE_TIME_KEY))
-			data.startDateTime = config_data.value(STAGE_START_DATE_TIME_KEY).toDateTime();
-		if(config_data.contains(STAGE_USE_ALL_MAPS_KEY))
-			data.useAllMaps = config_data.value(STAGE_USE_ALL_MAPS_KEY).toBool();
-		if(config_data.contains(STAGE_DRAWING_CONFIG_KEY))
-			data.drawingConfig = qf::core::Utils::jsonToQVariant(config_data.value(STAGE_DRAWING_CONFIG_KEY).toString()).toMap();
-		if(config_data.contains(STAGE_QX_API_TOKEN_KEY))
-			data.qxApiToken = config_data.value(STAGE_QX_API_TOKEN_KEY).toString();
+		// Default values: startDateTime=invalid, useAllMaps=false, drawingConfig=empty, qxApiToken=empty
+		const StageData cfg_stage = appDbConfig()->eventConfig().stages.value(stage_id);
+		if (cfg_stage.startDateTime.isValid())
+			data.startDateTime = cfg_stage.startDateTime;
+		if (cfg_stage.useAllMaps)
+			data.useAllMaps = cfg_stage.useAllMaps;
+		if (!cfg_stage.drawingConfig.isEmpty())
+			data.drawingConfig = cfg_stage.drawingConfig;
+		if (!cfg_stage.qxApiToken.isEmpty())
+			data.qxApiToken = cfg_stage.qxApiToken;
 
 		data.startDateTime = data.startDateTime.toTimeZone(QTimeZone::systemTimeZone());
 		m_stageCache[stage_id] = data;
@@ -336,12 +336,11 @@ StageData EventPlugin::stageData(int stage_id)
 void EventPlugin::setStageData(int stage_id, const StageData &data)
 {
 	AppDbConfig *config = appDbConfig();
-	const QString config_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
-	config->setValue(config_prefix + '.' + STAGE_START_DATE_TIME_KEY, data.startDateTime);
-	config->setValue(config_prefix + '.' + STAGE_USE_ALL_MAPS_KEY, data.useAllMaps);
-	config->setValue(config_prefix + '.' + STAGE_DRAWING_CONFIG_KEY, qf::core::Utils::qvariantToJson(data.drawingConfig));
-	config->setValue(config_prefix + '.' + STAGE_QX_API_TOKEN_KEY, data.qxApiToken);
-	config->save(config_prefix);
+	auto event_cfg = config->eventConfig();
+	event_cfg.stages.insert(stage_id, data);
+	config->setEventConfig(event_cfg);
+	const QString save_prefix = QStringLiteral("event.stage.%1").arg(stage_id);
+	config->save(save_prefix);
 	m_stageCache.remove(stage_id);
 }
 
@@ -509,7 +508,9 @@ void EventPlugin::loadCurrentStageId()
 void EventPlugin::saveCurrentStageId(int current_stage)
 {
 	if(current_stage != appDbConfig()->eventConfig().currentStageId) {
-		appDbConfig()->setValue("event.currentStageId", current_stage);
+		auto event_cfg = appDbConfig()->eventConfig();
+		event_cfg.currentStageId = current_stage;
+		appDbConfig()->setEventConfig(event_cfg);
 		appDbConfig()->save("event");
 	}
 }
@@ -947,7 +948,7 @@ bool EventPlugin::createEvent(const QString &event_name, const QVariantMap &even
 	Event::AppDbConfig event_config;
 	bool ok = false;
 	//ConnectionSettings connection_settings;
-	event_config.setValue("event", new_params.toVariantMap());
+	event_config.setEventConfig(new_params);
 	int stage_count = new_params.stageCount;
 	if(stage_count == 0)
 		stage_count = event_config.eventConfig().stageCount;
@@ -1034,7 +1035,7 @@ void EventPlugin::editEvent()
 		return;
 
 	event_data = event_w->saveParams();
-	appDbConfig()->setValue("event", event_data.toVariantMap());
+	appDbConfig()->setEventConfig(event_data);
 	appDbConfig()->save("event");
 }
 
