@@ -1,6 +1,8 @@
 #pragma once
 
 #include "eventconfig.h"
+#include "receiptsconfig.h"
+#include "ofeedconfig.h"
 
 #include <QObject>
 #include <QVariantMap>
@@ -43,6 +45,10 @@ public:
 	int dbVersion() const;
 	std::optional<int> maximumCardCheckAdvanceSec() const;
 	EventConfig eventConfig() const;
+	ReceiptsConfig receiptsConfig(int stage_id) const;
+	void setReceiptsConfig(int stage_id, const ReceiptsConfig &config);
+	OFeedConfig ofeedConfig(int stage_id) const;
+	void setOfeedConfig(int stage_id, const OFeedConfig &config);
 private:
 	void save_helper(QVariantMap &ret, const QString &current_path, const QVariant &val);
 	QVariantMap setValue_helper(const QVariantMap &m, const QStringList &path, const QVariant &val);

@@ -196,3 +196,68 @@ EventConfig AppDbConfig::eventConfig() const
 {
 	return EventConfig::fromVariantMap(value(QStringLiteral("event")).toMap());
 }
+
+ReceiptsConfig AppDbConfig::receiptsConfig(int stage_id) const
+{
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	ReceiptsConfig cfg;
+	cfg.printQrCode = value(QStringLiteral("event.receiptPrintEventQrCode") + e, false).toBool();
+	cfg.linkUrl = value(QStringLiteral("event.receiptEventLinkUrl") + e).toString().trimmed();
+	const QString caption = value(QStringLiteral("event.receiptPrintEventQrCodeCaption") + e).toString().trimmed();
+	cfg.qrCodeCaption = caption.isEmpty() ? QStringLiteral("Live Results") : caption;
+	cfg.printImage = value(QStringLiteral("event.receiptPrintEventImage") + e, false).toBool();
+	const int h = value(QStringLiteral("event.receiptImageHeightMm") + e, 18).toInt();
+	cfg.imageHeightMm = (h < 10) ? 10 : (h > 60) ? 60 : h;
+	cfg.imageBase64 = value(QStringLiteral("event.receiptImageDataBase64") + e).toString();
+	const QString fmt = value(QStringLiteral("event.receiptImageFormat") + e).toString().trimmed().toLower();
+	cfg.imageFormat = fmt.isEmpty() ? QStringLiteral("png") : fmt;
+	return cfg;
+}
+
+void AppDbConfig::setReceiptsConfig(int stage_id, const ReceiptsConfig &cfg)
+{
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	setValue(QStringLiteral("event.receiptPrintEventQrCode") + e, cfg.printQrCode);
+	setValue(QStringLiteral("event.receiptEventLinkUrl") + e, cfg.linkUrl);
+	setValue(QStringLiteral("event.receiptPrintEventQrCodeCaption") + e, cfg.qrCodeCaption);
+	setValue(QStringLiteral("event.receiptPrintEventImage") + e, cfg.printImage);
+	setValue(QStringLiteral("event.receiptImageHeightMm") + e, cfg.imageHeightMm);
+	setValue(QStringLiteral("event.receiptImageDataBase64") + e, cfg.imageBase64);
+	setValue(QStringLiteral("event.receiptImageFormat") + e, cfg.imageFormat);
+}
+
+OFeedConfig AppDbConfig::ofeedConfig(int stage_id) const
+{
+	const QString prefix = QStringLiteral("ofeed.");
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	OFeedConfig cfg;
+	const QString default_host = QStringLiteral("https://api.orienteerfeed.com");
+	cfg.hostUrl = value(prefix + QStringLiteral("hostUrl") + e, default_host).toString();
+	cfg.eventId = value(prefix + QStringLiteral("eventId") + e).toString();
+	cfg.eventPassword = value(prefix + QStringLiteral("eventPassword") + e).toString();
+	const QString origin = value(prefix + QStringLiteral("changelogOrigin") + e).toString();
+	cfg.changelogOrigin = origin.isEmpty() ? QStringLiteral("START") : origin;
+	const QString lcc = value(prefix + QStringLiteral("lastChangelogCall") + e).toString();
+	cfg.lastChangelogCall = lcc.isEmpty() ? QDateTime::fromSecsSinceEpoch(0)
+	                                        : QDateTime::fromString(lcc, Qt::ISODate);
+	if (!cfg.lastChangelogCall.isValid())
+		cfg.lastChangelogCall = QDateTime::fromSecsSinceEpoch(0);
+	cfg.runXmlValidation = value(prefix + QStringLiteral("runXmlValidation") + e, true).toBool();
+	cfg.runChangesProcessing = value(prefix + QStringLiteral("runChangesProcessing") + e, false).toBool();
+	cfg.introTourShowed = value(prefix + QStringLiteral("introTourShowed"), false).toBool();
+	return cfg;
+}
+
+void AppDbConfig::setOfeedConfig(int stage_id, const OFeedConfig &cfg)
+{
+	const QString prefix = QStringLiteral("ofeed.");
+	const QString e = QStringLiteral(".E") + QString::number(stage_id);
+	setValue(prefix + QStringLiteral("hostUrl") + e, cfg.hostUrl);
+	setValue(prefix + QStringLiteral("eventId") + e, cfg.eventId);
+	setValue(prefix + QStringLiteral("eventPassword") + e, cfg.eventPassword);
+	setValue(prefix + QStringLiteral("changelogOrigin") + e, cfg.changelogOrigin);
+	setValue(prefix + QStringLiteral("lastChangelogCall") + e, cfg.lastChangelogCall.toString(Qt::ISODate));
+	setValue(prefix + QStringLiteral("runXmlValidation") + e, cfg.runXmlValidation);
+	setValue(prefix + QStringLiteral("runChangesProcessing") + e, cfg.runChangesProcessing);
+	setValue(prefix + QStringLiteral("introTourShowed"), cfg.introTourShowed);
+}
