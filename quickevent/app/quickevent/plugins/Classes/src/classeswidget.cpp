@@ -359,7 +359,7 @@ void ClassesWidget::reload()
 		}
 		m_courseItemDelegate->setCourses(courses);
 	}
-	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id).useAllMaps);
+	ui->chkUseAllMaps->setChecked(getPlugin<EventPlugin>()->eventConfig().stageData(stage_id).useAllMaps);
 	reloadCourseCodes();
 }
 
@@ -413,7 +413,7 @@ QString normalize_course_name(const QString &course_name)
 
 void ClassesWidget::import_ocad_txt()
 {
-	if (getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays()) {
+	if (getPlugin<EventPlugin>()->eventConfig().isRelays()) {
 		QMessageBox::warning(this,tr("Warning"),tr("Import does not yet support relays."));
 		return;
 	}
@@ -501,7 +501,7 @@ void ClassesWidget::import_ocad_v8()
 			lines << QString::fromUtf8(ba).trimmed();
 		}
 		try {
-			bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+			bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 			QMap<QString, ImportCourseDef> defined_courses_map;
 			for(const auto &line : lines) {
 				// [classname];coursename;[relay.leg];lenght_km;climb;S1;dist_1;code_1[;dist_n;code_n];dist_finish;F1
@@ -596,7 +596,7 @@ QString dump_element(const QDomElement &el)
 
 void ClassesWidget::import_ocad_iofxml_2()
 {
-	if (getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays()) {
+	if (getPlugin<EventPlugin>()->eventConfig().isRelays()) {
 		QMessageBox::warning(this,tr("Warning"),tr("Import does not yet support relays."));
 		return;
 	}
@@ -745,7 +745,7 @@ void ClassesWidget::import_ocad_iofxml_3()
 					coursedef.addClass(class_name);
 				}
 			}
-			if (getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays()) {
+			if (getPlugin<EventPlugin>()->eventConfig().isRelays()) {
 				QDomNodeList ndlst = xdoc.elementsByTagName(QStringLiteral("TeamCourseAssignment"));
 				QMap<QString, ImportCourseDef> relay_courses;
 				for (int i = 0; i < ndlst.count(); ++i) {

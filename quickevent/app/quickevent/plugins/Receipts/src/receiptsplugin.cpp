@@ -391,7 +391,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 {
 	qfLogFuncFrame() << card_id;
 	QF_TIME_SCOPE("receiptTablesData()");
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	QVariantMap ret;
 	quickevent::core::si::ReadCard read_card = getPlugin<CardReaderPlugin>()->readCard(card_id);
 	quickevent::core::si::CheckedCard checked_card = getPlugin<CardReaderPlugin>()->checkCard(read_card);

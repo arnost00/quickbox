@@ -173,7 +173,7 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 		ui->lblClassStart->setText(class_start_time_min >= 0? QString::number(class_start_time_min): "---");
 		ui->lblClassInterval->setText(class_start_interval_min >= 0? QString::number(class_start_interval_min): "---");
 	}
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	if (!is_relays && m_courseItemDelegate) {
 		m_courseItemDelegate->setCourses(definedCourses());
 	}

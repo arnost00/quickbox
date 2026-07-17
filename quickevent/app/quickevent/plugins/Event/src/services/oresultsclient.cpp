@@ -60,7 +60,7 @@ void OResultsClient::stop() {
 void OResultsClient::exportResultsIofXml3()
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 
 	QString str = is_relays
 			? getPlugin<RelaysPlugin>()->resultsIofXml30()
@@ -72,7 +72,7 @@ void OResultsClient::exportResultsIofXml3()
 void OResultsClient::exportStartListIofXml3(std::function<void()> on_success)
 {
 	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 
 	QString str = is_relays
 			? getPlugin<RelaysPlugin>()->startListIofXml30()

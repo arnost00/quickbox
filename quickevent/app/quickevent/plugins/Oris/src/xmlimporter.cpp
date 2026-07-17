@@ -185,7 +185,7 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 		}
 	}
 
-	const auto &event_config = getPlugin<EventPlugin>()->appDbConfig()->eventConfig();
+	const auto &event_config = getPlugin<EventPlugin>()->eventConfig();
 	int selected_race = event_config.iofXmlRaceNumber; // if entries has more races in (defined in Event), selected race
 	// load from XML & insert to db
 	int items_processed = 0;
@@ -476,7 +476,7 @@ bool XmlImporter::importStartlist(QXmlStreamReader &reader, const XmlCreators cr
 bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators creator)
 {
 	// load data from XML
-	bool is_relays = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	qf::core::sql::Transaction transaction;
 	int items_processed = 0;
 	while(reader.readNextStartElement()) {

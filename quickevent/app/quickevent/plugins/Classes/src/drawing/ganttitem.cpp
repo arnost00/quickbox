@@ -63,7 +63,7 @@ StartSlotItem *GanttItem::addStartSlotItem()
 void GanttItem::load(int stage_id)
 {
 	qfLogFuncFrame();
-	Event::StageData stage_data = getPlugin<EventPlugin>()->appDbConfig()->eventConfig().stageData(stage_id);
+	Event::StageData stage_data = getPlugin<EventPlugin>()->eventConfig().stageData(stage_id);
 	DrawingConfig dc(stage_data.drawingConfig);
 	QVariantList start_slot_list = dc.startSlots();
 
