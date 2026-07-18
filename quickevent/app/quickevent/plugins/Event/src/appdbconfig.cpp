@@ -96,6 +96,7 @@ void AppDbConfig::load()
 			target[stage.toInt()] = fromVariantMap(val.toMap());
 		}
 	};
+	load_stage_config(STAGE, m_stagesConfig, StageConfig::fromVariantMap);
 	load_stage_config(RECEIPTS, m_receiptsConfig, Receipts::ReceiptsConfig::fromVariantMap);
 	load_stage_config(ORESULTS, m_oresultsConfig, services::OResultsConfig::fromVariantMap);
 	load_stage_config(OFEED, m_ofeedConfig, services::OFeedConfig::fromVariantMap);
