@@ -33,7 +33,6 @@ struct StageConfig
 	QDateTime startDateTime;
 	bool useAllMaps = false;
 	DrawingConfig drawingConfig;
-	QString qxApiToken;
 };
 
 }

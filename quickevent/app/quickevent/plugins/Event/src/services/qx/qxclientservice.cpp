@@ -271,11 +271,8 @@ int QxClientService::eventId() const
 
 QByteArray QxClientService::apiToken() const
 {
-	// API token must not be cached to enable service point
-	// always to current stage event on qxhttpd
-	auto *event_plugin = getPlugin<EventPlugin>();
-	auto current_stage = event_plugin->currentStageId();
-	return event_plugin->stageConfig(current_stage).qxApiToken.toUtf8();
+	// Dead service
+	return {};
 }
 
 QUrl QxClientService::exchangeServerUrl() const

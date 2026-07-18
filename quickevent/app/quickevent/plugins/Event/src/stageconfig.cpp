@@ -44,7 +44,7 @@ QVariantMap DrawingConfig::toVariantMap() const
 
 const StartSlotConfig& DrawingConfig::startSlotConfig(int index) const
 {
-    if (index < 0 || index >= startSlots.size()) {
+    if (index < 0 || index >= static_cast<int>(startSlots.size())) {
         static StartSlotConfig defaultSlot;
         return defaultSlot;
     }
@@ -57,7 +57,6 @@ StageConfig StageConfig::fromVariantMap(const QVariantMap& map)
     config.startDateTime = map.value("startDateTime").toDateTime();
     config.useAllMaps = map.value("useAllMaps").toBool();
     config.drawingConfig = DrawingConfig::fromVariantMap(map.value("drawingConfig").toMap());
-    config.qxApiToken = map.value("qxApiToken").toString();
     return config;
 }
 
@@ -67,7 +66,6 @@ QVariantMap StageConfig::toVariantMap() const
     map["startDateTime"] = startDateTime;
     map["useAllMaps"] = useAllMaps;
     map["drawingConfig"] = drawingConfig.toVariantMap();
-    map["qxApiToken"] = qxApiToken;
     return map;
 }
 
