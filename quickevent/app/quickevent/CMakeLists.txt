@@ -60,7 +60,7 @@ add_executable(quickevent
 	plugins/Core/src/widgets/settingsdialog.cpp
 	plugins/Core/src/widgets/settingsdialog.ui
 
-	plugins/Event/src/stagedata.h
+	plugins/Event/src/stageconfig.cpp plugins/Event/src/stageconfig.h
 	plugins/Event/src/connectdbdialogwidget.cpp
 	plugins/Event/src/connectdbdialogwidget.ui
 	plugins/Event/src/connectionsettings.cpp

@@ -58,7 +58,7 @@ namespace {
 ReceiptsConfig currentReceiptsConfig()
 {
 	const int current_stage = qMax(getPlugin<EventPlugin>()->currentStageId(), 1);
-	return getPlugin<EventPlugin>()->appDbConfig()->receiptsConfig(current_stage);
+	return getPlugin<EventPlugin>()->appDbConfig().receiptsConfig(current_stage);
 }
 
 QString configuredReceiptEventLinkUrl()

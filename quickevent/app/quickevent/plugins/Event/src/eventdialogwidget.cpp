@@ -1,8 +1,6 @@
 #include "eventdialogwidget.h"
 #include "ui_eventdialogwidget.h"
 
-#include "appdbconfig.h"
-
 #include <qf/core/collator.h>
 
 #include <QDateTimeEdit>
@@ -21,8 +19,9 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 	ui->stageStartTimesTable->verticalHeader()->hide();
-	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged), this, &EventDialogWidget::updateStageStartTimeEditors);
-	updateStageStartTimeEditors(ui->ed_stageCount->value());
+	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+		updateStageStartTimeEditors(saveParams());
+	});
 
 	connect(ui->ed_iofRace, &QAbstractButton::toggled, ui->frameIofRace, &QWidget::setVisible);
 	ui->frameIofRace->hide();
@@ -72,118 +71,94 @@ void EventDialogWidget::setEventIdEditable(bool b)
 	ui->ed_eventId->setReadOnly(!b);
 }
 
-void EventDialogWidget::updateStageStartTimeEditors(int stage_count)
+void EventDialogWidget::updateStageStartTimeEditors(const EventDialogWidget::Params &params)
 {
+	QDateTime event_start(params.eventConfig.date, params.eventConfig.time);
+
 	QTableWidget *table = ui->stageStartTimesTable;
-	const int old_count = table->rowCount();
-	if(stage_count < old_count) {
-		table->setRowCount(stage_count);
-		updateStageStartTimesTableHeight();
-		return;
-	}
-
-	QDateTime next_start(ui->ed_date->date(), ui->ed_time->time());
-	if(old_count > 0) {
-		if(auto *last_editor = qobject_cast<QDateTimeEdit *>(table->cellWidget(old_count - 1, 1)))
-			next_start = last_editor->dateTime().addDays(1);
-	}
-
-	table->setRowCount(stage_count);
-	for(int row = old_count; row < stage_count; ++row) {
-		auto *stage_item = new QTableWidgetItem(QString::number(row + 1));
+	table->setRowCount(params.eventConfig.stageCount);
+	for(int row = 0; row < params.eventConfig.stageCount; ++row) {
+		auto stage_id = row + 1;
+		auto *stage_item = new QTableWidgetItem(QString::number(stage_id));
 		stage_item->setTextAlignment(Qt::AlignCenter);
 		table->setItem(row, 0, stage_item);
 
-		auto *editor = new QDateTimeEdit(next_start, table);
+		auto stage_start = params.stageStarts.value(row, event_start.addDays(row));
+		auto *editor = new QDateTimeEdit(stage_start, table);
 		editor->setCalendarPopup(true);
 		editor->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
 		table->setCellWidget(row, 1, editor);
-		next_start = next_start.addDays(1);
 	}
-	updateStageStartTimesTableHeight();
-}
-
-void EventDialogWidget::updateStageStartTimesTableHeight()
-{
-	QTableWidget *table = ui->stageStartTimesTable;
 	table->resizeRowsToContents();
-
 	const int visible_row_count = qMin(table->rowCount(), 5);
 	int height = table->horizontalHeader()->height() + 2 * table->frameWidth();
-	for(int row = 0; row < visible_row_count; ++row)
+	for(int row = 0; row < visible_row_count; ++row) {
 		height += table->rowHeight(row);
+	}
 	table->setFixedHeight(height);
 }
 
-void EventDialogWidget::loadParams(const Event::EventConfig &params)
+void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 {
-	m_data = params;
-	ui->ed_name->setText(params.name);
-	ui->ed_date->setDate(params.date.isValid() ? params.date : QDate::currentDate());
-	if(params.time.isValid())
-		ui->ed_time->setTime(params.time);
+	ui->ed_name->setText(params.eventConfig.name);
+	ui->ed_date->setDate(params.eventConfig.date.isValid() ? params.eventConfig.date : QDate::currentDate());
+	if(params.eventConfig.time.isValid())
+		ui->ed_time->setTime(params.eventConfig.time);
 
-	ui->stageStartTimesTable->setRowCount(0);
-	ui->ed_stageCount->setValue(params.stageCount);
-	updateStageStartTimeEditors(ui->ed_stageCount->value());
-	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		const QDateTime start_time = params.stageData(row + 1).startDateTime;
-		if(start_time.isValid()) {
-			if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
-				editor->setDateTime(start_time);
-		}
-	}
-	ui->ed_description->setText(params.description);
-	ui->ed_place->setText(params.place);
-	ui->ed_mainReferee->setText(params.mainReferee);
-	ui->ed_director->setText(params.director);
-	ui->ed_handicapLength->setValue(params.handicapLength);
-	if(auto ix = ui->cbxSportId->findData(params.sportId); ix < 0)
+	ui->ed_stageCount->setValue(params.eventConfig.stageCount);
+	updateStageStartTimeEditors(params);
+	ui->ed_description->setText(params.eventConfig.description);
+	ui->ed_place->setText(params.eventConfig.place);
+	ui->ed_mainReferee->setText(params.eventConfig.mainReferee);
+	ui->ed_director->setText(params.eventConfig.director);
+	ui->ed_handicapLength->setValue(params.eventConfig.handicapLength);
+	if(auto ix = ui->cbxSportId->findData(params.eventConfig.sportId); ix < 0)
 		ui->cbxSportId->setCurrentIndex(0);
 	else
 		ui->cbxSportId->setCurrentIndex(ix);
-	if(auto ix = ui->cbxDisciplineId->findData(params.disciplineId); ix < 0)
+	if(auto ix = ui->cbxDisciplineId->findData(params.eventConfig.disciplineId); ix < 0)
 		ui->cbxDisciplineId->setCurrentIndex(0);
 	else
 		ui->cbxDisciplineId->setCurrentIndex(ix);
-	ui->ed_orisImportId->setText(params.importId > 0 ? QString::number(params.importId) : QString());
-	ui->ed_orisRace->setChecked(params.importId > 0);
-	ui->ed_orisEventKey->setText(params.orisEventKey);
-	ui->ed_cardChecCheckTimeSec->setValue(params.cardCheckTimeSec);
-	ui->ed_oneTenthSecResults->setCurrentIndex(params.oneTenthSecResults);
-	ui->ed_iofRace->setChecked(params.iofRace);
-	ui->ed_xmlRaceNumber->setValue(params.iofXmlRaceNumber);
+	ui->ed_orisImportId->setText(params.eventConfig.importId > 0 ? QString::number(params.eventConfig.importId) : QString());
+	ui->ed_orisRace->setChecked(params.eventConfig.importId > 0);
+	ui->ed_orisEventKey->setText(params.eventConfig.orisEventKey);
+	ui->ed_cardChecCheckTimeSec->setValue(params.eventConfig.cardCheckTimeSec);
+	ui->ed_oneTenthSecResults->setCurrentIndex(params.eventConfig.oneTenthSecResults);
+	ui->ed_iofRace->setChecked(params.eventConfig.iofRace);
+	ui->ed_xmlRaceNumber->setValue(params.eventConfig.iofXmlRaceNumber);
 }
 
-Event::EventConfig EventDialogWidget::saveParams()
+EventDialogWidget::Params EventDialogWidget::saveParams()
 {
-	Event::EventConfig data = m_data;
-	data.stageCount = ui->ed_stageCount->value();
+    EventDialogWidget::Params params;
+	params.eventConfig.stageCount = ui->ed_stageCount->value();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
-		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1)))
-			data.stages[row + 1].startDateTime = editor->dateTime();
+		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1))) {
+			params.stageStarts << editor->dateTime();
+		}
 	}
-	data.name = ui->ed_name->text();
-	data.date = ui->ed_date->date();
-	data.time = ui->ed_time->time();
-	data.description = ui->ed_description->text();
-	data.place = ui->ed_place->text();
-	data.mainReferee = ui->ed_mainReferee->text();
-	data.director = ui->ed_director->text();
-	data.handicapLength = ui->ed_handicapLength->value();
-	data.sportId = ui->cbxSportId->currentData().isNull()
+	params.eventConfig.name = ui->ed_name->text();
+	params.eventConfig.date = ui->ed_date->date();
+	params.eventConfig.time = ui->ed_time->time();
+	params.eventConfig.description = ui->ed_description->text();
+	params.eventConfig.place = ui->ed_place->text();
+	params.eventConfig.mainReferee = ui->ed_mainReferee->text();
+	params.eventConfig.director = ui->ed_director->text();
+	params.eventConfig.handicapLength = ui->ed_handicapLength->value();
+	params.eventConfig.sportId = ui->cbxSportId->currentData().isNull()
 		? static_cast<int>(Event::EventConfig::Sport::OB)
 		: ui->cbxSportId->currentData().toInt();
-	data.disciplineId = ui->cbxDisciplineId->currentIndex() <= 0
+	params.eventConfig.disciplineId = ui->cbxDisciplineId->currentIndex() <= 0
 		? static_cast<int>(Event::EventConfig::Discipline::LongDistance)
 		: ui->cbxDisciplineId->currentData().toInt();
-	data.importId = ui->ed_orisImportId->text().toInt();
-	data.orisEventKey = ui->ed_orisEventKey->text();
-	data.cardCheckTimeSec = ui->ed_cardChecCheckTimeSec->value();
-	data.oneTenthSecResults = ui->ed_oneTenthSecResults->currentIndex();
-	data.iofRace = ui->ed_iofRace->isChecked();
-	data.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
-	return data;
+	params.eventConfig.importId = ui->ed_orisImportId->text().toInt();
+	params.eventConfig.orisEventKey = ui->ed_orisEventKey->text();
+	params.eventConfig.cardCheckTimeSec = ui->ed_cardChecCheckTimeSec->value();
+	params.eventConfig.oneTenthSecResults = ui->ed_oneTenthSecResults->currentIndex();
+	params.eventConfig.iofRace = ui->ed_iofRace->isChecked();
+	params.eventConfig.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
+	return params;
 }
 
 QString EventDialogWidget::disciplineName(int disc_id)

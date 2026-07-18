@@ -2,6 +2,7 @@
 #define EVENTPLUGIN_H
 
 #include "appdbconfig.h"
+#include "plugins/Event/src/stageconfig.h"
 
 #include <qf/gui/framework/plugin.h>
 
@@ -62,25 +63,25 @@ public:
 	static constexpr auto DBEVENT_QX_CHANGE_RECEIVED = "qxChangeReceived";
 	static constexpr auto DBEVENT_QX_RECCHNG = "qxRecChng";
 
-	Q_INVOKABLE void initEventConfig();
-	Event::AppDbConfig* appDbConfig(bool reload = false);
-	const Event::EventConfig& eventConfig();
-	int stageCount();
+	Event::AppDbConfig& appDbConfig();
+	const Event::AppDbConfig& appDbConfig() const;
+	const Event::EventConfig& eventConfig() const;
+	int stageCount() const;
+	const Event::StageConfig& stageConfig(int stage_id) const;
+
 
 	Q_SLOT void setCurrentStageId(int stage_id);
 	int currentStageId() const;
 	Q_SIGNAL void currentStageIdChanged(int current_stage);
 
-	Q_INVOKABLE int stageIdForRun(int run_id);
+	Q_INVOKABLE int stageIdForRun(int run_id) const;
 
-	Q_INVOKABLE int stageStartMsec(int stage_id);
-	Q_INVOKABLE QDate stageStartDate(int stage_id);
-	Q_INVOKABLE QTime stageStartTime(int stage_id);
-	Q_INVOKABLE QDateTime stageStartDateTime(int stage_id);
+	int stageStartMsec(int stage_id) const;
+	QDate stageStartDate(int stage_id) const;
+	QTime stageStartTime(int stage_id) const;
+	QDateTime stageStartDateTime(int stage_id) const;
 	//Q_INVOKABLE int currentStageStartMsec();
-	int msecToStageStartAM(int si_am_time_sec, int msec = 0, int stage_id = 0);
-
-
+	int msecToStageStartAM(int si_am_time_sec, int msec = 0, int stage_id = 0) const;
 
 	bool createEvent(const QString &event_name, const EventConfig &event_params);
 	void editEvent();
@@ -106,9 +107,9 @@ public:
 	QString shvApiEventId() const;
 	static QString createApiKey(int length);
 
-	QString startListIofXml3FileName(std::optional<int> stage_id = std::nullopt);
-	QString resultsIofXml3FileName(std::optional<int> stage_id = std::nullopt);
-	QString fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id);
+	QString startListIofXml3FileName(std::optional<int> stage_id = std::nullopt) const;
+	QString resultsIofXml3FileName(std::optional<int> stage_id = std::nullopt) const;
+	QString fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id) const;
 
 	DbSchema* dbSchema();
 	static int dbVersion();
@@ -164,9 +165,8 @@ private:
 	qf::gui::Action *m_actSetCurrentStage = nullptr;
 	qf::gui::Action *m_actExportEvent_qbe = nullptr;
 	qf::gui::Action *m_actImportEvent_qbe = nullptr;
-	Event::AppDbConfig *m_eventConfig = nullptr;
+	Event::AppDbConfig m_appDbConfig;
 	bool m_sqlServerConnected = false;
-	int m_currentStageId = 0;
 	QMap<int, QString> m_classNameCache;
 
 	qf::gui::framework::DockWidget *m_servicesDockWidget = nullptr;

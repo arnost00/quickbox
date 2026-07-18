@@ -58,7 +58,7 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	ui->tblRuns->setItemDelegate(m_runsTableItemDelegate);
 	auto *event_plugin = getPlugin<Event::EventPlugin>();
 	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
-		if (is_open && !event_plugin->appDbConfig()->eventConfig().isRelays() && !m_courseItemDelegate) {
+		if (is_open && !event_plugin->appDbConfig().eventConfig().isRelays() && !m_courseItemDelegate) {
 			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
 			m_courseItemDelegate->setNullText(tr("Implicit"));
 			ui->tblRuns->setItemDelegateForColumn(RunsTableModel::col_course_id, m_courseItemDelegate);

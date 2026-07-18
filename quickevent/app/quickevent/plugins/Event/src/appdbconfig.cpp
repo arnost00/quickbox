@@ -21,6 +21,7 @@ using namespace Event;
 namespace {
 
 constexpr auto EVENT = "event";
+constexpr auto STAGE = "stage";
 constexpr auto RECEIPTS = "receipts";
 constexpr auto OFEED = "ofeed";
 constexpr auto ORESULTS = "oresults";
@@ -122,6 +123,8 @@ void AppDbConfig::save(const QString &prefix, const QVariantMap &data)
 			val_str = val.toTime().toString(Qt::ISODate);
 		else if(val.typeId() == qMetaTypeId<QDateTime>())
 			val_str = val.toDateTime().toString(Qt::ISODate);
+		else if(val.typeId() == qMetaTypeId<QVariantMap>())
+			val_str = qf::core::Utils::qvariantToJson(val);
 		else
 			val_str = val.toString();
 		auto full_key = prefix.isEmpty() ? key : prefix + "." + key;
@@ -151,6 +154,21 @@ const services::OResultsConfig& AppDbConfig::oresultsConfig(int stage_id) const
 	}
 	static services::OResultsConfig defaultCfg;
 	return defaultCfg;
+}
+
+const StageConfig& AppDbConfig::stageConfig(int stage_id) const
+{
+	if (m_stagesConfig.contains(stage_id)) {
+		return m_stagesConfig.at(stage_id);
+	}
+	static StageConfig defaultCfg;
+	return defaultCfg;
+}
+
+void AppDbConfig::setStageConfig(int stage_id, const StageConfig &cfg)
+{
+	m_stagesConfig[stage_id] = cfg;
+	save(STAGE, stage_id, cfg.toVariantMap());
 }
 
 void AppDbConfig::setOresultsConfig(int stage_id, const services::OResultsConfig &cfg)

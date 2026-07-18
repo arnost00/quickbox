@@ -425,8 +425,7 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 
 	auto updateMenuEnabled = [part_widget]() {
 		auto *ep = getPlugin<EventPlugin>();
-		auto *cfg = ep->isEventOpen() ? ep->appDbConfig() : nullptr;
-		bool enabled = !(cfg && cfg->eventConfig().isRelays());
+		bool enabled = !(ep->isEventOpen() && ep->appDbConfig().eventConfig().isRelays());
 		for(const char *path : {"print", "import", "export"}) {
 			if(auto *a = part_widget->menuBar()->actionForPath(path)) {
 				a->setEnabled(enabled);
@@ -693,7 +692,7 @@ void RunsWidget::onDrawClicked()
 	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	int stage_id = selectedStageId();
 	DrawMethod draw_method = DrawMethod(ui->cbxDrawMethod->currentData().toInt());
-	const auto &stage_data = getPlugin<EventPlugin>()->eventConfig().stageData(stage_id);
+	const auto &stage_data = getPlugin<EventPlugin>()->stageConfig(stage_id);
 	bool use_all_maps = stage_data.useAllMaps;
 	qfDebug() << "DrawMethod:" << (int)draw_method << "use_all_maps:" << use_all_maps;
 	QList<int> class_ids;

@@ -389,10 +389,9 @@ void ReceiptsSettingsPage::load()
 	}
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->appDbConfig();
-	Q_ASSERT(event_config);
-	m_stageId = qMax(event_config->eventConfig().currentStageId, 1);
-	const auto rc = event_config->receiptsConfig(m_stageId);
+	auto &event_config = event_plugin->appDbConfig();
+	m_stageId = qMax(event_config.eventConfig().currentStageId, 1);
+	const auto &rc = event_config.receiptsConfig(m_stageId);
 	ui->chkPrintReceiptQrCode->setChecked(rc.printQrCode);
 	ui->edReceiptQrCodeBaseUrl->setText(rc.linkUrl);
 	ui->edReceiptQrCodeCaption->setText(rc.qrCodeCaption);
@@ -423,8 +422,7 @@ void ReceiptsSettingsPage::save()
 
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->appDbConfig();
-	Q_ASSERT(event_config);
+	auto &event_config = event_plugin->appDbConfig();
 	ReceiptsConfig rc;
 	rc.printQrCode = ui->chkPrintReceiptQrCode->isChecked();
 	rc.linkUrl = ui->edReceiptQrCodeBaseUrl->text().trimmed();
@@ -433,7 +431,7 @@ void ReceiptsSettingsPage::save()
 	rc.imageHeightMm = ui->edReceiptImageHeight->value();
 	rc.imageBase64 = m_receiptImageBase64;
 	rc.imageFormat = m_receiptImageFormat;
-	event_config->setReceiptsConfig(m_stageId, rc);
+	event_config.setReceiptsConfig(m_stageId, rc);
 }
 
 QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const
@@ -442,8 +440,7 @@ QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const
 
 	auto *event_plugin = qf::gui::framework::getPlugin<Event::EventPlugin>();
 	Q_ASSERT(event_plugin);
-	auto *event_config = event_plugin->appDbConfig();
-	Q_ASSERT(event_config);
+	auto &event_config = event_plugin->appDbConfig();
 
 	const int stage_id = qMax(m_stageId, 1);
 	const bool print_logo = ui->chkPrintReceiptImage->isChecked();
@@ -511,7 +508,7 @@ QVariantMap ReceiptsSettingsPage::currentTestReceiptData() const
 
 	int stage_start_time_ms = event_plugin->stageStartMsec(stage_id);
 	if(stage_start_time_ms <= 0) {
-		QTime tm = event_config->eventConfig().time;
+		QTime tm = event_config.eventConfig().time;
 		stage_start_time_ms = tm.isValid() ? tm.msecsSinceStartOfDay() : (10 * 60 * 60 * 1000);
 	}
 

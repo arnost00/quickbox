@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stagedata.h"
-
 #include <QDate>
 #include <QMap>
 #include <QString>
@@ -35,14 +33,11 @@ struct EventConfig
 	std::optional<int> maximumCardCheckAdvanceSec() const;
 
 	bool isRelays() const;
-	const StageData& stageData(int stage_id) const;
-	void setStageData(int stage_id, const StageData &data);
 
 	static EventConfig fromVariantMap(const QVariantMap &values);
 	QVariantMap toVariantMap() const;
 
 	int stageCount = 1;
-	std::map<int, StageData> stages;
 	QString name;
 	QDate date;
 	QTime time;

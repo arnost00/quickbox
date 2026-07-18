@@ -30,21 +30,6 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	EventConfig data;
 	data.stageCount = values.value("stageCount", 1).toInt();
 	const QVariantMap stages = values.value("stage").toMap();
-	for(auto it = stages.cbegin(); it != stages.cend(); ++it) {
-		const int stage_id = it.key().toInt();
-		if(stage_id <= 0)
-			continue;
-		const QVariantMap stage_values = it.value().toMap();
-		StageData stage;
-		stage.startDateTime = stage_values.value("startDateTime").toDateTime();
-		stage.useAllMaps = stage_values.value("useAllMaps").toBool();
-		const QVariant drawing_config = stage_values.value("drawingConfig");
-		stage.drawingConfig = drawing_config.userType() == qMetaTypeId<QString>()
-			? qf::core::Utils::jsonToQVariant(drawing_config.toString()).toMap()
-			: drawing_config.toMap();
-		stage.qxApiToken = stage_values.value("qxApiToken").toString();
-		data.stages[stage_id] = stage;
-	}
 	data.name = values.value("name").toString();
 	data.date = values.value("date").toDate();
 	data.time = values.value("time").toTime();
@@ -77,34 +62,10 @@ bool EventConfig::isRelays() const
 	return disciplineId == 5 || disciplineId == 6 || disciplineId == 15;
 }
 
-const StageData& EventConfig::stageData(int stage_id) const
-{
-	if (stages.contains(stage_id)) {
-		return stages.at(stage_id);
-	}
-	static StageData sd;
-	return sd;
-}
-
-void EventConfig::setStageData(int stage_id, const StageData &data)
-{
-	stages[stage_id] = data;
-}
-
 QVariantMap EventConfig::toVariantMap() const
 {
 	QVariantMap values;
 	values.insert("stageCount", stageCount);
-	QVariantMap stage_values;
-	for(const auto &[key, val] : stages) {
-		QVariantMap stage;
-		stage.insert("startDateTime", val.startDateTime);
-		stage.insert("useAllMaps", val.useAllMaps);
-		stage.insert("drawingConfig", qf::core::Utils::qvariantToJson(val.drawingConfig));
-		stage.insert("qxApiToken", val.qxApiToken);
-		stage_values.insert(QString::number(key), stage);
-	}
-	values.insert("stage", stage_values);
 	values.insert("name", name);
 	values.insert("date", date);
 	values.insert("time", time);

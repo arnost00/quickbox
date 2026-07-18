@@ -1179,7 +1179,7 @@ void RunsPlugin::writeCSOSHeader(QTextStream &ts) const
 	auto *evp = getPlugin<EventPlugin>();
 	int stage_id = selectedStageId();
 	QDateTime start_dt = evp->stageStartDateTime(stage_id);
-	const auto &ec = evp->appDbConfig()->eventConfig();
+	const auto &ec = evp->appDbConfig().eventConfig();
 	static constexpr int HWIDTH = -19;
 	ts << make_width("Kod zavodu", HWIDTH) << ": " << ec.importId << "\r\n";
 	ts << make_width("Nazev zavodu", HWIDTH) << ": " << ec.name << "\r\n";

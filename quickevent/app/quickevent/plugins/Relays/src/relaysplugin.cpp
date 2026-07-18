@@ -81,8 +81,7 @@ void RelaysPlugin::onInstalled()
 			return;
 		auto *ep = getPlugin<EventPlugin>();
 		bool event_open = ep->isEventOpen();
-		auto *cfg = event_open ? ep->appDbConfig() : nullptr;
-		bool is_relays = cfg && cfg->eventConfig().isRelays();
+		bool is_relays = event_open && ep->appDbConfig().eventConfig().isRelays();
 		scw->setPartVisible(featureId(), is_relays);
 		if(event_open && !is_relays && m_partWidget && m_partWidget->isActive())
 			scw->setActivePart(QStringLiteral("Runs"), true);

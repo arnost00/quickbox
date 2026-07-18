@@ -4,7 +4,9 @@
 #include "eventdialogwidget.h"
 #include "openeventdialog.h"
 #include "dbschema.h"
+#include "plugins/Event/src/appdbconfig.h"
 #include "plugins/Event/src/eventconfig.h"
+#include "plugins/Event/src/stageconfig.h"
 #include "registrationswidget.h"
 #include "lentcardssettingspage.h"
 #include "../../Core/src/widgets/appstatusbar.h"
@@ -200,59 +202,53 @@ EventPlugin::EventPlugin(QObject *parent)
 
 EventPlugin::~EventPlugin()
 {
-    QF_SAFE_DELETE(m_eventConfig);
 }
 
-void EventPlugin::initEventConfig()
+Event::AppDbConfig &EventPlugin::appDbConfig()
 {
-	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::AppDbConfig();
-	}
-	else {
-		qfWarning() << "Event config exists already!";
-	}
+	return m_appDbConfig;
 }
 
-Event::AppDbConfig *EventPlugin::appDbConfig(bool reload)
+const Event::AppDbConfig &EventPlugin::appDbConfig() const
 {
-	if(m_eventConfig == nullptr) {
-		m_eventConfig = new Event::AppDbConfig();
-		reload = true;
-	}
-	if(reload) {
-		m_eventConfig->load();
-		//emit eventNameChanged(m_eventConfig->eventName());
-	}
-	return m_eventConfig;
+	return m_appDbConfig;
 }
 
-const EventConfig &EventPlugin::eventConfig()
+const EventConfig &EventPlugin::eventConfig() const
 {
-	return appDbConfig()->eventConfig();
+	return appDbConfig().eventConfig();
 }
 
-int EventPlugin::stageCount()
+int EventPlugin::stageCount() const
 {
-	if(eventName().isEmpty())
+	if(eventName().isEmpty()) {
 		return 0;
-	return appDbConfig()->eventConfig().stageCount;
+	}
+	return appDbConfig().eventConfig().stageCount;
+}
+
+const Event::StageConfig &EventPlugin::stageConfig(int stage_id) const
+{
+	return appDbConfig().stageConfig(stage_id);
 }
 
 void EventPlugin::setCurrentStageId(int stage_id)
 {
-	if(m_currentStageId == stage_id) {
+	if(currentStageId() == stage_id) {
 		return;
 	}
-	m_currentStageId = stage_id;
+	auto c = eventConfig();
+	c.currentStageId = stage_id;
+	appDbConfig().setEventConfig(c);
 	emit currentStageIdChanged(stage_id);
 }
 
 int EventPlugin::currentStageId() const
 {
-	return m_currentStageId;
+	return eventConfig().currentStageId;
 }
 
-int EventPlugin::stageIdForRun(int run_id)
+int EventPlugin::stageIdForRun(int run_id) const
 {
 	int ret = 0;
 	qfs::QueryBuilder qb;
@@ -268,29 +264,29 @@ int EventPlugin::stageIdForRun(int run_id)
 	return ret;
 }
 
-int EventPlugin::stageStartMsec(int stage_id)
+int EventPlugin::stageStartMsec(int stage_id) const
 {
 	QTime start_time = stageStartTime(stage_id);
 	int ret = start_time.msecsSinceStartOfDay();
 	return ret;
 }
 
-QDate EventPlugin::stageStartDate(int stage_id)
+QDate EventPlugin::stageStartDate(int stage_id) const
 {
 	return stageStartDateTime(stage_id).date();
 }
 
-QTime EventPlugin::stageStartTime(int stage_id)
+QTime EventPlugin::stageStartTime(int stage_id) const
 {
 	return stageStartDateTime(stage_id).time();
 }
 
-QDateTime EventPlugin::stageStartDateTime(int stage_id)
+QDateTime EventPlugin::stageStartDateTime(int stage_id) const
 {
-	return appDbConfig()->eventConfig().stageData(stage_id).startDateTime;
+	return appDbConfig().stageConfig(stage_id).startDateTime;
 }
 
-int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id)
+int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id) const
 {
 	if(si_am_time_sec == 0xEEEE)
 		return quickevent::core::og::TimeMs::UNREAL_TIME_MSEC;
@@ -453,17 +449,17 @@ void EventPlugin::loadCurrentStageId()
 {
 	int stage_id = 1;
 	if(!eventName().isEmpty()) {
-		stage_id = appDbConfig()->eventConfig().currentStageId;
+		stage_id = appDbConfig().eventConfig().currentStageId;
 	}
 	setCurrentStageId(stage_id);
 }
 
 void EventPlugin::saveCurrentStageId(int current_stage)
 {
-	if(current_stage != appDbConfig()->eventConfig().currentStageId) {
-		auto event_cfg = appDbConfig()->eventConfig();
+	if(current_stage != appDbConfig().eventConfig().currentStageId) {
+		auto event_cfg = appDbConfig().eventConfig();
 		event_cfg.currentStageId = current_stage;
-		appDbConfig()->setEventConfig(event_cfg);
+		appDbConfig().setEventConfig(event_cfg);
 	}
 }
 
@@ -543,7 +539,7 @@ QString EventPlugin::classNameById(int class_id)
 
 QString EventPlugin::shvApiEventId() const
 {
-	return eventName() + "-" + QString::number(m_eventConfig->eventConfig().importId);
+	return eventName() + "-" + QString::number(eventConfig().importId);
 }
 
 QString EventPlugin::createApiKey(int length)
@@ -572,7 +568,7 @@ QString EventPlugin::createApiKey(int length)
 	return key;
 }
 
-QString EventPlugin::fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id)
+QString EventPlugin::fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id) const
 {
 	auto ret = eventName();
 	if(stageCount() > 1) {
@@ -582,12 +578,12 @@ QString EventPlugin::fileNameWithStageAndEventName(const QString &fn, std::optio
 	return ret;
 }
 
-QString EventPlugin::startListIofXml3FileName(std::optional<int> stage_id)
+QString EventPlugin::startListIofXml3FileName(std::optional<int> stage_id) const
 {
 	return fileNameWithStageAndEventName(START_LIST_IOFXML3_FILE, stage_id);
 }
 
-QString EventPlugin::resultsIofXml3FileName(std::optional<int> stage_id)
+QString EventPlugin::resultsIofXml3FileName(std::optional<int> stage_id) const
 {
 	return fileNameWithStageAndEventName(RESULTS_IOFXML3_FILE, stage_id);
 }
@@ -871,7 +867,7 @@ bool EventPlugin::createEvent(const QString &event_name, const EventConfig &even
 		existing_event_ids = existingSqlEventNames();
 	}
 	QString event_id = event_name;
-	auto new_params = event_params;
+	EventDialogWidget::Params new_params {.eventConfig = event_params, .stageStarts = {}};
 	do {
 		qfd::Dialog dlg(fwk);
 		dlg.setButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -898,13 +894,9 @@ bool EventPlugin::createEvent(const QString &event_name, const EventConfig &even
 
 	closeEvent();
 
-	Event::AppDbConfig app_db_config;
 	bool ok = false;
 	//ConnectionSettings connection_settings;
-	app_db_config.setEventConfig(new_params);
-	int stage_count = new_params.stageCount;
-	if(stage_count == 0)
-		stage_count = app_db_config.eventConfig().stageCount;
+	int stage_count = new_params.eventConfig.stageCount;
 	qfInfo() << "createEvent, stage_count:" << stage_count;
 	QF_ASSERT(stage_count > 0, "Stage count have to be greater than 0", return false);
 
@@ -963,6 +955,13 @@ bool EventPlugin::createEvent(const QString &event_name, const EventConfig &even
 		qfd::MessageBox::showError(fwk, tr("Cannot create event, database is not open: %1").arg(conn.lastError().text()));
 	}
 	if(ok) {
+	    AppDbConfig cfg;
+		cfg.setEventConfig(new_params.eventConfig);
+		for(int i=0; i<stage_count; i++) {
+		    StageConfig stcfg;
+		    stcfg.startDateTime = new_params.stageStarts.value(i);
+		    cfg.setStageConfig(i+1, stcfg);
+		}
 		ok = openEvent(event_id);
 	}
 	return ok;
@@ -978,13 +977,24 @@ void EventPlugin::editEvent()
 	event_w->setWindowTitle(tr("Edit event"));
 	event_w->setEventId(eventName());
 	event_w->setEventIdEditable(false);
-	event_w->loadParams(appDbConfig()->eventConfig());
+	EventDialogWidget::Params params;
+	params.eventConfig = eventConfig();
+	for(int i=0; i<params.eventConfig.stageCount; i++) {
+		params.stageStarts << stageStartDateTime(i+1);
+	}
+	event_w->loadParams(params);
 	dlg.setCentralWidget(event_w);
 	if(!dlg.exec())
 		return;
 
-	auto event_data = event_w->saveParams();
-	appDbConfig()->setEventConfig(event_data);
+	auto new_params = event_w->saveParams();
+	appDbConfig().setEventConfig(new_params.eventConfig);
+	for(int i=0; i<new_params.eventConfig.stageCount; i++) {
+		auto stc = appDbConfig().stageConfig(i+1);
+		stc.startDateTime = new_params.stageStarts.value(i);
+		appDbConfig().setStageConfig(i+1, stc);
+	}
+
 }
 
 bool EventPlugin::closeEvent()
@@ -992,7 +1002,6 @@ bool EventPlugin::closeEvent()
 	qfLogFuncFrame();
 	m_classNameCache.clear();
 	setEventName(QString());
-	QF_SAFE_DELETE(m_eventConfig)
 	setEventOpen(false);
 	return true;
 }
@@ -1102,17 +1111,18 @@ bool EventPlugin::openEvent(const QString &_event_name)
 		}
 	}
 	if(ok) {
-		AppDbConfig *evc = appDbConfig(true);
-		if(evc->dbVersion() < dbVersion()) {
+	    m_appDbConfig = AppDbConfig();
+		m_appDbConfig.load();
+		if(m_appDbConfig.dbVersion() < dbVersion()) {
 			qfd::MessageBox::showError(fwk, tr("Event data version (%1) is too low, minimal version is (%2).\nUse: File --> Import --> Event (*.qbe) to convert event to current version.")
-									   .arg(qf::core::Utils::intToVersionString(evc->dbVersion()))
+									   .arg(qf::core::Utils::intToVersionString(m_appDbConfig.dbVersion()))
 									   .arg(qf::core::Utils::intToVersionString(dbVersion())));
 			closeEvent();
 			ok = false;
 		}
-		else if(evc->dbVersion() > dbVersion()) {
+		else if(m_appDbConfig.dbVersion() > dbVersion()) {
 			qfd::MessageBox::showError(fwk, tr("Event was created in more recent QuickEvent version (%1) and the application might not work as expected. Download latest QuickEvent is strongly recommended.")
-									   .arg(qf::core::Utils::intToVersionString(evc->dbVersion())));
+									   .arg(qf::core::Utils::intToVersionString(m_appDbConfig.dbVersion())));
 		}
 	}
 	if(ok) {

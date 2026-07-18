@@ -1,6 +1,7 @@
 #pragma once
 
 #include "eventconfig.h"
+#include "plugins/Event/src/stageconfig.h"
 #include "services/oresultsconfig.h"
 #include "services/ofeed/ofeedconfig.h"
 #include <plugins/Receipts/src/receiptsconfig.h>
@@ -30,6 +31,8 @@ public:
 	int dbVersion() const { return m_dbVersion; }
 	const EventConfig &eventConfig() const { return m_eventConfig; }
 	void setEventConfig(const EventConfig &config);
+	const StageConfig &stageConfig(int stage_id) const;
+	void setStageConfig(int stage_id, const StageConfig &config);
 	const services::OResultsConfig &oresultsConfig(int stage_id) const;
 	void setOresultsConfig(int stage_id, const services::OResultsConfig &config);
 	const Receipts::ReceiptsConfig &receiptsConfig(int stage_id) const;
@@ -44,6 +47,7 @@ private:
 	void save(const QString &prefix, int stage_id, const QVariantMap &data);
 
 private:
+    std::map<int, StageConfig> m_stagesConfig;
 	std::map<int, services::OFeedConfig> m_ofeedConfig;
 	std::map<int, Receipts::ReceiptsConfig> m_receiptsConfig;
 	std::map<int, services::OResultsConfig> m_oresultsConfig;
