@@ -29,7 +29,6 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 {
 	EventConfig data;
 	data.stageCount = values.value("stageCount", 1).toInt();
-	const QVariantMap stages = values.value("stage").toMap();
 	data.name = values.value("name").toString();
 	data.date = values.value("date").toDate();
 	data.time = values.value("time").toTime();

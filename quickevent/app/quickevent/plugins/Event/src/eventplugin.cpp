@@ -200,9 +200,7 @@ EventPlugin::EventPlugin(QObject *parent)
 	connect(qf::gui::framework::Application::instance(), &qf::gui::framework::Application::qxRecChng, this, &EventPlugin::onRecChng);
 }
 
-EventPlugin::~EventPlugin()
-{
-}
+EventPlugin::~EventPlugin() = default;
 
 Event::AppDbConfig &EventPlugin::appDbConfig()
 {

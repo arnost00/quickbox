@@ -818,7 +818,7 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 		ecfg.disciplineId = static_cast<int>(discipline);
 		ecfg.importId = event_id;
 		ecfg.time = event_race.datetime.time();
-		ecfg.iofRace = 1;
+		ecfg.iofRace = true;
 		ecfg.iofXmlRaceNumber = (races.size() > 1) ? event_race.number : 0;
 		return getPlugin<EventPlugin>()->createEvent(QString(), ecfg);
 	}
