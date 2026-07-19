@@ -27,6 +27,16 @@ constexpr auto OFEED = "ofeed";
 constexpr auto ORESULTS = "oresults";
 constexpr auto QX = "qx";
 
+QVariantMap changedValues(const QVariantMap &old_values, const QVariantMap &new_values)
+{
+	QVariantMap ret;
+	for (const auto &[key, val] : new_values.asKeyValueRange()) {
+		if(old_values.value(key) != val)
+			ret.insert(key, val);
+	}
+	return ret;
+}
+
 }
 
 QxConfig QxConfig::fromVariantMap(const QVariantMap &map)
@@ -122,6 +132,10 @@ void AppDbConfig::save(const QString &prefix, int stage_id, const QVariantMap &d
 
 void AppDbConfig::save(const QString &prefix, const QVariantMap &data)
 {
+    if(data.isEmpty()) {
+        return;
+    }
+
 	using namespace qf::core::sql;
 	Connection conn = Connection::forName();
 
@@ -157,8 +171,9 @@ void AppDbConfig::save(const QString &prefix, const QVariantMap &data)
 
 void AppDbConfig::setEventConfig(const EventConfig &config)
 {
+	const QVariantMap changed_values = changedValues(m_eventConfig.toVariantMap(), config.toVariantMap());
 	m_eventConfig = config;
-	save(EVENT, config.toVariantMap());
+	save(EVENT, changed_values);
 }
 
 const services::OResultsConfig& AppDbConfig::oresultsConfig(int stage_id) const
@@ -181,14 +196,16 @@ const StageConfig& AppDbConfig::stageConfig(int stage_id) const
 
 void AppDbConfig::setStageConfig(int stage_id, const StageConfig &cfg)
 {
+	const QVariantMap changed_values = changedValues(stageConfig(stage_id).toVariantMap(), cfg.toVariantMap());
 	m_stagesConfig[stage_id] = cfg;
-	save(STAGE, stage_id, cfg.toVariantMap());
+	save(STAGE, stage_id, changed_values);
 }
 
 void AppDbConfig::setOresultsConfig(int stage_id, const services::OResultsConfig &cfg)
 {
+	const QVariantMap changed_values = changedValues(oresultsConfig(stage_id).toVariantMap(), cfg.toVariantMap());
 	m_oresultsConfig[stage_id] = cfg;
-	save(ORESULTS, stage_id, cfg.toVariantMap());
+	save(ORESULTS, stage_id, changed_values);
 }
 
 const Receipts::ReceiptsConfig& AppDbConfig::receiptsConfig(int stage_id) const
@@ -202,8 +219,9 @@ const Receipts::ReceiptsConfig& AppDbConfig::receiptsConfig(int stage_id) const
 
 void AppDbConfig::setReceiptsConfig(int stage_id, const Receipts::ReceiptsConfig &cfg)
 {
+	const QVariantMap changed_values = changedValues(receiptsConfig(stage_id).toVariantMap(), cfg.toVariantMap());
 	m_receiptsConfig[stage_id] = cfg;
-	save(RECEIPTS, stage_id, cfg.toVariantMap());
+	save(RECEIPTS, stage_id, changed_values);
 }
 
 const services::OFeedConfig& AppDbConfig::ofeedConfig(int stage_id) const
@@ -217,6 +235,14 @@ const services::OFeedConfig& AppDbConfig::ofeedConfig(int stage_id) const
 
 void AppDbConfig::setOfeedConfig(int stage_id, const services::OFeedConfig &cfg)
 {
+	const QVariantMap changed_values = changedValues(ofeedConfig(stage_id).toVariantMap(), cfg.toVariantMap());
 	m_ofeedConfig[stage_id] = cfg;
-	save(OFEED, stage_id, cfg.toVariantMap());
+	save(OFEED, stage_id, changed_values);
+}
+
+void AppDbConfig::setQxConfig(const QxConfig &config)
+{
+	const QVariantMap changed_values = changedValues(m_qxConfig.toVariantMap(), config.toVariantMap());
+	m_qxConfig = config;
+	save(QX, changed_values);
 }
