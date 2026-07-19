@@ -31,7 +31,7 @@ class EventPlugin : public qf::gui::framework::Plugin
 
 	Q_PROPERTY(int currentStageId READ currentStageId NOTIFY currentStageIdChanged)
 	Q_PROPERTY(int stageCount READ stageCount)
-	Q_PROPERTY(QString eventName READ eventName WRITE setEventName NOTIFY eventNameChanged)
+	Q_PROPERTY(QString eventDbName READ eventDbName WRITE setEventDbName NOTIFY eventDbNameChanged)
 	Q_PROPERTY(bool eventOpen READ isEventOpen WRITE setEventOpen NOTIFY eventOpenChanged)
 	Q_PROPERTY(bool sqlServerConnected READ isSqlServerConnected NOTIFY sqlServerConnectedChanged)
 private:
@@ -43,7 +43,7 @@ public:
 	~EventPlugin() override;
 
 	QF_PROPERTY_BOOL_IMPL(e, E, ventOpen)
-	QF_PROPERTY_IMPL(QString, e, E, ventName)
+	QF_PROPERTY_IMPL(QString, e, E, ventDbName)
 
 	/// strange is that 'quickboxDbEvent' just doesn't work without any error
 	/// from psql doc: Commonly, the channel name is the same as the name of some table in the database
@@ -68,7 +68,6 @@ public:
 	const Event::EventConfig& eventConfig() const;
 	int stageCount() const;
 	const Event::StageConfig& stageConfig(int stage_id) const;
-
 
 	Q_SLOT void setCurrentStageId(int stage_id);
 	int currentStageId() const;
@@ -129,9 +128,7 @@ private:
 	QStringList existingSqlEventNames() const;
 	QStringList existingFileEventNames(const QString &dir = QString()) const;
 
-	void onEventOpened();
 	void connectToSqlServer();
-	void loadCurrentStageId();
 	void saveCurrentStageId(int current_stage);
 	void setCurrentStage();
 	void onDbEvent(const QString & name, QSqlDriver::NotificationSource source, const QVariant & payload);

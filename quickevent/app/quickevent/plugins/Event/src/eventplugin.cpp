@@ -193,7 +193,7 @@ EventPlugin::EventPlugin(QObject *parent)
 {
 	connect(this, &EventPlugin::installed, this, &EventPlugin::onInstalled);//, Qt::QueuedConnection);
 	connect(this, &EventPlugin::currentStageIdChanged, this, &EventPlugin::saveCurrentStageId);
-	connect(this, &EventPlugin::eventNameChanged, [this](const QString &event_name) {
+	connect(this, &EventPlugin::eventDbNameChanged, [this](const QString &event_name) {
 		setEventOpen(!event_name.isEmpty());
 	});
 	connect(this, &Event::EventPlugin::dbEventNotify, this, &Event::EventPlugin::onDbEventNotify, Qt::QueuedConnection);
@@ -221,7 +221,7 @@ const EventConfig &EventPlugin::eventConfig() const
 
 int EventPlugin::stageCount() const
 {
-	if(eventName().isEmpty()) {
+	if(eventDbName().isEmpty()) {
 		return 0;
 	}
 	return appDbConfig().eventConfig().stageCount;
@@ -319,7 +319,7 @@ void EventPlugin::onInstalled()
 	m_actEditEvent = new qfw::Action(tr("E&dit event"));
 	m_actEditEvent->setEnabled(false);
 	connect(m_actEditEvent, &QAction::triggered, this, &EventPlugin::editEvent);
-	connect(this, &EventPlugin::eventNameChanged, [this](const QString &event_name) {
+	connect(this, &EventPlugin::eventDbNameChanged, [this](const QString &event_name) {
 		this->m_actEditEvent->setEnabled(!event_name.isEmpty());
 	});
 
@@ -336,14 +336,13 @@ void EventPlugin::onInstalled()
 	connect(m_actImportEvent_qbe, &QAction::triggered, this, &EventPlugin::importEvent_qbe);
 
 	if(auto *sb = qobject_cast<Core::AppStatusBar*>(fwk->statusBar())) {
-		connect(this, &EventPlugin::eventNameChanged, sb, &Core::AppStatusBar::setEventName);
+		connect(this, &EventPlugin::eventDbNameChanged, sb, &Core::AppStatusBar::setEventName);
 		connect(this, &EventPlugin::currentStageIdChanged, sb, &Core::AppStatusBar::setStageNo);
 		connect(sb, &Core::AppStatusBar::stageClicked, this, &EventPlugin::setCurrentStage);
 	}
-	connect(this, &EventPlugin::eventNameChanged, this, &EventPlugin::updateWindowTitle);
+	connect(this, &EventPlugin::eventDbNameChanged, this, &EventPlugin::updateWindowTitle);
 	connect(this, &EventPlugin::currentStageIdChanged, this, &EventPlugin::updateWindowTitle);
 	connect(fwk, &qff::MainWindow::applicationLaunched, this, &EventPlugin::connectToSqlServer);
-	connect(this, &EventPlugin::eventOpenChanged, this, &EventPlugin::onEventOpened);
 
 	qfw::Action *a_import = fwk->menuBar()->actionForPath("file/import", false);
 	Q_ASSERT(a_import);
@@ -440,18 +439,9 @@ void EventPlugin::onInstalled()
 
 void EventPlugin::updateWindowTitle() const
 {
-	QString title = QStringLiteral("%1 E%2").arg(eventName()).arg(currentStageId());
+	QString title = QStringLiteral("%1 E%2").arg(eventDbName()).arg(currentStageId());
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	fwk->setWindowTitle(title);
-}
-
-void EventPlugin::loadCurrentStageId()
-{
-	int stage_id = 1;
-	if(!eventName().isEmpty()) {
-		stage_id = appDbConfig().eventConfig().currentStageId;
-	}
-	setCurrentStageId(stage_id);
 }
 
 void EventPlugin::saveCurrentStageId(int current_stage)
@@ -495,7 +485,7 @@ void EventPlugin::emitDbEvent(const QString &domain, const QVariant &data, bool 
 		return;
 	}
 	DbEventPayload dbpl;
-	dbpl.setEventName(eventName());
+	dbpl.setEventName(eventDbName());
 	dbpl.setDomain(domain);
 	dbpl.setData(data);
 	dbpl.setconnectionId(connection_id);
@@ -539,7 +529,7 @@ QString EventPlugin::classNameById(int class_id)
 
 QString EventPlugin::shvApiEventId() const
 {
-	return eventName() + "-" + QString::number(eventConfig().importId);
+	return eventDbName() + "-" + QString::number(eventConfig().importId);
 }
 
 QString EventPlugin::createApiKey(int length)
@@ -570,7 +560,7 @@ QString EventPlugin::createApiKey(int length)
 
 QString EventPlugin::fileNameWithStageAndEventName(const QString &fn, std::optional<int> stage_id) const
 {
-	auto ret = eventName();
+	auto ret = eventDbName();
 	if(stageCount() > 1) {
 		ret += QStringLiteral(".e%1").arg(stage_id.value_or(currentStageId()));
 	}
@@ -630,7 +620,7 @@ void EventPlugin::onDbEvent(const QString &name, QSqlDriver::NotificationSource 
 				qfWarning() << "DbNotify with invalid event name, payload:" << event_name << payload.toString();
 				return;
 			}
-			if(event_name == eventName()) {
+			if(event_name == eventDbName()) {
 				QVariant data = dbpl.data();
 				if (dbpl.domain() == DBEVENT_QX_RECCHNG) {
 					qfMessage() << "from postgres:" << data;
@@ -675,14 +665,6 @@ void EventPlugin::repairStageStarts(const qf::core::sql::Connection &from_conn, 
 		int id = from_q.value("id").toInt();
 		to_q.exec("UPDATE stages SET startDateTime=" QF_SARG(dt.toString(Qt::ISODate)) " WHERE id=" QF_IARG(id));
 	}
-}
-
-void EventPlugin::onEventOpened()
-{
-	if(!isEventOpen())
-		return;
-	qfLogFuncFrame() << "stage count:" << stageCount();
-	loadCurrentStageId();
 }
 
 EventPlugin::ConnectionType EventPlugin::connectionType() const
@@ -928,22 +910,22 @@ bool EventPlugin::createEvent(const QString &event_name, const EventConfig &even
 			ok = run_sql_script(q, create_script);
 			if(!ok)
 				break;
-			// qfDebug() << "creating stages:" << stage_count;
-			// QString stage_table_name = "stages";
-			// if(connection_type == ConnectionType::SqlServer) {
-			// 	stage_table_name = event_id + '.' + stage_table_name;
-			// }
-			// // Stage start times are stored in config as event.stage.<id>.startDateTime.
-			// q.prepare("INSERT INTO " + stage_table_name + " (id) VALUES (:id)");
-			// for(int i=0; i<stage_count; i++) {
-			// 	q.bindValue(":id", i+1);
-			// 	ok = q.exec();
-			// 	if(!ok) {
-			// 		break;
-			// 	}
-			// }
-			// if(!ok)
-			// 	break;
+			qfDebug() << "creating stages:" << stage_count;
+			QString stage_table_name = "stages";
+			if(connection_type == ConnectionType::SqlServer) {
+				stage_table_name = event_id + '.' + stage_table_name;
+			}
+			// Stage details are stored in config, but stage rows are still required by foreign keys.
+			q.prepare("INSERT INTO " + stage_table_name + " (id) VALUES (:id)");
+			for(int i=0; i<stage_count; i++) {
+				q.bindValue(":id", i+1);
+				ok = q.exec();
+				if(!ok) {
+					break;
+				}
+			}
+			if(!ok)
+				break;
 			conn.setCurrentSchema(event_id);
 			transaction.commit();
 		} while(false);
@@ -975,7 +957,7 @@ void EventPlugin::editEvent()
 	dlg.setButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 	auto *event_w = new EventDialogWidget();
 	event_w->setWindowTitle(tr("Edit event"));
-	event_w->setEventId(eventName());
+	event_w->setEventId(eventDbName());
 	event_w->setEventIdEditable(false);
 	EventDialogWidget::Params params;
 	params.eventConfig = eventConfig();
@@ -1001,7 +983,7 @@ bool EventPlugin::closeEvent()
 {
 	qfLogFuncFrame();
 	m_classNameCache.clear();
-	setEventName(QString());
+	setEventDbName(QString());
 	setEventOpen(false);
 	return true;
 }
@@ -1064,7 +1046,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 			break;
 		}
 	}
-	if(!eventName().isEmpty() && db_event_names.contains(eventName()) && !ok) // dialog canceled and event is already open => no change
+	if(!eventDbName().isEmpty() && db_event_names.contains(eventDbName()) && !ok) // dialog canceled and event is already open => no change
 		return true;
 
 	closeEvent();
@@ -1127,7 +1109,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 	}
 	if(ok) {
 		connection_settings.setEventName(event_name);
-		setEventName(event_name);
+		setEventDbName(event_name);
 		//emit reloadDataRequest();
 	}
 
@@ -1135,6 +1117,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 	m_actEditEvent->setEnabled(ok);
 	m_actExportEvent_qbe->setEnabled(ok);
 	setEventOpen(ok);
+	emit currentStageIdChanged(currentStageId());
 	return ok;
 }
 
@@ -1318,7 +1301,7 @@ void EventPlugin::exportEvent_qbe()
 void EventPlugin::deleteEvent(const QString &event_name)
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	if(event_name == eventName())
+	if(event_name == eventDbName())
 		closeEvent();
 	if(connectionType() == ConnectionType::SingleFile) {
 		const QString fn = eventNameToFileName(event_name);

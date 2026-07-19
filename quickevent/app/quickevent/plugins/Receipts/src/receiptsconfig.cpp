@@ -14,6 +14,7 @@ ReceiptsConfig ReceiptsConfig::fromVariantMap(const QVariantMap &map)
 {
 	ReceiptsConfig config;
 	config.printQrCode = map.value("printQrCode", config.printQrCode).toBool();
+	config.linkUrl = map.value("linkUrl", config.linkUrl).toString();
 	config.qrCodeCaption = map.value("qrCodeCaption", config.qrCodeCaption).toString();
 	config.printImage = map.value("printImage", config.printImage).toBool();
 	config.imageHeightMm = map.value("imageHeightMm", config.imageHeightMm).toInt();
@@ -26,6 +27,7 @@ QVariantMap ReceiptsConfig::toVariantMap() const
 {
 	QVariantMap ret;
 	ret["printQrCode"] = printQrCode;
+	ret["linkUrl"] = linkUrl;
 	ret["qrCodeCaption"] = qrCodeCaption;
 	ret["printImage"] = printImage;
 	ret["imageHeightMm"] = imageHeightMm;

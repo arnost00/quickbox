@@ -50,16 +50,16 @@ void AppDbConfig::load()
 	Q_ASSERT(conn.isOpen());
 
 	QVariantMap config;
-	const auto set_group_value = [&config](const QString &group, const QStringList &path, const QVariant &value) {
+	const auto set_group_value = [&config](const QString &group, const QString &key, const QVariant &value) {
 		auto m = config.value(group).toMap();
-		m[path.mid(1).join('.')] = value;
+		m[key] = value;
 		config[group] = m;
 	};
-	const auto set_group_stage_value = [&config](const QString &group, const QStringList &path, const QVariant &value) {
-		auto stage = path.value(1);
+	const auto set_group_stage_value = [&config](const QString &group, int stage_id, const QString &key, const QVariant &value) {
+		auto stage = QString::number(stage_id);
 		auto m1 = config.value(group).toMap();
 		auto m2 = m1.value(stage).toMap();
-		m2[path.mid(2).join('.')] = value;
+		m2[key] = value;
 		m1[stage] = m2;
 		config[group] = m1;
 	};
@@ -73,12 +73,12 @@ void AppDbConfig::load()
 			QVariant val = q.value(1);
 			QString type = q.value(2).toString();
 			QVariant v = qf::core::Utils::retypeStringValue(val.toString(), type);
-			auto path = key.split('.');
-			const auto group = path.value(0);
+			const auto group = key.section('.', 0, 0);
 			if (group == EVENT || group == QX) {
-				set_group_value(group, path, v);
+				set_group_value(group, key.section('.', 1), v);
 			} else if (group == STAGE || group == RECEIPTS || group == ORESULTS || group == OFEED) {
-				set_group_stage_value(group, path, v);
+				auto stage_id = key.section('.', 1, 1).toInt();
+				set_group_stage_value(group, stage_id, key.section('.', 2), v);
 			} else {
 				config[key] = v;
 			}
@@ -104,9 +104,9 @@ void AppDbConfig::load()
 			const auto stage_id = stages_q.value("id").toString();
 			if(stages.contains(stage_id))
 				continue;
-			set_group_stage_value(STAGE, QStringList{stage_id, "startDateTime"}, stages_q.value("startDateTime").toDateTime());
-			set_group_stage_value(STAGE, QStringList{stage_id, "useAllMaps"}, stages_q.value("useAllMaps").toBool());
-			set_group_stage_value(STAGE, QStringList{stage_id, "drawingConfig"}, stages_q.value("drawingConfig").toString());
+			set_group_stage_value(STAGE, stage_id.toInt(), "startDateTime", stages_q.value("startDateTime").toDateTime());
+			set_group_stage_value(STAGE, stage_id.toInt(), "useAllMaps", stages_q.value("useAllMaps").toBool());
+			set_group_stage_value(STAGE, stage_id.toInt(), "drawingConfig", stages_q.value("drawingConfig").toString());
 		}
 	}
 	load_stage_config(STAGE, m_stagesConfig, StageConfig::fromVariantMap);
