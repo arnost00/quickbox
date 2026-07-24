@@ -5,6 +5,7 @@
 
 #include <QDateTimeEdit>
 #include <QHeaderView>
+#include <QSignalBlocker>
 #include <QTableWidget>
 
 
@@ -34,12 +35,13 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 		ui->cbxSportId->addItem(sportName(static_cast<int>(sport)), static_cast<int>(sport));
 
 	using D = Event::EventConfig::Discipline;
-	for (D disc : {D::LongDistance, D::ShortDistance, D::UltralongDistance, D::Sprint,
-	               D::Relays, D::Teams, D::FreeOrder, D::NightRace, D::SprintRelays,
-	               D::KnocOutSprint, D::TempO, D::MultiStages, D::Indoor, D::MassStart}) {
-		ui->cbxDisciplineId->addItem(disciplineName(static_cast<int>(disc)), static_cast<int>(disc));
+	for (D disc : {D::LongDistance, D::ShortDistance, D::UltralongDistance,
+		 D::Sprint, D::Relays, D::Teams, D::FreeOrder,
+		 D::NightRace, D::SprintRelays, D::KnocOutSprint,
+		 D::TempO, D::MultiStages, D::Indoor, D::MassStart}) {
+		ui->cbxDisciplineId->addItem(disciplineName(static_cast<int>(disc)),
+									 static_cast<int>(disc));
 	}
-
 
 	ui->ed_oneTenthSecResults->setDisabled(true);
 
@@ -84,7 +86,7 @@ void EventDialogWidget::updateStageStartTimeEditors(const EventDialogWidget::Par
 		table->setItem(row, 0, stage_item);
 
 		auto stage_start = params.stageStarts.value(row, event_start.addDays(row));
-		auto *editor = new QDateTimeEdit(stage_start, table);
+		auto *editor = new QDateTimeEdit(stage_start);
 		editor->setCalendarPopup(true);
 		editor->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
 		table->setCellWidget(row, 1, editor);
@@ -102,11 +104,15 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 {
 	ui->ed_name->setText(params.eventConfig.name);
 	ui->ed_date->setDate(params.eventConfig.date.isValid() ? params.eventConfig.date : QDate::currentDate());
-	if(params.eventConfig.time.isValid())
+	if(params.eventConfig.time.isValid()) {
 		ui->ed_time->setTime(params.eventConfig.time);
-
-	ui->ed_stageCount->setValue(params.eventConfig.stageCount);
+	}
+	{
+		const QSignalBlocker blocker(ui->ed_stageCount);
+		ui->ed_stageCount->setValue(params.eventConfig.stageCount);
+	}
 	updateStageStartTimeEditors(params);
+
 	ui->ed_description->setText(params.eventConfig.description);
 	ui->ed_place->setText(params.eventConfig.place);
 	ui->ed_mainReferee->setText(params.eventConfig.mainReferee);
@@ -131,7 +137,7 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 
 EventDialogWidget::Params EventDialogWidget::saveParams()
 {
-    EventDialogWidget::Params params;
+	EventDialogWidget::Params params;
 	params.eventConfig.stageCount = ui->ed_stageCount->value();
 	for(int row = 0; row < ui->stageStartTimesTable->rowCount(); ++row) {
 		if(auto *editor = qobject_cast<QDateTimeEdit *>(ui->stageStartTimesTable->cellWidget(row, 1))) {
