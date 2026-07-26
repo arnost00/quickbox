@@ -15,6 +15,7 @@
 #include "services/emmaclient.h"
 #include "services/qx/qxclientservice.h"
 #include "services/punchingtest/punchingtestservice.h"
+#include "services/radiosender/radiosenderservice.h"
 
 #include <plugins/Core/src/widgets/settingsdialog.h>
 #include <plugins/Event/src/services/oresultsclient.h>
@@ -396,6 +397,9 @@ void EventPlugin::onInstalled()
 
 	auto shvapi_client = new services::qx::QxClientService(this);
 	services::Service::addService(shvapi_client);
+
+	auto *radio_sender = new services::RadioSenderService(this);
+	services::Service::addService(radio_sender);
 
 	auto *punching_test = new services::PunchingTestService(this);
 	services::Service::addService(punching_test);

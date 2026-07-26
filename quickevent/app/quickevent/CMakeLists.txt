@@ -113,6 +113,9 @@ add_executable(quickevent
 	plugins/Event/src/services/punchingtest/punchingtestservice.h plugins/Event/src/services/punchingtest/punchingtestservice.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.h plugins/Event/src/services/punchingtest/punchingtestservicewidget.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.ui
+	plugins/Event/src/services/radiosender/radiosenderconfig.cpp plugins/Event/src/services/radiosender/radiosenderconfig.h
+	plugins/Event/src/services/radiosender/radiosenderservice.cpp plugins/Event/src/services/radiosender/radiosenderservice.h
+	plugins/Event/src/services/radiosender/radiosenderservicewidget.cpp plugins/Event/src/services/radiosender/radiosenderservicewidget.h plugins/Event/src/services/radiosender/radiosenderservicewidget.ui
 
 	plugins/Oris/src/chooseoriseventdialog.cpp
 	plugins/Oris/src/chooseoriseventdialog.ui

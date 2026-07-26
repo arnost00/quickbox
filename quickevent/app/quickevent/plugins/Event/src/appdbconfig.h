@@ -4,13 +4,13 @@
 #include "plugins/Event/src/stageconfig.h"
 #include "services/oresultsconfig.h"
 #include "services/ofeed/ofeedconfig.h"
+#include "services/radiosender/radiosenderconfig.h"
 #include <plugins/Receipts/src/receiptsconfig.h>
 
 #include <QDateTime>
 #include <QObject>
 #include <QSet>
 #include <QVariantMap>
-#include <qcontainerfwd.h>
 
 namespace Event {
 
@@ -39,6 +39,8 @@ public:
 	void setReceiptsConfig(int stage_id, const Receipts::ReceiptsConfig &config);
 	const services::OFeedConfig &ofeedConfig(int stage_id) const;
 	void setOfeedConfig(int stage_id, const services::OFeedConfig &config);
+	const services::RadioSenderConfig &radioSenderConfig() const { return m_radioSenderConfig; }
+	void setRadioSenderConfig(const services::RadioSenderConfig &config);
 	const QxConfig &qxConfig() const { return m_qxConfig; }
 	void setQxConfig(const QxConfig &config);
 
@@ -53,6 +55,8 @@ private:
 	std::map<int, services::OResultsConfig> m_oresultsConfig;
 	EventConfig m_eventConfig;
 	QxConfig m_qxConfig;
+	services::RadioSenderConfig m_radioSenderConfig;
+
 	int m_dbVersion = 0;
 };
 
