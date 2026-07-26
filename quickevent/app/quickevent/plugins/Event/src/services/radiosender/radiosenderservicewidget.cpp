@@ -4,6 +4,7 @@
 
 #include "../../eventplugin.h"
 
+#include <qf/core/assert.h>
 #include <qf/gui/framework/mainwindow.h>
 
 #include <QDialog>
@@ -12,10 +13,12 @@ using qf::gui::framework::getPlugin;
 
 namespace Event::services {
 
-RadioSenderServiceWidget::RadioSenderServiceWidget(QWidget *parent)
+RadioSenderServiceWidget::RadioSenderServiceWidget(RadioSenderService *service, QWidget *parent)
 	: Super(parent)
 	, ui(new Ui::RadioSenderServiceWidget)
+	, m_service(service)
 {
+	Q_ASSERT(m_service);
 	setPersistentSettingsId(QStringLiteral("RadioSenderServiceWidget"));
 	ui->setupUi(this);
 	auto *event_plugin = getPlugin<EventPlugin>();
@@ -27,12 +30,14 @@ RadioSenderServiceWidget::RadioSenderServiceWidget(QWidget *parent)
 	ui->edStartTolerance->setValue(config.startToleranceMs);
 	ui->edFinishTolerance->setValue(config.finishToleranceMs);
 
-	m_service = qobject_cast<RadioSenderService*>(Service::serviceByName(RadioSenderService::serviceName()));
-	if (m_service) {
-		connect(m_service, &RadioSenderService::receivedLineLogged,
-			this, &RadioSenderServiceWidget::updateReceivedLineLog);
-		updateReceivedLineLog();
-	}
+	connect(m_service, &RadioSenderService::receivedLineLogged,
+		this, &RadioSenderServiceWidget::updateReceivedLineLog);
+	connect(m_service, &RadioSenderService::statusChanged,
+		this, &RadioSenderServiceWidget::updateServiceControls);
+	connect(ui->btStart, &QPushButton::clicked, this, [this] { m_service->setRunning(true); });
+	connect(ui->btStop, &QPushButton::clicked, this, [this] { m_service->setRunning(false); });
+	updateReceivedLineLog();
+	updateServiceControls();
 }
 
 RadioSenderServiceWidget::~RadioSenderServiceWidget()
@@ -47,10 +52,16 @@ bool RadioSenderServiceWidget::acceptDialogDone(int result)
 	return true;
 }
 
+void RadioSenderServiceWidget::updateServiceControls()
+{
+	const bool running = m_service->isRunning();
+	ui->btStart->setEnabled(!running);
+	ui->btStop->setEnabled(running);
+}
+
 void RadioSenderServiceWidget::updateReceivedLineLog()
 {
-	if (m_service)
-		ui->edReceivedLines->setPlainText(m_service->receivedLineLog().join(QStringLiteral("\n\n")));
+	ui->edReceivedLines->setPlainText(m_service->receivedLineLog().join(QStringLiteral("\n\n")));
 }
 
 void RadioSenderServiceWidget::saveConfig()
@@ -65,10 +76,9 @@ void RadioSenderServiceWidget::saveConfig()
 	config.finishToleranceMs = ui->edFinishTolerance->value();
 	event_plugin->appDbConfig().setRadioSenderConfig(config);
 
-	auto *service = qobject_cast<RadioSenderService*>(Service::serviceByName(RadioSenderService::serviceName()));
-	if (service && service->isRunning()) {
-		service->stop();
-		service->run();
+	if (m_service->isRunning()) {
+		m_service->stop();
+		m_service->run();
 	}
 }
 

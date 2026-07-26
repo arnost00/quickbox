@@ -22,6 +22,13 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="serviceButtonsLayout">
+     <item><spacer name="serviceButtonsSpacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+     <item><widget class="QPushButton" name="btStart"><property name="text"><string>Start</string></property></widget></item>
+     <item><widget class="QPushButton" name="btStop"><property name="text"><string>Stop</string></property></widget></item>
+    </layout>
+   </item>
+   <item>
     <widget class="QGroupBox" name="grpReceivedLines">
      <property name="title"><string>Last 20 received lines</string></property>
      <layout class="QVBoxLayout" name="receivedLinesLayout">

@@ -6,21 +6,24 @@ namespace Event::services {
 
 namespace Ui { class RadioSenderServiceWidget; }
 
+class RadioSenderService;
+
 class RadioSenderServiceWidget : public qf::gui::framework::DialogWidget
 {
 	Q_OBJECT
 	using Super = qf::gui::framework::DialogWidget;
 public:
-	explicit RadioSenderServiceWidget(QWidget *parent = nullptr);
+	explicit RadioSenderServiceWidget(RadioSenderService *service, QWidget *parent = nullptr);
 	~RadioSenderServiceWidget() override;
 
 private:
 	bool acceptDialogDone(int result) override;
 	void saveConfig();
 	void updateReceivedLineLog();
+	void updateServiceControls();
 
 	Ui::RadioSenderServiceWidget *ui;
-	class RadioSenderService *m_service = nullptr;
+	RadioSenderService *m_service = nullptr;
 };
 
 } // namespace Event::services

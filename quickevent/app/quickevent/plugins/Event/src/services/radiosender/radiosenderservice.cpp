@@ -61,7 +61,7 @@ void RadioSenderService::stop()
 
 qf::gui::framework::DialogWidget *RadioSenderService::createDetailWidget()
 {
-	return new RadioSenderServiceWidget();
+	return new RadioSenderServiceWidget(this);
 }
 
 void RadioSenderService::startServer()

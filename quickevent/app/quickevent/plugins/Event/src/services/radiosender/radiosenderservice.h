@@ -23,8 +23,7 @@ public:
 	QString serviceDisplayName() const override;
 	const QStringList &receivedLineLog() const { return m_receivedLineLog; }
 
-signals:
-	void receivedLineLogged();
+	Q_SIGNAL void receivedLineLogged();
 
 private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
