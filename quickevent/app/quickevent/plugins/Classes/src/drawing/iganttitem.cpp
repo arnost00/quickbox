@@ -52,6 +52,13 @@ const GanttItem *IGanttItem::ganttItem() const
 
 GanttItem *IGanttItem::ganttItem()
 {
-	return const_cast<GanttItem*>(((const IGanttItem*)this)->ganttItem());
+	GanttItem *ret = nullptr;
+	for (QGraphicsItem *it = m_graphicsItem; it; it = it->parentItem()) {
+		ret = dynamic_cast<GanttItem*>(it);
+		if(ret)
+			break;
+	}
+	QF_ASSERT_EX(ret != nullptr, "Bad parent!");
+	return ret;
 }
 
