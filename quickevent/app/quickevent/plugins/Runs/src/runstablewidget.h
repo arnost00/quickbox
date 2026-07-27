@@ -27,6 +27,7 @@ public:
 
 	RunsTableModel* runsModel() {return m_runsModel;}
 	qf::gui::TableView* tableView();
+	void setColumnVisible(int column, bool visible);
 
 	Q_SIGNAL void editCompetitorRequest(int competitor_id, int mode);
 private:

@@ -16,8 +16,8 @@ public:
 	explicit RadioSenderServiceWidget(RadioSenderService *service, QWidget *parent = nullptr);
 	~RadioSenderServiceWidget() override;
 
-private:
 	bool acceptDialogDone(int result) override;
+private:
 	void saveConfig();
 	void updateReceivedLineLog();
 	void updateServiceControls();

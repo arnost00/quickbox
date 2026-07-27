@@ -58,6 +58,17 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	ui->tblRuns->setItemDelegate(m_runsTableItemDelegate);
 	auto *event_plugin = getPlugin<Event::EventPlugin>();
 	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
+		if(is_open) {
+			qf::core::sql::Query q;
+			q.prepare("SELECT cvalue FROM config WHERE ckey='runs.hiddenColumns'", qf::core::Exception::Throw);
+			q.exec(qf::core::Exception::Throw);
+			if(q.next()) {
+				const auto hidden_columns = q.value("cvalue").toString().split(',', Qt::SkipEmptyParts);
+				for(int column = 0; column < RunsTableModel::col_COUNT; ++column) {
+					setColumnVisible(column, !hidden_columns.contains(m_runsModel->columnDefinition(column).fieldName()));
+				}
+			}
+		}
 		if (is_open && !event_plugin->appDbConfig().eventConfig().isRelays() && !m_courseItemDelegate) {
 			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
 			m_courseItemDelegate->setNullText(tr("Implicit"));
@@ -233,6 +244,11 @@ void RunsTableWidget::reload()
 qf::gui::TableView *RunsTableWidget::tableView()
 {
 	return ui->tblRuns;
+}
+
+void RunsTableWidget::setColumnVisible(int column, bool visible)
+{
+	ui->tblRuns->horizontalHeader()->setSectionHidden(column, !visible);
 }
 
 QMap<int, QString> RunsTableWidget::definedCourses()

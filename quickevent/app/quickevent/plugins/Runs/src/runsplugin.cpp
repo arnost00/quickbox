@@ -2,6 +2,7 @@
 
 #include "nstagesreportoptionsdialog.h"
 #include "runstablemodel.h"
+#include "runssettingspage.h"
 #include "runswidget.h"
 #include "runstabledialogwidget.h"
 #include "eventstatisticswidget.h"
@@ -10,6 +11,8 @@
 #include "partwidget.h"
 // #include "../../Competitors/src/competitorwidget.h"
 #include "../../CardReader/src/cardreaderplugin.h"
+#include "../../Core/src/coreplugin.h"
+#include "../../Core/src/widgets/settingsdialog.h"
 #include "../../Event/src/eventplugin.h"
 #include "../../Event/src/services/qx/qxlateregistrationswidget.h"
 
@@ -115,6 +118,7 @@ void RunsPlugin::onInstalled()
 	qfLogFuncFrame();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	m_partWidget = qff::initPluginWidget<RunsWidget, PartWidget>(tr("&Runs"), featureId());
+	getPlugin<Core::CorePlugin>()->settingsDialog()->addPage(new RunsSettingsPage());
 
 	//connect(getPlugin<CompetitorsPlugin>(), &CompetitorsPlugin::competitorEdited, this, &RunsPlugin::clearRunnersTableCache);
 	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::dbEventNotify, this, [this](const QString &domain, const QVariant &payload) {

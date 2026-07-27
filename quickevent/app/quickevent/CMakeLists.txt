@@ -167,6 +167,8 @@ add_executable(quickevent
 	plugins/Runs/src/runstabledialogwidget.ui
 	plugins/Runs/src/runstableitemdelegate.cpp
 	plugins/Runs/src/runstablemodel.cpp
+	plugins/Runs/src/runssettingspage.cpp
+	plugins/Runs/src/runssettingspage.ui
 	plugins/Runs/src/runstablewidget.cpp
 	plugins/Runs/src/runstablewidget.ui
 	plugins/Runs/src/runswidget.cpp
