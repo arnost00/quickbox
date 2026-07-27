@@ -8,3 +8,4 @@ disable-model-invocation: false
 
 * load global skill cpp-indent
 * build dir is /home/fanda/b/quickbox
+* build with 16 cores

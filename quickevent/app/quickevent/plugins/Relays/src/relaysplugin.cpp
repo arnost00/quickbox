@@ -68,7 +68,9 @@ int RelaysPlugin::editRelay(int id, int mode)
 
 void RelaysPlugin::onInstalled()
 {
-	m_partWidget = qff::initPluginWidget<RelaysWidget, PartWidget>(tr("&Relays"), featureId());
+	auto [part_widget, relays_widget] = qff::initPluginWidget<RelaysWidget, PartWidget>(tr("&Relays"), featureId());
+	m_partWidget = part_widget;
+	Q_UNUSED(relays_widget)
 
 	auto *scw = qobject_cast<qff::StackedCentralWidget*>(qff::MainWindow::frameWork()->centralWidget());
 	if(scw)

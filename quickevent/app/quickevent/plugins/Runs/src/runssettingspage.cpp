@@ -3,6 +3,8 @@
 
 #include "runstablemodel.h"
 #include "runstablewidget.h"
+#include "runsplugin.h"
+#include "runswidget.h"
 
 #include <plugins/Event/src/eventplugin.h>
 
@@ -15,13 +17,15 @@
 #include <QCheckBox>
 
 namespace Runs {
-namespace {
 
-const auto config_key = QStringLiteral("runs.hiddenColumns");
+namespace {
 
 RunsTableWidget *runsTableWidget()
 {
-	return qf::gui::framework::MainWindow::frameWork()->findChild<RunsTableWidget*>();
+    auto runs_plugin = qf::gui::framework::getPlugin<RunsPlugin>();
+	auto *runs_widget = runs_plugin->runsWidget();
+	Q_ASSERT(runs_widget);
+	return runs_widget->findChild<RunsTableWidget*>();
 }
 
 }
@@ -33,7 +37,7 @@ RunsSettingsPage::RunsSettingsPage(QWidget *parent)
 	ui = new ::Ui::RunsSettingsPage;
 	ui->setupUi(this);
 
-	auto *model = new RunsTableModel(this);
+	auto *model = runsTableWidget()->runsModel();
 	for(int column = 0; column < model->columnCount({}); ++column) {
 		auto *check_box = new QCheckBox(model->headerData(column, Qt::Horizontal).toString(), this);
 		ui->columnsLayout->addWidget(check_box);
@@ -72,34 +76,17 @@ void RunsSettingsPage::save()
 		return;
 	}
 
-	RunsTableModel model;
 	QStringList hidden_columns;
 	auto *runs_table = runsTableWidget();
 	for(auto it = m_columnCheckBoxes.cbegin(); it != m_columnCheckBoxes.cend(); ++it) {
 		if(!it.value()->isChecked()) {
-			hidden_columns << model.columnDefinition(it.key()).fieldName();
+			hidden_columns << runs_table->runsModel()->columnDefinition(it.key()).fieldName();
 		}
 		if(runs_table) {
 			runs_table->setColumnVisible(it.key(), it.value()->isChecked());
 		}
 	}
-
-	using namespace qf::core::sql;
-	Query update_query(Connection::forName());
-	update_query.prepare("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", qf::core::Exception::Throw);
-	update_query.bindValue(":key", config_key);
-	update_query.bindValue(":value", hidden_columns.join(','));
-	update_query.exec(qf::core::Exception::Throw);
-	if(update_query.numRowsAffected() < 1) {
-		Query insert_query(Connection::forName());
-		insert_query.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", qf::core::Exception::Throw);
-		insert_query.bindValue(":key", config_key);
-		insert_query.bindValue(":value", hidden_columns.join(','));
-		insert_query.exec(qf::core::Exception::Throw);
-	}
-
-	Query delete_legacy_query(Connection::forName());
-	delete_legacy_query.exec("DELETE FROM config WHERE ckey LIKE 'runs.tableColumn.%' OR ckey='runs.visibleColumns'", qf::core::Exception::Throw);
+	RunsPlugin::saveRunsTableHiddenColumns(hidden_columns);
 }
 
 } // namespace Runs

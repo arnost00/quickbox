@@ -44,7 +44,7 @@ public:
 		{
 		public:
 			QString fieldName; //!< ID to pair ColumnDefinitions with fields
-			int fieldIndex;
+			int fieldIndex = -1;
 			QString caption;
 			QString toolTip;
 			//int initialSize; //!< initial width of column
@@ -52,10 +52,10 @@ public:
 			bool isVirtual = false;
 			Qt::Alignment alignment;
 			QString format; //!< format for date, time, ... types
-			int castType;
+			int castType = QMetaType::UnknownType;
 			QVariantMap castProperties;
 
-			Data(const QString &fldname = QString()) : fieldName(fldname), fieldIndex(-1), castType(QMetaType::UnknownType) {}
+			Data(const QString &fldname = QString()) : fieldName(fldname) {}
 		};
 	private:
 		QSharedDataPointer<Data> d;
@@ -231,4 +231,3 @@ protected:
 }}}
 
 Q_DECLARE_METATYPE(qf::gui::model::TableModel::ColumnDefinition)
-

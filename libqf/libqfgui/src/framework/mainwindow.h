@@ -126,14 +126,14 @@ static T* getPlugin()
 }
 
 template<typename Widget, typename PartWidget>
-static PartWidget* initPluginWidget(QString title, QString featureId)
+static std::pair<PartWidget*, Widget*> initPluginWidget(QString title, QString featureId)
 {
 	auto* widget = new Widget();
 	auto *part_widget = new PartWidget(title, featureId);
 	qf::gui::framework::MainWindow::frameWork()->addPartWidget(part_widget);
 	part_widget->addWidget(widget);
 	widget->settleDownInPartWidget(part_widget);
-	return part_widget;
+	return std::make_pair(part_widget, widget);
 }
 
 }}}

@@ -117,7 +117,9 @@ void RunsPlugin::onInstalled()
 {
 	qfLogFuncFrame();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	m_partWidget = qff::initPluginWidget<RunsWidget, PartWidget>(tr("&Runs"), featureId());
+	auto [part_widget, runs_widget] = qff::initPluginWidget<RunsWidget, PartWidget>(tr("&Runs"), featureId());
+	m_partWidget = part_widget;
+	m_runsWidget = runs_widget;
 	getPlugin<Core::CorePlugin>()->settingsDialog()->addPage(new RunsSettingsPage());
 
 	//connect(getPlugin<CompetitorsPlugin>(), &CompetitorsPlugin::competitorEdited, this, &RunsPlugin::clearRunnersTableCache);
@@ -3039,6 +3041,37 @@ bool RunsPlugin::exportStartListCurrentStageTvGraphics(const QString &file_name)
 	qfInfo() << "exported:" << file_name;
 	return true;
 }
+namespace {
+    constexpr auto HIDDEN_COLUMNS_CONFIG_KEY = "runs.hiddenColumns";
+}
+QStringList RunsPlugin::loadRunsTableHiddenColumns()
+{
+    qf::core::sql::Query q;
+	q.prepare(QStringLiteral("SELECT cvalue FROM config WHERE ckey=:key"), qf::core::Exception::Throw);
+	q.bindValue(QStringLiteral(":key"), QLatin1String(HIDDEN_COLUMNS_CONFIG_KEY));
+	q.exec(qf::core::Exception::Throw);
+	if(q.next()) {
+		const auto hidden_columns = q.value("cvalue").toString().split(',', Qt::SkipEmptyParts);
+		return hidden_columns;
+	}
+	return QStringList();
+}
+void RunsPlugin::saveRunsTableHiddenColumns(const QStringList &hidden_columns)
+{
+    using namespace qf::core::sql;
+	const auto hidden_columns_value = hidden_columns.join(',');
 
+	auto exec_query = [](const QString &sql, const QString &key, const QString &value) {
+		Query query(Connection::forName());
+		query.prepare(sql, qf::core::Exception::Throw);
+		query.bindValue(":key", key);
+		query.bindValue(":value", value);
+		query.exec(qf::core::Exception::Throw);
+		return query.numRowsAffected();
+	};
 
+	if(exec_query("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value) < 1) {
+		exec_query("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value);
+	}
+}
 }
