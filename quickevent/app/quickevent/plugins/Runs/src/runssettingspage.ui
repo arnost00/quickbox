@@ -17,9 +17,32 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Visible columns</string>
+      <string>Column visibility and order (Drag to reorder)</string>
      </property>
-     <layout class="QVBoxLayout" name="columnsLayout"/>
+     <layout class="QVBoxLayout" name="columnsLayout">
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
+       <number>3</number>
+      </property>
+      <property name="rightMargin">
+       <number>3</number>
+      </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
+      <item>
+       <widget class="QListWidget" name="lwColumns">
+        <property name="dragDropMode">
+         <enum>QAbstractItemView::DragDropMode::InternalMove</enum>
+        </property>
+        <property name="defaultDropAction">
+         <enum>Qt::DropAction::MoveAction</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

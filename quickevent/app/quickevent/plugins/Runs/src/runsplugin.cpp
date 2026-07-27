@@ -3043,6 +3043,7 @@ bool RunsPlugin::exportStartListCurrentStageTvGraphics(const QString &file_name)
 }
 namespace {
     constexpr auto HIDDEN_COLUMNS_CONFIG_KEY = "runs.hiddenColumns";
+    constexpr auto COLUMN_ORDER_CONFIG_KEY = "runs.columnOrder";
 }
 QStringList RunsPlugin::loadRunsTableHiddenColumns()
 {
@@ -3072,6 +3073,33 @@ void RunsPlugin::saveRunsTableHiddenColumns(const QStringList &hidden_columns)
 
 	if(exec_query("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value) < 1) {
 		exec_query("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value);
+	}
+}
+QStringList RunsPlugin::loadRunsTableColumnOrder()
+{
+	qf::core::sql::Query q;
+	q.prepare(QStringLiteral("SELECT cvalue FROM config WHERE ckey=:key"), qf::core::Exception::Throw);
+	q.bindValue(QStringLiteral(":key"), QLatin1String(COLUMN_ORDER_CONFIG_KEY));
+	q.exec(qf::core::Exception::Throw);
+	if(q.next()) {
+		return q.value("cvalue").toString().split(',', Qt::SkipEmptyParts);
+	}
+	return QStringList();
+}
+void RunsPlugin::saveRunsTableColumnOrder(const QStringList &ordered_columns)
+{
+	using namespace qf::core::sql;
+	const auto value = ordered_columns.join(',');
+	auto exec_query = [](const QString &sql, const QString &key, const QString &val) {
+		Query query(Connection::forName());
+		query.prepare(sql, qf::core::Exception::Throw);
+		query.bindValue(":key", key);
+		query.bindValue(":value", val);
+		query.exec(qf::core::Exception::Throw);
+		return query.numRowsAffected();
+	};
+	if(exec_query("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", COLUMN_ORDER_CONFIG_KEY, value) < 1) {
+		exec_query("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", COLUMN_ORDER_CONFIG_KEY, value);
 	}
 }
 }

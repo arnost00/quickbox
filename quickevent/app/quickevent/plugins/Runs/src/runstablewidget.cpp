@@ -60,9 +60,8 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
 		if(is_open) {
 			auto hidden_columns = RunsPlugin::loadRunsTableHiddenColumns();
-			for(int column = 0; column < RunsTableModel::col_COUNT; ++column) {
-				setColumnVisible(column, !hidden_columns.contains(m_runsModel->columnDefinition(column).fieldName()));
-			}
+			setColumnsHidden(hidden_columns);
+			setColumnsOrder(RunsPlugin::loadRunsTableColumnOrder());
 		}
 		if (is_open && !event_plugin->appDbConfig().eventConfig().isRelays() && !m_courseItemDelegate) {
 			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
@@ -241,9 +240,33 @@ qf::gui::TableView *RunsTableWidget::tableView()
 	return ui->tblRuns;
 }
 
-void RunsTableWidget::setColumnVisible(int column, bool visible)
+void RunsTableWidget::setColumnsHidden(const QStringList &hidden_field_names)
 {
-	ui->tblRuns->horizontalHeader()->setSectionHidden(column, !visible);
+	for(const auto &field_name : hidden_field_names) {
+		int col = m_runsModel->columnIndex(field_name);
+		if(col >= 0) {
+			ui->tblRuns->horizontalHeader()->setSectionHidden(col, true);
+		}
+	}
+}
+
+void RunsTableWidget::setColumnsOrder(const QStringList &ordered_field_names)
+{
+	if(ordered_field_names.isEmpty())
+		return;
+	auto *hh = ui->tblRuns->horizontalHeader();
+	const int col_count = RunsTableModel::col_COUNT;
+	for(int target_visual = 0; target_visual < ordered_field_names.size() && target_visual < col_count; ++target_visual) {
+		const auto &field_name = ordered_field_names[target_visual];
+		for(int logical = 0; logical < col_count; ++logical) {
+			if(m_runsModel->columnDefinition(logical).fieldName() == field_name) {
+				const int current_visual = hh->visualIndex(logical);
+				if(current_visual != target_visual)
+					hh->moveSection(current_visual, target_visual);
+				break;
+			}
+		}
+	}
 }
 
 QMap<int, QString> RunsTableWidget::definedCourses()

@@ -2,10 +2,6 @@
 
 #include <plugins/Core/src/widgets/settingspage.h>
 
-#include <QMap>
-
-class QCheckBox;
-
 namespace Ui {
 class RunsSettingsPage;
 }
@@ -27,7 +23,6 @@ public:
 
 private:
 	::Ui::RunsSettingsPage *ui;
-	QMap<int, QCheckBox*> m_columnCheckBoxes;
 };
 
 } // namespace Runs

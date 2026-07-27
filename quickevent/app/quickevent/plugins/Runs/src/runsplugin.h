@@ -132,6 +132,8 @@ public:
 
 	static QStringList loadRunsTableHiddenColumns();
 	static void saveRunsTableHiddenColumns(const QStringList &hidden_columns);
+	static QStringList loadRunsTableColumnOrder();
+	static void saveRunsTableColumnOrder(const QStringList &ordered_columns);
 private:
 	Q_SLOT void onInstalled();
 
