@@ -51,7 +51,7 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	// ui->tblRuns->setEditRowsMenuSectionEnabled(false);
 	ui->tblRuns->setCloneRowEnabled(false);
 	ui->tblRuns->setDirtyRowsMenuSectionEnabled(false);
-	ui->tblRuns->setPersistentSettingsId("tblRuns");
+	ui->tblRuns->setPersistentSettingsId({}); // controlled by Runs settings
 	ui->tblRuns->setRowEditorMode(qfw::TableView::EditRowsMixed);
 	ui->tblRuns->setInlineEditSaveStrategy(qfw::TableView::OnEditedValueCommit);
 	m_runsTableItemDelegate = new RunsTableItemDelegate(ui->tblRuns);
