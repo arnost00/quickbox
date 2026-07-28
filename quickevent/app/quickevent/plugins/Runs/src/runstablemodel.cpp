@@ -3,6 +3,7 @@
 #include "runsplugin.h"
 #include "../../Event/src/eventplugin.h"
 
+#include <qnamespace.h>
 #include <quickevent/core/og/timems.h>
 #include <quickevent/core/si/siid.h>
 
@@ -109,6 +110,29 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 			return QVariant();
 		}
 		return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
+	}
+
+	if((index.column() == col_runs_startGateTime || index.column() == col_runs_finishGateTime) && role == Qt::BackgroundRole) {
+		auto *event_plugin = getPlugin<EventPlugin>();
+		const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+		const bool is_start = index.column() == col_runs_startGateTime;
+		const int time_col = is_start ? col_runs_startTimeMs : col_runs_finishTimeMs;
+		const int tolerance = is_start ? config.startToleranceMs : config.finishToleranceMs;
+		auto check_gate = [&](const QModelIndex &idx, int tc, int tol) -> QVariant {
+			auto gate_time = Super::data(idx, Qt::EditRole).toDateTime();
+			if(!gate_time.isValid()) {
+				return QVariant();
+			}
+			auto time_v = Super::data(idx.sibling(idx.row(), tc), Qt::EditRole);
+			if(!time_v.isValid()) {
+				return QVariant();
+			}
+			auto time_msec = time_v.toInt();
+			auto ref_time = event_plugin->stageStartDateTime(m_stageId).addMSecs(time_msec);
+			const bool is_ok = std::abs(gate_time.msecsTo(ref_time)) <= tol;
+			return is_ok ? QColor("lightgreen") : QColor("salmon");
+		};
+		return check_gate(index, time_col, tolerance);
 	}
 
 	return Super::data(index, role);

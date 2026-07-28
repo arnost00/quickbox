@@ -198,7 +198,7 @@ void RadioSenderService::updateRunTime(int run_id)
 	const QVariant finish_gate_value = q.value(QStringLiteral("finishGateTime"));
 	const qint64 start_gate = stage_start.msecsTo(start_gate_value.toDateTime());
 	const qint64 finish_gate = stage_start.msecsTo(finish_gate_value.toDateTime());
-	const auto config = event_plugin->appDbConfig().radioSenderConfig();
+	const auto &config = event_plugin->appDbConfig().radioSenderConfig();
 	const bool use_start_gate = !start_gate_value.isNull()
 		&& std::abs(start_gate - start_time) <= config.startToleranceMs;
 	const bool use_finish_gate = !finish_gate_value.isNull()
