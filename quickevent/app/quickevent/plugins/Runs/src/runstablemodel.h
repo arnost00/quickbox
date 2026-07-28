@@ -27,7 +27,9 @@ public:
 		col_runs_corridorTime,
 		col_runs_checkTimeMs,
 		col_runs_startTimeMs,
+		col_runs_startGateTime,
 		col_runs_finishTimeMs,
+		col_runs_finishGateTime,
 		col_runs_penaltyTimeMs,
 		col_runs_timeMs,
 		col_runFlags,
@@ -43,7 +45,6 @@ public:
 	int columnCount(const QModelIndex &) const override { return col_COUNT; }
 	Qt::ItemFlags flags(const QModelIndex &index) const override;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-	//bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
 	using Super::value;
 	QVariant value(int row_ix, int column_ix) const override;
@@ -51,6 +52,8 @@ public:
 	bool setValue(int row_ix, int column_ix, const QVariant &val) override;
 
 	bool postRow(int row_no, bool throw_exc) override;
+
+	void load(int stage_id, int class_id, bool show_offrace);
 
 	QStringList mimeTypes() const override;
 	QMimeData *mimeData(const QModelIndexList &indexes) const override;
@@ -65,6 +68,8 @@ public:
 private:
 	void onDataChanged(const QModelIndex &top_left, const QModelIndex &bottom_right, const QVector<int> &roles);
 	void onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source);
+private:
+    int m_stageId = 1;
 };
 
 #endif // RUNSTABLEMODEL_H

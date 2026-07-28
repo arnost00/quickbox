@@ -182,11 +182,8 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 	if (!is_relays && m_courseItemDelegate) {
 		m_courseItemDelegate->setCourses(definedCourses());
 	}
-	auto qb = getPlugin<RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
-	qfDebug() << qb.toString();
 	m_runsTableItemDelegate->setHighlightedClassId(class_id, stage_id);
-	m_runsModel->setQueryBuilder(qb, false);
-	m_runsModel->reload();
+	m_runsModel->load(stage_id, class_id, show_offrace);
 	updateStartTimeHighlight();
 
 	QHeaderView *hh = ui->tblRuns->horizontalHeader();
@@ -242,11 +239,9 @@ qf::gui::TableView *RunsTableWidget::tableView()
 
 void RunsTableWidget::setColumnsHidden(const QStringList &hidden_field_names)
 {
-	for(const auto &field_name : hidden_field_names) {
-		int col = m_runsModel->columnIndex(field_name);
-		if(col >= 0) {
-			ui->tblRuns->horizontalHeader()->setSectionHidden(col, true);
-		}
+    for (int i = 0; i < m_runsModel->columnCount({}); ++i) {
+        auto field_name = m_runsModel->columnDefinition(i).fieldName();
+		ui->tblRuns->horizontalHeader()->setSectionHidden(i, hidden_field_names.contains(field_name));
 	}
 }
 

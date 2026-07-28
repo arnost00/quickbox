@@ -21,7 +21,7 @@ namespace {
 
 RunsTableWidget *runsTableWidget()
 {
-    auto runs_plugin = qf::gui::framework::getPlugin<RunsPlugin>();
+	auto runs_plugin = qf::gui::framework::getPlugin<RunsPlugin>();
 	auto *runs_widget = runs_plugin->runsWidget();
 	Q_ASSERT(runs_widget);
 	return runs_widget->findChild<RunsTableWidget*>();
@@ -38,7 +38,8 @@ RunsSettingsPage::RunsSettingsPage(QWidget *parent)
 
 	auto *model = runsTableWidget()->runsModel();
 	for(int column = 0; column < model->columnCount({}); ++column) {
-		auto *item = new QListWidgetItem(model->headerData(column, Qt::Horizontal).toString());
+		QString col_name = model->headerData(column, Qt::Horizontal).toString();
+		auto *item = new QListWidgetItem(col_name);
 		item->setData(Qt::UserRole, column);
 		item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled);
 		item->setCheckState(Qt::Checked);
@@ -119,8 +120,8 @@ void RunsSettingsPage::save()
 		}
 	}
 
-	runs_table->setColumnsOrder(column_order);
 	runs_table->setColumnsHidden(hidden_columns);
+	runs_table->setColumnsOrder(column_order);
 
 	RunsPlugin::saveRunsTableHiddenColumns(hidden_columns);
 	RunsPlugin::saveRunsTableColumnOrder(column_order);

@@ -1,7 +1,7 @@
 #include "runflagsdialog.h"
 #include "ui_runflagsdialog.h"
 
-#include "runstablemodel.h"
+#include <quickevent/gui/og/sqltablemodel.h>
 
 namespace Runs {
 

@@ -1,8 +1,10 @@
 #include "runstablemodel.h"
 
+#include "runsplugin.h"
+#include "../../Event/src/eventplugin.h"
+
 #include <quickevent/core/og/timems.h>
 #include <quickevent/core/si/siid.h>
-#include "../../Event/src/eventplugin.h"
 
 #include <qf/gui/log.h>
 #include <qf/gui/framework/mainwindow.h>
@@ -40,9 +42,11 @@ RunsTableModel::RunsTableModel(QObject *parent)
 	setColumn(col_runs_corridorTime, ColumnDefinition("runs.corridorTime", tr("Corridor")).setToolTip(tr("Time when the competitor entered start corridor")).setFormat(QStringLiteral("dd.MM.yyyy hh:mm:ss")));
 	setColumn(col_runs_checkTimeMs, ColumnDefinition("runs.checkTimeMs", tr("Check")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
 	setColumn(col_runs_startTimeMs, ColumnDefinition("runs.startTimeMs", tr("Start")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
-	setColumn(col_runs_timeMs, ColumnDefinition("runs.timeMs", tr("Time")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
+	setColumn(col_runs_startGateTime, ColumnDefinition("runs.startGateTime", tr("Start gate")));
 	setColumn(col_runs_finishTimeMs, ColumnDefinition("runs.finishTimeMs", tr("Finish")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
+	setColumn(col_runs_finishGateTime, ColumnDefinition("runs.finishGateTime", tr("Finish gate")));
 	setColumn(col_runs_penaltyTimeMs, ColumnDefinition("runs.penaltyTimeMs", tr("Penalty")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
+	setColumn(col_runs_timeMs, ColumnDefinition("runs.timeMs", tr("Time")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
 	setColumn(col_runFlags, ColumnDefinition("runFlags", tr("Run flags")).setReadOnly(true));
 	setColumn(col_cardFlags, ColumnDefinition("cardFlags", tr("Card flags")).setReadOnly(true));
 	setColumn(col_runs_rankingPos, ColumnDefinition("ranking", tr("Ranking pos")).setToolTip(tr("Runner's position in CZ ranking.")).setReadOnly(false));
@@ -51,6 +55,15 @@ RunsTableModel::RunsTableModel(QObject *parent)
 
 	connect(this, &RunsTableModel::dataChanged, this, &RunsTableModel::onDataChanged, Qt::QueuedConnection);
 	connect(qf::gui::framework::Application::instance(), &qf::gui::framework::Application::qxRecChng, this, &RunsTableModel::onQxRecChng, Qt::QueuedConnection);
+}
+
+void RunsTableModel::load(int stage_id, int class_id, bool show_offrace)
+{
+	m_stageId = stage_id;
+	auto qb = getPlugin<Runs::RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
+	qfDebug() << qb.toString();
+	setQueryBuilder(qb, false);
+	reload();
 }
 
 Qt::ItemFlags RunsTableModel::flags(const QModelIndex &index) const
@@ -79,20 +92,22 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 		}
 	}
 
-	if(index.column() == col_runs_corridorTime && role == Qt::DisplayRole) {
+	if((index.column() == col_runs_corridorTime
+	|| index.column() == col_runs_startGateTime
+	|| index.column() == col_runs_finishGateTime) && role == Qt::DisplayRole) {
 		QVariant raw = Super::data(index, Qt::EditRole);
 		if(raw.isNull() || !raw.isValid())
 			return QVariant();
-		QDateTime corridor_dt = raw.toDateTime();
-		if(!corridor_dt.isValid())
+		auto dt = raw.toDateTime();
+		if(!dt.isValid())
 			return QVariant();
-		int stage_id = getPlugin<EventPlugin>()->currentStageId();
-		QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);
+		QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(m_stageId);
 		if(!stage_start.isValid())
 			return QVariant();
-		qint64 offset_ms = stage_start.msecsTo(corridor_dt);
-		if(offset_ms < 0)
+		qint64 offset_ms = stage_start.msecsTo(dt);
+		if(offset_ms < 0) {
 			return QVariant();
+		}
 		return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
 	}
 
@@ -259,23 +274,7 @@ Qt::DropActions RunsTableModel::supportedDropActions() const
 	//qfLogFuncFrame();
 	return Qt::MoveAction;// | Qt::CopyAction;
 }
-/*
-bool RunsTableModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
-{
-	qfLogFuncFrame() << "row:" << row << "col:" << column << action << parent;
-	Q_UNUSED(action);
-	Q_UNUSED(row);
-	Q_UNUSED(parent);
 
-	if (!data->hasFormat(MIME_TYPE))
-		return false;
-
-	if (column > 0)
-		return false;
-	qfInfo() << "TRUE";
-	return true;
-}
-*/
 bool RunsTableModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
 	// qfLogFuncFrame() << "row:" << row << "col:" << column << "parent:" << parent;
@@ -387,4 +386,3 @@ bool RunsTableModel::postRow(int row_no, bool throw_exc)
 	}
 	return ret;
 }
-
