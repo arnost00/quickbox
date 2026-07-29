@@ -35,11 +35,11 @@ RunsTableModel::RunsTableModel(QObject *parent)
 	setColumn(col_classes_name, ColumnDefinition("classes.name", tr("Class")));
 	setColumn(col_startNumber, ColumnDefinition("startNumber", tr("SN", "start number")).setToolTip(tr("Start number")));
 	setColumn(col_course_id, ColumnDefinition("runs.courseId", tr("Course")));
-	setColumn(col_competitors_siId, ColumnDefinition("competitors.siId", tr("SI")).setToolTip(tr("Registered SI")).setReadOnly(true));
+	setColumn(col_competitors_siId, ColumnDefinition("competitors.siId", tr("SI reg")).setToolTip(tr("Registered SI")).setReadOnly(true));
 	setColumn(col_competitorName, ColumnDefinition("competitorName", tr("Name")));
 	setColumn(col_registration, ColumnDefinition("registration", tr("Reg")));
 	setColumn(col_runs_license, ColumnDefinition("licence", tr("Lic")).setToolTip(tr("License")));
-	setColumn(col_runs_siId, ColumnDefinition("runs.siId", tr("SI")).setToolTip(tr("Actual SI")).setCastType(qMetaTypeId<quickevent::core::si::SiId>()));
+	setColumn(col_runs_siId, ColumnDefinition("runs.siId", tr("SI")).setToolTip(tr("Run SI")).setCastType(qMetaTypeId<quickevent::core::si::SiId>()));
 	setColumn(col_runs_corridorTime, ColumnDefinition("runs.corridorTime", tr("Corridor")).setToolTip(tr("Time when the competitor entered start corridor")).setFormat(QStringLiteral("dd.MM.yyyy hh:mm:ss")));
 	setColumn(col_runs_checkTimeMs, ColumnDefinition("runs.checkTimeMs", tr("Check")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));
 	setColumn(col_runs_startTimeMs, ColumnDefinition("runs.startTimeMs", tr("Start")).setCastType(qMetaTypeId<quickevent::core::og::TimeMs>()));

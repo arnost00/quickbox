@@ -20,8 +20,6 @@ using qf::gui::framework::getPlugin;
 
 namespace Event::services {
 
-
-
 RadioSenderService::RadioSenderService(QObject *parent)
 	: Super(serviceName(), parent)
 {
@@ -118,32 +116,35 @@ void RadioSenderService::onReadyRead()
 
 void RadioSenderService::processLine(const QByteArray &line)
 {
+    // {Control};{Type};{Bib};{Time:HH:mm:ss.fff};{Status};{Cancellation}
+    enum { ColControl = 0, ColType, ColBib, ColTime, ColStatus, ColCancellation };
 	const QList<QByteArray> fields = line.split(';');
 	bool id_ok = false;
 	bool control_ok = false;
-	const int competitor_id = fields.value(0).toInt(&id_ok);
-	const int control = fields.value(1).toInt(&control_ok);
-	const QTime time = QTime::fromString(QString::fromLatin1(fields.value(2)), QStringLiteral("HH:mm:ss,zzz"));
+	const int start_number = fields.value(ColBib).trimmed().toInt(&id_ok);
+	const int control = fields.value(ColControl).trimmed().toInt(&control_ok);
+	const QTime time = QTime::fromString(QString::fromLatin1(fields.value(ColTime).trimmed()), QStringLiteral("HH:mm:ss.zzz"));
+	bool is_dns = fields.value(ColStatus).trimmed() == "DNS";
+	bool is_cancellation = fields.value(ColCancellation).trimmed() == "ANN";
 	const auto config = getPlugin<EventPlugin>()->appDbConfig().radioSenderConfig();
-	const bool valid = fields.size() == 3 && id_ok && control_ok && time.isValid()
-		&& config.startControl != config.finishControl
-		&& (control == config.startControl || control == config.finishControl);
+	const bool is_valid = (control == config.startControl || control == config.finishControl)
+		&& (time.isValid() || is_cancellation || is_dns);
 	QString parsed_data;
-	if (valid) {
-		parsed_data = QStringLiteral("competitorId=%1, control=%2 (%3), time=%4")
-			.arg(competitor_id)
-			.arg(control)
-			.arg(control == config.startControl ? QStringLiteral("start") : QStringLiteral("finish"))
+	if (is_valid) {
+		parsed_data = QStringLiteral("%1, startNumber: %2, time=%3")
+			.arg(control == config.startControl ? QStringLiteral("STA") : QStringLiteral("FIN"))
+			.arg(start_number)
 			.arg(time.toString(QStringLiteral("HH:mm:ss.zzz")));
 	} else {
 		parsed_data = QStringLiteral("invalid message");
 	}
 	m_receivedLineLog.append(QStringLiteral("%1\n  %2")
 		.arg(QString::fromUtf8(line), parsed_data));
-	while (m_receivedLineLog.size() > 20)
+	while (m_receivedLineLog.size() > 20) {
 		m_receivedLineLog.removeFirst();
+	}
 	emit receivedLineLogged();
-	if (!valid) {
+	if (!is_valid) {
 		qfWarning() << "RadioSender: invalid message:" << line;
 		return;
 	}
@@ -151,32 +152,40 @@ void RadioSenderService::processLine(const QByteArray &line)
 	auto *event_plugin = getPlugin<EventPlugin>();
 	const int stage_id = event_plugin->currentStageId();
 	qf::core::sql::Query q;
-	q.prepare(QStringLiteral(
-		"SELECT runs.id FROM runs JOIN competitors ON competitors.id=runs.competitorId"
-		" WHERE runs.stageId=:stageId AND runs.isRunning"
-		" AND (competitors.startNumber=:competitorId OR runs.siId=:competitorId)"));
+	q.prepare("SELECT runs.id FROM runs JOIN competitors ON competitors.id=runs.competitorId"
+		" WHERE runs.stageId=:stageId"
+		" AND runs.isRunning"
+		" AND competitors.startNumber=:startNumber");
 	q.bindValue(QStringLiteral(":stageId"), stage_id);
-	q.bindValue(QStringLiteral(":competitorId"), competitor_id);
+	q.bindValue(QStringLiteral(":startNumber"), start_number);
 	q.exec(qf::core::Exception::Throw);
 	if (!q.next()) {
-		qfWarning() << "RadioSender: competitor not found:" << competitor_id;
+		qfWarning() << "RadioSender: competitor not found:" << start_number;
 		return;
 	}
 	const int run_id = q.value(0).toInt();
 	if (q.next()) {
-		qfWarning() << "RadioSender: ambiguous competitor id:" << competitor_id;
+		qfWarning() << "RadioSender: ambiguous competitor id:" << start_number;
 		return;
 	}
 
-	QDateTime gate_time(event_plugin->stageStartDate(stage_id), time);
-	const QDateTime stage_start = event_plugin->stageStartDateTime(stage_id);
-	if (gate_time < stage_start.addSecs(-12 * 60 * 60))
-		gate_time = gate_time.addDays(1);
-
+	QVariantMap record;
 	const QString field = control == config.startControl
-		? QStringLiteral("startGateTime") : QStringLiteral("finishGateTime");
-	qf::gui::framework::Application::instance()->updateDbRecord(
-		QStringLiteral("runs"), run_id, {{field, gate_time}}, this);
+				? QStringLiteral("startGateTime")
+				: QStringLiteral("finishGateTime");
+	if (time.isValid()) {
+	    const QDateTime stage_start = event_plugin->stageStartDateTime(stage_id);
+	    QDateTime gate_time(stage_start.date(), time);
+	    record[field] = gate_time;
+	}
+	if (is_dns) {
+		record[QStringLiteral("notstart")] = true;
+	}
+	if (is_cancellation) {
+	    record[field] = {};
+	}
+
+	qf::gui::framework::Application::instance()->updateDbRecord( QStringLiteral("runs"), run_id, record, this);
 	updateRunTime(run_id);
 }
 
