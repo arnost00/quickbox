@@ -53,6 +53,7 @@ public:
 
 	bool postRow(int row_no, bool throw_exc) override;
 
+	int stageId() const { return m_stageId; }
 	void load(int stage_id, int class_id, bool show_offrace);
 
 	QStringList mimeTypes() const override;
