@@ -2,9 +2,9 @@ name: Installer
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main", "qe3-wf-test4" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   windows:
