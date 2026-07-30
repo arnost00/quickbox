@@ -30,22 +30,24 @@ RadioSenderServiceWidget::RadioSenderServiceWidget(RadioSenderService *service, 
 	ui->edStartTolerance->setValue(config.startToleranceMs);
 	ui->edFinishTolerance->setValue(config.finishToleranceMs);
 
-	ui->edTestPunch->addItem("11;STA;1;09:34:02.714;;;");     // bib 1 start
-	ui->edTestPunch->addItem("901;FIN;1;09:34:08.892;;;");    // bib 1 finish
-	ui->edTestPunch->addItem("11;STA;2;09:41:06.986;;;");     // bib 2 start
-	ui->edTestPunch->addItem("11;STA;2;09:41:06.986;;ANN;");  // bib 2 start canceled
-	ui->edTestPunch->addItem("11;STA;3;09:41:06.986;;;");     // bib 3 start (note: with the time previously assigned to bib 2)
-	ui->edTestPunch->addItem("11;STA;2;09:41:30.323;DNS;;");  // bib 2 DNS (time represent when the DNS is recorded)
-	ui->edTestPunch->addItem("11;STA;4;09:41:38.751;DNS;;");  // bib 4 DNS
-	ui->edTestPunch->addItem("11;STA;4;09:41:38.751;;ANN;");  // bib 4 DNS canceled (note: DNS flag is not present, only the time)
-	ui->edTestPunch->addItem("11;STA;4;09:42:20.959;;;");     // bib 4 start
-	ui->edTestPunch->addItem("11;STA;4;09:42:20.959;;ANN;");  // bib 4 start canceled (note: the time is discarded not assigned to anyone else)
-	ui->edTestPunch->addItem("11;STA;4;09:42:36.161;;;");     // bib 4 start
-	ui->edTestPunch->addItem("901;FIN;3;09:42:40.677;;;");    // bib 3 finish
-	ui->edTestPunch->addItem("901;FIN;3;09:42:40.677;;ANN;"); // bib 3 finish canceled (note: the time is discarded)
-	ui->edTestPunch->addItem("901;FIN;3;09:42:50.739;;;");    // bib 3 finish
-	ui->edTestPunch->addItem("901;FIN;4;09:43:17.101;;;");    // bib 4 finish
-
+	ui->edTestPunch->addItem("11;1;09:34:02.714;;;");     // bib 1 start
+	ui->edTestPunch->addItem("901;FIN;1;09:34:08.892;;;");// bib 1 finish
+	ui->edTestPunch->addItem("11;2;09:41:06.986;;;");     // bib 2 start
+	ui->edTestPunch->addItem("11;2;09:41:06.986;;ANN;");  // bib 2 start canceled
+	ui->edTestPunch->addItem("11;3;09:41:06.986;;;");     // bib 3 start (note: with the time previously assigned to bib 2)
+	ui->edTestPunch->addItem("11;2;09:41:30.323;DNS;;");  // bib 2 DNS (time represent when the DNS is recorded)
+	ui->edTestPunch->addItem("11;4;09:41:38.751;DNS;;");  // bib 4 DNS
+	ui->edTestPunch->addItem("11;4;09:41:38.751;;ANN;");  // bib 4 DNS canceled (note: DNS flag is not present, only the time)
+	ui->edTestPunch->addItem("11;4;09:42:20.959;;;");     // bib 4 start
+	ui->edTestPunch->addItem("11;4;09:42:20.959;;ANN;");  // bib 4 start canceled (note: the time is discarded not assigned to anyone else)
+	ui->edTestPunch->addItem("11;4;09:42:36.161;;;");     // bib 4 start
+	ui->edTestPunch->addItem("901;3;09:42:40.677;;;");    // bib 3 finish
+	ui->edTestPunch->addItem("901;3;09:42:40.677;;ANN;"); // bib 3 finish canceled (note: the time is discarded)
+	ui->edTestPunch->addItem("901;3;09:42:50.739;;;");    // bib 3 finish
+	ui->edTestPunch->addItem("901;4;09:43:17.101;;;");    // bib 4 finish
+	connect(ui->btSendTestPunch, &QPushButton::clicked, this, [this] {
+		onTestPunch(ui->edTestPunch->currentText());
+	});
 	connect(m_service, &RadioSenderService::receivedLineLogged,
 		this, &RadioSenderServiceWidget::updateReceivedLineLog);
 	connect(m_service, &RadioSenderService::statusChanged,
@@ -96,6 +98,11 @@ void RadioSenderServiceWidget::saveConfig()
 		m_service->stop();
 		m_service->run();
 	}
+}
+
+void RadioSenderServiceWidget::onTestPunch(const QString &line)
+{
+	m_service->processLine(line.toUtf8());
 }
 
 } // namespace Event::services

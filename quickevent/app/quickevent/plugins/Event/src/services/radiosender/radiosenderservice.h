@@ -25,12 +25,12 @@ public:
 
 	Q_SIGNAL void receivedLineLogged();
 
+	void processLine(const QByteArray &line);
 private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
 	void startServer();
 	void onNewConnection();
 	void onReadyRead();
-	void processLine(const QByteArray &line);
 	void updateRunTime(int run_id);
 	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
 

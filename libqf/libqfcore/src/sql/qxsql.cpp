@@ -61,7 +61,6 @@ bool QxSqlApi::updateRecord(const QString &table, qint64 id, const Record &recor
 
 	QString qs = QString("UPDATE %1 SET %2 WHERE id = %3")
 			.arg(table, keyVals.join(", "), QString::number(id));
-
 	ExecResult res = exec(qs, record);
 	return res.rowsAffected == 1;
 }

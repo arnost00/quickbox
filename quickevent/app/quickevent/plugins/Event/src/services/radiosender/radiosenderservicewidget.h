@@ -22,6 +22,8 @@ private:
 	void updateReceivedLineLog();
 	void updateServiceControls();
 
+	void onTestPunch(const QString &line);
+
 	Ui::RadioSenderServiceWidget *ui;
 	RadioSenderService *m_service = nullptr;
 };

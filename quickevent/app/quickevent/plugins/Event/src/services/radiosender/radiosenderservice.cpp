@@ -117,7 +117,7 @@ void RadioSenderService::onReadyRead()
 void RadioSenderService::processLine(const QByteArray &line)
 {
     // {Control};{Type};{Bib};{Time:HH:mm:ss.fff};{Status};{Cancellation}
-    enum { ColControl = 0, ColType, ColBib, ColTime, ColStatus, ColCancellation };
+    enum { ColControl = 0, ColBib, ColTime, ColStatus, ColCancellation };
 	const QList<QByteArray> fields = line.split(';');
 	bool id_ok = false;
 	bool control_ok = false;

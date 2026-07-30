@@ -162,6 +162,27 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="serviceButtonsLayout_4">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Format</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="text">
+        <string>{Control};{Bib};{Time:HH:mm:ss.fff};{Status};{Cancellation};{CRLF}</string>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="serviceButtonsLayout_2">
      <item>
       <widget class="QComboBox" name="edTestPunch">

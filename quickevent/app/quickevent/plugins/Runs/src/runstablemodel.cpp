@@ -62,6 +62,7 @@ void RunsTableModel::load(int stage_id, int class_id, bool show_offrace)
 {
 	m_stageId = stage_id;
 	auto qb = getPlugin<Runs::RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
+	qb.orderBy("runs.id");
 	qfDebug() << qb.toString();
 	setQueryBuilder(qb, false);
 	reload();
@@ -95,44 +96,54 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 
 	if((index.column() == col_runs_corridorTime
 	|| index.column() == col_runs_startGateTime
-	|| index.column() == col_runs_finishGateTime) && role == Qt::DisplayRole) {
-		QVariant raw = Super::data(index, Qt::EditRole);
-		if(raw.isNull() || !raw.isValid())
-			return QVariant();
-		auto dt = raw.toDateTime();
-		if(!dt.isValid())
-			return QVariant();
-		QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(m_stageId);
-		if(!stage_start.isValid())
-			return QVariant();
-		qint64 offset_ms = stage_start.msecsTo(dt);
-		if(offset_ms < 0) {
-			return QVariant();
-		}
-		return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
-	}
-
-	if((index.column() == col_runs_startGateTime || index.column() == col_runs_finishGateTime) && role == Qt::BackgroundRole) {
+	|| index.column() == col_runs_finishGateTime)) {
 		auto *event_plugin = getPlugin<EventPlugin>();
-		const auto &config = event_plugin->appDbConfig().radioSenderConfig();
-		const bool is_start = index.column() == col_runs_startGateTime;
-		const int time_col = is_start ? col_runs_startTimeMs : col_runs_finishTimeMs;
-		const int tolerance = is_start ? config.startToleranceMs : config.finishToleranceMs;
-		auto check_gate = [&](const QModelIndex &idx, int tc, int tol) -> QVariant {
-			auto gate_time = Super::data(idx, Qt::EditRole).toDateTime();
-			if(!gate_time.isValid()) {
+		if (role == Qt::DisplayRole) {
+			QVariant raw = Super::data(index, Qt::EditRole);
+			if(raw.isNull() || !raw.isValid())
+				return QVariant();
+			auto dt = raw.toDateTime();
+			if(!dt.isValid())
+				return QVariant();
+			QDateTime stage_start = event_plugin->stageStartDateTime(m_stageId);
+			if(!stage_start.isValid())
+				return QVariant();
+			qint64 offset_ms = stage_start.msecsTo(dt);
+			return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
+		}
+		if (role == Qt::ToolTipRole) {
+			QVariant raw = Super::data(index, Qt::EditRole);
+			auto dt = raw.toDateTime();
+			if(!dt.isValid()) {
 				return QVariant();
 			}
-			auto time_v = Super::data(idx.sibling(idx.row(), tc), Qt::EditRole);
-			if(!time_v.isValid()) {
-				return QVariant();
+			dt = dt.toLocalTime();
+			return dt.toString(Qt::ISODateWithMs);
+		}
+		if(index.column() == col_runs_startGateTime || index.column() == col_runs_finishGateTime) {
+			if (role == Qt::BackgroundRole) {
+				const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+				const bool is_start = index.column() == col_runs_startGateTime;
+				const int time_col = is_start ? col_runs_startTimeMs : col_runs_finishTimeMs;
+				const int tolerance = is_start ? config.startToleranceMs : config.finishToleranceMs;
+				auto check_gate = [&](const QModelIndex &idx, int tc, int tol) -> QVariant {
+					auto gate_time = Super::data(idx, Qt::EditRole).toDateTime();
+					if(!gate_time.isValid()) {
+						return QVariant();
+					}
+					auto time_v = Super::data(idx.sibling(idx.row(), tc), Qt::EditRole);
+					if(!time_v.isValid()) {
+						return QVariant();
+					}
+					auto time_msec = time_v.toInt();
+					auto ref_time = event_plugin->stageStartDateTime(m_stageId).addMSecs(time_msec);
+					const bool is_ok = std::abs(gate_time.msecsTo(ref_time)) <= tol;
+					return is_ok ? QColor("lightgreen") : QColor("salmon");
+				};
+				return check_gate(index, time_col, tolerance);
 			}
-			auto time_msec = time_v.toInt();
-			auto ref_time = event_plugin->stageStartDateTime(m_stageId).addMSecs(time_msec);
-			const bool is_ok = std::abs(gate_time.msecsTo(ref_time)) <= tol;
-			return is_ok ? QColor("lightgreen") : QColor("salmon");
-		};
-		return check_gate(index, time_col, tolerance);
+		}
+		return QVariant();
 	}
 
 	return Super::data(index, role);
