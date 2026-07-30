@@ -47,7 +47,7 @@ public:
 
 	static TimeMs fromVariant(const QVariant &time_v);
 	static TimeMs fromString(const QString &time_str);
-	QString toString(QChar sec_sep = QChar('.'), QChar msec_sep = QChar()) const;
+	QString toString() const;
 	int msec() const {return isValid()? m_msec: 0;}
 
 	/// while time2 < time1 add 12 hours to time2 and return it
@@ -56,8 +56,8 @@ public:
 
 	static void registerQVariantFunctions();
 
-	//static void setOneTenthSecPrecision(bool b) { m_oneTenthSecPrecision = b; }
-	//static bool isOneTenthSecPrecision() { return m_oneTenthSecPrecision; }
+private:
+	QString toString(QChar sec_sep, QChar msec_sep) const;
 private:
 	int m_msec;
 	bool m_isValid;
