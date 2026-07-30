@@ -79,7 +79,7 @@ void RadioSenderServiceWidget::updateServiceControls()
 
 void RadioSenderServiceWidget::updateReceivedLineLog()
 {
-	ui->edReceivedLines->setPlainText(m_service->receivedLineLog().join(QStringLiteral("\n\n")));
+	ui->edReceivedLines->setPlainText(m_service->receivedLineLog().join(QStringLiteral("\n")));
 }
 
 void RadioSenderServiceWidget::saveConfig()
