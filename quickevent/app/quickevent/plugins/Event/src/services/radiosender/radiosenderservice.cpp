@@ -174,15 +174,15 @@ void RadioSenderService::processLine(const QByteArray &line)
 				? QStringLiteral("startGateTime")
 				: QStringLiteral("finishGateTime");
 	if (time.isValid()) {
-	    const QDateTime stage_start = event_plugin->stageStartDateTime(stage_id);
-	    QDateTime gate_time(stage_start.date(), time);
-	    record[field] = gate_time;
+		const QDateTime stage_start = event_plugin->stageStartDateTime(stage_id);
+		QDateTime gate_time(stage_start.date(), time);
+		record[field] = gate_time;
 	}
 	if (is_dns) {
 		record[QStringLiteral("notstart")] = true;
 	}
 	if (is_cancellation) {
-	    record[field] = {};
+		record[field] = {};
 	}
 
 	qf::gui::framework::Application::instance()->updateDbRecord( QStringLiteral("runs"), run_id, record, this);

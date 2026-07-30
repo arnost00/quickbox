@@ -31,7 +31,7 @@ RadioSenderServiceWidget::RadioSenderServiceWidget(RadioSenderService *service, 
 	ui->edFinishTolerance->setValue(config.finishToleranceMs);
 
 	ui->edTestPunch->addItem("11;1;09:34:02.714;;;");     // bib 1 start
-	ui->edTestPunch->addItem("901;FIN;1;09:34:08.892;;;");// bib 1 finish
+	ui->edTestPunch->addItem("901;1;09:34:08.892;;;");// bib 1 finish
 	ui->edTestPunch->addItem("11;2;09:41:06.986;;;");     // bib 2 start
 	ui->edTestPunch->addItem("11;2;09:41:06.986;;ANN;");  // bib 2 start canceled
 	ui->edTestPunch->addItem("11;3;09:41:06.986;;;");     // bib 3 start (note: with the time previously assigned to bib 2)

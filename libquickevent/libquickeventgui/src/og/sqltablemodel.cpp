@@ -26,6 +26,9 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 		int type = v.userType();
 		if(type == qMetaTypeId<core::og::TimeMs>()) {
 			auto t = v.value<core::og::TimeMs>();
+			if (t.msec() > 0) {
+				return t.toString(':', '.');
+			}
 			return t.toString();
 		}
 		if(type == qMetaTypeId<core::si::SiId>()) {

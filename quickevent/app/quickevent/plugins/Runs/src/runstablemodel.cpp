@@ -92,6 +92,34 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 			auto leg = value(index.row(), "runs.leg").toInt();
 			return QStringLiteral("%1.%2").arg(start_number).arg(leg);
 		}
+		return Super::data(index, role);
+	}
+	if((index.column() == col_runs_startTimeMs
+	|| index.column() == col_runs_checkTimeMs
+	|| index.column() == col_runs_finishTimeMs
+	|| index.column() == col_runs_timeMs)
+	&& role == Qt::ToolTipRole) {
+		QVariant raw = Super::data(index, Qt::EditRole);
+		if(raw.isNull() || !raw.isValid())
+			return QVariant();
+		auto *event_plugin = getPlugin<EventPlugin>();
+		auto dt = event_plugin->stageStartDateTime(m_stageId)
+			.addMSecs(raw.toInt())
+			.toLocalTime();
+		return dt.time().toString(Qt::ISODateWithMs);
+	}
+
+	if((index.column() == col_runs_corridorTime
+	|| index.column() == col_runs_startGateTime
+	|| index.column() == col_runs_finishGateTime)
+	&& role == Qt::ToolTipRole) {
+		QVariant raw = Super::data(index, Qt::EditRole);
+		if(raw.isNull() || !raw.isValid())
+			return QVariant();
+		auto time = raw.toDateTime().toLocalTime().time();
+		if (time.msec() == 0)
+			return time.toString(Qt::ISODateWithMs);
+		return time.addMSecs(raw.toInt()).toString(Qt::ISODateWithMs);
 	}
 
 	if((index.column() == col_runs_corridorTime
@@ -100,8 +128,6 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 		auto *event_plugin = getPlugin<EventPlugin>();
 		if (role == Qt::DisplayRole) {
 			QVariant raw = Super::data(index, Qt::EditRole);
-			if(raw.isNull() || !raw.isValid())
-				return QVariant();
 			auto dt = raw.toDateTime();
 			if(!dt.isValid())
 				return QVariant();
@@ -109,16 +135,7 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 			if(!stage_start.isValid())
 				return QVariant();
 			qint64 offset_ms = stage_start.msecsTo(dt);
-			return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
-		}
-		if (role == Qt::ToolTipRole) {
-			QVariant raw = Super::data(index, Qt::EditRole);
-			auto dt = raw.toDateTime();
-			if(!dt.isValid()) {
-				return QVariant();
-			}
-			dt = dt.toLocalTime();
-			return dt.toString(Qt::ISODateWithMs);
+			return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString(':', '.');
 		}
 		if(index.column() == col_runs_startGateTime || index.column() == col_runs_finishGateTime) {
 			if (role == Qt::BackgroundRole) {
@@ -143,7 +160,7 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 				return check_gate(index, time_col, tolerance);
 			}
 		}
-		return QVariant();
+		return Super::data(index, role);
 	}
 
 	return Super::data(index, role);
