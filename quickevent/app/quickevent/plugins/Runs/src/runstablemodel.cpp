@@ -135,7 +135,7 @@ QVariant RunsTableModel::data(const QModelIndex &index, int role) const
 			if(!stage_start.isValid())
 				return QVariant();
 			qint64 offset_ms = stage_start.msecsTo(dt);
-			return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString(':', '.');
+			return quickevent::core::og::TimeMs(static_cast<int>(offset_ms)).toString();
 		}
 		if(index.column() == col_runs_startGateTime || index.column() == col_runs_finishGateTime) {
 			if (role == Qt::BackgroundRole) {
@@ -233,74 +233,24 @@ bool RunsTableModel::setValue(int row_ix, int column_ix, const QVariant &val)
 		}
 		return Super::setValue(row_ix, column_ix, is_running);
 	}
-	if(column_ix == col_runs_finishTimeMs) {
+	// Setting any of these three recalculates timeMs = finishTimeMs - startTimeMs + penaltyTimeMs.
+	if(column_ix == col_runs_finishTimeMs
+			|| column_ix == col_runs_startTimeMs
+			|| column_ix == col_runs_penaltyTimeMs) {
+		bool ret = Super::setValue(row_ix, column_ix, val);
+		QVariant finish_ms = value(row_ix, col_runs_finishTimeMs);
 		QVariant start_ms = value(row_ix, col_runs_startTimeMs);
-		if(val.isNull()) {
+		if(finish_ms.isNull() || start_ms.isNull()) {
 			Super::setValue(row_ix, col_runs_timeMs, QVariant());
 		}
 		else {
-			if(!start_ms.isNull()) {
-				int penalty_ms = value(row_ix, col_runs_penaltyTimeMs).toInt();
-				int time_ms = val.toInt() - start_ms.toInt() + penalty_ms;
-				if(time_ms > 0) {
-					Super::setValue(row_ix, col_runs_timeMs, time_ms);
-				}
-				else {
-					Super::setValue(row_ix, col_runs_timeMs, QVariant());
-				}
-			}
-		}
-		return Super::setValue(row_ix, column_ix, val);
-	}
-	if(column_ix == col_runs_penaltyTimeMs) {
-		int penalty_ms = val.toInt();
-		int old_penalty_ms = Super::value(row_ix, col_runs_penaltyTimeMs).toInt();
-		int time_ms = value(row_ix, col_runs_timeMs).toInt();
-		if(time_ms > 0) {
-			time_ms = time_ms - old_penalty_ms + penalty_ms;
-			Super::setValue(row_ix, col_runs_timeMs, time_ms);
-		}
-		return Super::setValue(row_ix, column_ix, val);
-	}
-	if(column_ix == col_runs_timeMs) {
-		int rt = val.toInt();
-		if(rt == 0) {
-			/// run time cannot be 0
-			Super::setValue(row_ix, col_runs_finishTimeMs, QVariant());
-			Super::setValue(row_ix, col_runs_penaltyTimeMs, QVariant());
-			return Super::setValue(row_ix, column_ix, QVariant());
-		}
-		QVariant start_ms = value(row_ix, col_runs_startTimeMs);
-		if(!start_ms.isNull()) {
 			int penalty_ms = value(row_ix, col_runs_penaltyTimeMs).toInt();
-			int finish_ms = val.toInt() + start_ms.toInt() - penalty_ms;
-			if(finish_ms > 0) {
-				Super::setValue(row_ix, col_runs_finishTimeMs, finish_ms);
-			}
-			else {
-				Super::setValue(row_ix, col_runs_finishTimeMs, QVariant());
-			}
+			int time_ms = finish_ms.toInt() - start_ms.toInt() + penalty_ms;
+			Super::setValue(row_ix, col_runs_timeMs, time_ms > 0 ? QVariant(time_ms) : QVariant());
 		}
-		return Super::setValue(row_ix, column_ix, val);
+		return ret;
 	}
-	if(column_ix == col_runs_startTimeMs) {
-		if(!val.isNull()) {
-			int start_ms = val.toInt();
-			int finish_ms = value(row_ix, col_runs_finishTimeMs).toInt();
-			int penalty_ms = value(row_ix, col_runs_penaltyTimeMs).toInt();
-			int time_ms = value(row_ix, col_runs_timeMs).toInt();
-			if(finish_ms > 0) {
-				int time_ms = finish_ms - start_ms + penalty_ms;
-				Super::setValue(row_ix, col_runs_timeMs, time_ms);
-			}
-			else if(time_ms > penalty_ms) {
-				finish_ms = start_ms + time_ms - penalty_ms;
-				Super::setValue(row_ix, col_runs_finishTimeMs, finish_ms);
-			}
-		}
-	}
-	bool ret = Super::setValue(row_ix, column_ix, val);
-	return ret;
+	return Super::setValue(row_ix, column_ix, val);
 }
 
 static const auto MIME_TYPE = QStringLiteral("application/quickevent.startTime");
@@ -400,8 +350,9 @@ void RunsTableModel::switchStartTimes(int r1, int r2)
 void RunsTableModel::onDataChanged(const QModelIndex &top_left, const QModelIndex &bottom_right, const QVector<int> &roles)
 {
 	Q_UNUSED(roles)
-	if(top_left.column() <= RunsTableModel::col_runs_siId && bottom_right.column() >= RunsTableModel::col_runs_siId)
+	if(top_left.column() <= RunsTableModel::col_runs_siId && bottom_right.column() >= RunsTableModel::col_runs_siId) {
 		emit runnerSiIdEdited();
+	}
 }
 
 void RunsTableModel::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source)
