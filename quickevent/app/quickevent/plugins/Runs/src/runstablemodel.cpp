@@ -19,6 +19,8 @@
 
 #include <QMimeData>
 
+#include <cmath>
+
 using qf::gui::framework::getPlugin;
 using Event::EventPlugin;
 
@@ -233,19 +235,39 @@ bool RunsTableModel::setValue(int row_ix, int column_ix, const QVariant &val)
 		}
 		return Super::setValue(row_ix, column_ix, is_running);
 	}
-	// Setting any of these three recalculates timeMs = finishTimeMs - startTimeMs + penaltyTimeMs.
+	// Setting any of these five recalculates timeMs.
+	// timeMs = effective_finish - effective_start + penaltyTimeMs
+	// effective_start  = startGateTime (as ms from stage start) if within tolerance, else startTimeMs
+	// effective_finish = finishGateTime (as ms from stage start) if within tolerance, else finishTimeMs
 	if(column_ix == col_runs_finishTimeMs
 			|| column_ix == col_runs_startTimeMs
-			|| column_ix == col_runs_penaltyTimeMs) {
+			|| column_ix == col_runs_penaltyTimeMs
+			|| column_ix == col_runs_startGateTime
+			|| column_ix == col_runs_finishGateTime) {
 		bool ret = Super::setValue(row_ix, column_ix, val);
-		QVariant finish_ms = value(row_ix, col_runs_finishTimeMs);
-		QVariant start_ms = value(row_ix, col_runs_startTimeMs);
-		if(finish_ms.isNull() || start_ms.isNull()) {
+		const QVariant finish_ms_v = value(row_ix, col_runs_finishTimeMs);
+		const QVariant start_ms_v = value(row_ix, col_runs_startTimeMs);
+		if(finish_ms_v.isNull() || start_ms_v.isNull()) {
 			Super::setValue(row_ix, col_runs_timeMs, QVariant());
 		}
 		else {
-			int penalty_ms = value(row_ix, col_runs_penaltyTimeMs).toInt();
-			int time_ms = finish_ms.toInt() - start_ms.toInt() + penalty_ms;
+			auto *event_plugin = getPlugin<EventPlugin>();
+			const QDateTime stage_start = event_plugin->stageStartDateTime(m_stageId);
+			const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+			const qint64 start_ms = start_ms_v.toLongLong();
+			const qint64 finish_ms = finish_ms_v.toLongLong();
+			const auto start_gate_dt = value(row_ix, col_runs_startGateTime).toDateTime();
+			const auto finish_gate_dt = value(row_ix, col_runs_finishGateTime).toDateTime();
+			const qint64 start_gate_msec = stage_start.msecsTo(start_gate_dt);
+			const qint64 finish_gate_msec = stage_start.msecsTo(finish_gate_dt);
+			const bool use_start_gate = start_gate_dt.isValid() && start_ms_v.isValid()
+				&& std::abs(start_gate_msec - start_ms) <= config.startToleranceMs;
+			const bool use_finish_gate = finish_gate_dt.isValid() && finish_ms_v.isValid()
+				&& std::abs(finish_gate_msec - finish_ms) <= config.finishToleranceMs;
+			const int penalty_ms = value(row_ix, col_runs_penaltyTimeMs).toInt();
+			const qint64 time_ms = (use_finish_gate ? finish_gate_msec : finish_ms)
+				- (use_start_gate ? start_gate_msec : start_ms)
+				+ penalty_ms;
 			Super::setValue(row_ix, col_runs_timeMs, time_ms > 0 ? QVariant(time_ms) : QVariant());
 		}
 		return ret;
