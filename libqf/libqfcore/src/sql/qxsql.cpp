@@ -81,9 +81,14 @@ QList<Record> QxSqlApi::listOneOrMoreRecords(const QString &table, const std::op
 
 	QString qs = QString("SELECT %1 FROM %2").arg(fieldsStr, table);
 
-	if (id.has_value()) {
+	if (id.has_value() && limit.has_value() && *limit == 1) {
+		qs += QString(" WHERE id = %1").arg(*id);
+	}
+	else if (id.has_value()) {
 		qs += QString(" WHERE id >= %1").arg(*id);
 	}
+
+	qs += QString(" ORDER BY id");
 
 	if (limit.has_value()) {
 		qs += QString(" LIMIT %1").arg(*limit);
