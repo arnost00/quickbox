@@ -109,9 +109,8 @@ jobs:
           path: ${{ github.workspace }}/install/_inno/quickevent/quickevent-*-setup.exe
 
       - name: Create 7zip
-        uses: milliewalky/setup-7-zip@v2
-        with:
-          args: 7z a -t7z -mx=9 ${{ github.workspace }}/install/build.7z ${{ github.workspace }}/install/bin/
+        shell: pwsh
+        run: 7z a -t7z -mx=9 ${{ github.workspace }}/install/build.7z ${{ github.workspace }}/install/bin/
 
       - name: Upload 7zip
         uses: actions/upload-artifact@v7
