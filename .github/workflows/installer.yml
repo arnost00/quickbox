@@ -110,10 +110,11 @@ jobs:
 
       - name: Create 7zip
         shell: pwsh
-        run: 7z a -t7z -mx=9 ${{ github.workspace }}/install/build.7z ${{ github.workspace }}/install/bin/
+        run: 7z a -t7z -mx=9 ${{ github.workspace }}/install/build.7z ${{ github.workspace }}/install/bin/*
 
       - name: Upload 7zip
         uses: actions/upload-artifact@v7
         with:
-          name: quickevent-${{ env.VERSION }}-pack.7ip
+          name: quickevent-${{ env.VERSION }}-pack.7z
           path: ${{ github.workspace }}/install/build.7z
+          archive: false
