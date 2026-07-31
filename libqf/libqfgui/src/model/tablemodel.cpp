@@ -12,8 +12,8 @@
 #include <QColor>
 #include <QPixmap>
 #include <QIcon>
+
 #include <algorithm>
-#include <qnamespace.h>
 
 namespace qfc = qf::core;
 namespace qfu = qf::core::utils;
