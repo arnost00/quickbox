@@ -31,8 +31,6 @@ private:
 	void startServer();
 	void onNewConnection();
 	void onReadyRead();
-	void updateRunTime(int run_id);
-	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
 
 	QTcpServer *m_server = nullptr;
 	QHash<QTcpSocket*, QByteArray> m_clients;

@@ -21,6 +21,7 @@
 #include <quickevent/core/si/punchrecord.h>
 #include <quickevent/core/runstatus.h>
 
+#include <qf/gui/framework/application.h>
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/framework/dockwidget.h>
 #include <qf/gui/action.h>
@@ -1356,6 +1357,66 @@ QVariantMap RunsPlugin::runsRecord(int run_id)
 	}
 	return {};
 }
+
+// timeMs = effective_finish - effective_start + penaltyTimeMs
+// effective_start  = startGateTime (as ms from stage start) if within tolerance, else startTimeMs
+// effective_finish = finishGateTime (as ms from stage start) if within tolerance, else finishTimeMs
+void RunsPlugin::computeStageTime(int run_id)
+{
+	static constexpr auto FLD_STAGE_ID = "stageid";
+	static constexpr auto FLD_START_TIME_MS = "starttimems";
+	static constexpr auto FLD_FINISH_TIME_MS = "finishtimems";
+	static constexpr auto FLD_START_GATE_TIME = "startgatetime";
+	static constexpr auto FLD_FINISH_GATE_TIME = "finishgatetime";
+	static constexpr auto FLD_PENALTY_TIME_MS = "penaltytimems";
+	static constexpr auto FLD_TIME_MS = "timems";
+
+	const auto run = qff::Application::instance()->readDbRecord("runs", run_id,
+		QStringList{
+			FLD_STAGE_ID,
+			FLD_START_TIME_MS,
+			FLD_FINISH_TIME_MS,
+			FLD_START_GATE_TIME,
+			FLD_FINISH_GATE_TIME,
+			FLD_PENALTY_TIME_MS,
+			FLD_TIME_MS
+		});
+	if(!run) {
+		qfWarning() << Q_FUNC_INFO << "run not found, run_id:" << run_id;
+		return;
+	}
+	const QVariant start_ms_v = run->value(FLD_START_TIME_MS);
+	const QVariant finish_ms_v = run->value(FLD_FINISH_TIME_MS);
+	const QVariant orig_time_ms_v = run->value(FLD_TIME_MS);
+	QVariant time_ms_v;
+	if(start_ms_v.isValid() && finish_ms_v.isValid()) {
+		const int stage_id = run->value(FLD_STAGE_ID).toInt();
+		auto *event_plugin = getPlugin<EventPlugin>();
+		const QDateTime stage_start_dt = event_plugin->stageStartDateTime(stage_id);
+		const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+		const qint64 start_ms = start_ms_v.toLongLong();
+		const qint64 finish_ms = finish_ms_v.toLongLong();
+
+		const auto start_gate_dt = run->value(FLD_START_GATE_TIME).toDateTime();
+		const qint64 start_gate_ms = stage_start_dt.msecsTo(start_gate_dt);
+		const bool use_start_gate = start_gate_dt.isValid()
+			&& std::abs(start_gate_ms - start_ms) <= config.startToleranceMs;
+
+		const auto finish_gate_dt = run->value(FLD_FINISH_GATE_TIME).toDateTime();
+		const qint64 finish_gate_ms = stage_start_dt.msecsTo(finish_gate_dt);
+		const bool use_finish_gate = finish_gate_dt.isValid()
+			&& std::abs(finish_gate_ms - finish_ms) <= config.finishToleranceMs;
+
+		const int penalty_ms = run->value(FLD_PENALTY_TIME_MS).toInt();
+		const qint64 time_ms = (use_finish_gate ? finish_gate_ms : finish_ms)
+			- (use_start_gate ? start_gate_ms : start_ms)
+			+ penalty_ms;
+		time_ms_v = time_ms;
+	}
+	qff::Application::instance()->updateDbRecord(
+		QStringLiteral("runs"), run_id, {{FLD_TIME_MS, time_ms_v}}, this);
+}
+
 
 void RunsPlugin::setRunsRecord(int run_id, const QVariant &rec)
 {

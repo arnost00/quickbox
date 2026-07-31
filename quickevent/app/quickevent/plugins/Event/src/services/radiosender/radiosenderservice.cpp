@@ -4,6 +4,8 @@
 
 #include "../../eventplugin.h"
 
+#include <plugins/Runs/src/runsplugin.h>
+
 #include <quickevent/core/si/checkedcard.h>
 
 #include <qf/core/log.h>
@@ -14,8 +16,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-#include <cmath>
-
 using qf::gui::framework::getPlugin;
 
 namespace Event::services {
@@ -25,8 +25,6 @@ RadioSenderService::RadioSenderService(QObject *parent)
 {
 	m_server = new QTcpServer(this);
 	connect(m_server, &QTcpServer::newConnection, this, &RadioSenderService::onNewConnection);
-	connect(getPlugin<EventPlugin>(), &EventPlugin::dbEventNotify,
-		this, &RadioSenderService::onDbEventNotify, Qt::QueuedConnection);
 }
 
 QString RadioSenderService::serviceName()
@@ -186,49 +184,7 @@ void RadioSenderService::processLine(const QByteArray &line)
 	}
 
 	qf::gui::framework::Application::instance()->updateDbRecord( QStringLiteral("runs"), run_id, record, this);
-	updateRunTime(run_id);
-}
-
-void RadioSenderService::updateRunTime(int run_id)
-{
-	auto *event_plugin = getPlugin<EventPlugin>();
-	qf::core::sql::Query q;
-	q.prepare(QStringLiteral("SELECT stageId, startTimeMs, finishTimeMs, startGateTime, finishGateTime FROM runs WHERE id=:id"));
-	q.bindValue(QStringLiteral(":id"), run_id);
-	q.exec(qf::core::Exception::Throw);
-	if (!q.next() || q.value(QStringLiteral("finishTimeMs")).isNull())
-		return;
-
-	const int stage_id = q.value(QStringLiteral("stageId")).toInt();
-	const QDateTime stage_start = event_plugin->stageStartDateTime(stage_id);
-	const qint64 start_time = q.value(QStringLiteral("startTimeMs")).toLongLong();
-	const qint64 finish_time = q.value(QStringLiteral("finishTimeMs")).toLongLong();
-	const QVariant start_gate_value = q.value(QStringLiteral("startGateTime"));
-	const QVariant finish_gate_value = q.value(QStringLiteral("finishGateTime"));
-	const qint64 start_gate = stage_start.msecsTo(start_gate_value.toDateTime());
-	const qint64 finish_gate = stage_start.msecsTo(finish_gate_value.toDateTime());
-	const auto &config = event_plugin->appDbConfig().radioSenderConfig();
-	const bool use_start_gate = !start_gate_value.isNull()
-		&& std::abs(start_gate - start_time) <= config.startToleranceMs;
-	const bool use_finish_gate = !finish_gate_value.isNull()
-		&& std::abs(finish_gate - finish_time) <= config.finishToleranceMs;
-	const qint64 result_time = (use_finish_gate ? finish_gate : finish_time)
-		- (use_start_gate ? start_gate : start_time);
-	if (result_time <= 0)
-		return;
-
-	qf::gui::framework::Application::instance()->updateDbRecord(
-		QStringLiteral("runs"), run_id, {{QStringLiteral("timeMs"), result_time}}, this);
-}
-
-void RadioSenderService::onDbEventNotify(const QString &domain, int connection_id, const QVariant &data)
-{
-	Q_UNUSED(connection_id)
-	if (domain != QLatin1String(EventPlugin::DBEVENT_CARD_PROCESSED_AND_ASSIGNED))
-		return;
-	const quickevent::core::si::CheckedCard card(data.toMap());
-	if (card.runId() > 0)
-		updateRunTime(card.runId());
+	getPlugin<Runs::RunsPlugin>()->computeStageTime(run_id);
 }
 
 } // namespace Event::services

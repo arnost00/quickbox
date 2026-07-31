@@ -69,6 +69,7 @@ public:
 private:
 	void onDataChanged(const QModelIndex &top_left, const QModelIndex &bottom_right, const QVector<int> &roles);
 	void onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source);
+
 private:
     int m_stageId = 1;
 };
