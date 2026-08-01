@@ -399,7 +399,6 @@ void CardReaderPlugin::updateCheckedCardValuesSql(int card_id, const quickevent:
 		{
 			QVariantMap rec {
 				{"checkTimeMs", checked_card.checkTimeMs()},
-				{"timeMs", checked_card.timeMs()},
 				{"finishTimeMs", checked_card.finishTimeMs()},
 				{"misPunch", checked_card.isMisPunch()},
 				{"badCheck", checked_card.isBadCheck()},
@@ -407,6 +406,7 @@ void CardReaderPlugin::updateCheckedCardValuesSql(int card_id, const quickevent:
 				{"penaltyTimeMs", {}},
 			};
 			app->updateDbRecord("runs", run_id, rec, this);
+			getPlugin<RunsPlugin>()->computeStageTime(run_id);
 		}
 		if (auto missing_codes = checked_card.missingCodes(); !missing_codes.isEmpty()) {
 			QStringList missing_str;
@@ -423,21 +423,6 @@ void CardReaderPlugin::updateCheckedCardValuesSql(int card_id, const quickevent:
 	catch (const std::exception &e) {
 		qfError() << "Update runs error, query:" << e.what();
 	}
-	// QString qs = "UPDATE runs SET checkTimeMs=:checkTimeMs, timeMs=:timeMs, finishTimeMs=:finishTimeMs, penaltyTimeMs=NULL,"
-	// 			 " misPunch=:misPunch, badCheck=:badCheck,"
-	// 			 " notStart=:notStart"
-	// 			 " WHERE id=" + QString::number(run_id);
-	// q.prepare(qs, qf::core::Exception::Throw);
-	// q.bindValue(QStringLiteral(":checkTimeMs"), checked_card.checkTimeMs());
-	// q.bindValue(QStringLiteral(":timeMs"), checked_card.timeMs());
-	// q.bindValue(QStringLiteral(":finishTimeMs"), checked_card.finishTimeMs());
-	// q.bindValue(QStringLiteral(":misPunch"), checked_card.isMisPunch());
-	// q.bindValue(QStringLiteral(":badCheck"), checked_card.isBadCheck());
-	// q.bindValue(QStringLiteral(":notStart"), false);
-	// q.exec(qf::core::Exception::Throw);
-	// if(q.numRowsAffected() != 1) {
-	// 	qfError() << "Update runs error, query:" << qs;
-	// }
 }
 
 void CardReaderPlugin::updateCardToRunAssignmentInPunches(int stage_id, int card_id, int run_id)
