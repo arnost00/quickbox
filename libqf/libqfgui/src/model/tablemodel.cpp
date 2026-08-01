@@ -676,7 +676,7 @@ void TableModel::handleQxRecChng(const core::sql::QxRecChng &recchng, QObject *s
 				}
 			}
 		} else {
-			qfWarning() << "cannot find table column:" << (table_name + ".id");
+			qfMessage() << "handleQxRecChng: table model doesn't contain column:" << (table_name + ".id");
 		}
 		return -1;
 	};

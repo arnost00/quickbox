@@ -6,6 +6,7 @@
 
 #include <plugins/Runs/src/runsplugin.h>
 
+#include <qabstractsocket.h>
 #include <quickevent/core/si/checkedcard.h>
 
 #include <qf/core/log.h>
@@ -80,18 +81,22 @@ void RadioSenderService::onNewConnection()
 {
 	while (m_server->hasPendingConnections()) {
 		QTcpSocket *socket = m_server->nextPendingConnection();
+		qfInfo() << "New connection from" << socket->peerAddress().toString();
 		m_clients.insert(socket, {});
 		connect(socket, &QTcpSocket::readyRead, this, &RadioSenderService::onReadyRead);
 		connect(socket, &QTcpSocket::disconnected, this, [this, socket] {
 			m_clients.remove(socket);
 			socket->deleteLater();
-			setStatusMessage(tr("Listening, %1 sender(s) connected").arg(m_clients.size()));
 		});
-		connect(socket, &QTcpSocket::errorOccurred, this, [socket](QAbstractSocket::SocketError) {
-			qfWarning() << "RadioSender socket error:" << socket->errorString();
+		connect(socket, &QTcpSocket::errorOccurred, this, [socket](QAbstractSocket::SocketError error) {
+			if (error == QAbstractSocket::SocketError::RemoteHostClosedError) {
+				qfInfo() << "Remote host" << socket->peerAddress().toString() << "closed connection";
+			} else {
+				qfWarning() << "RadioSender socket error:" << socket->errorString();
+			}
 		});
-		setStatusMessage(tr("Listening, %1 sender(s) connected").arg(m_clients.size()));
 	}
+	setStatusMessage(tr("Listening, %1 sender(s) connected").arg(m_clients.size()));
 }
 
 void RadioSenderService::onReadyRead()
@@ -114,7 +119,7 @@ void RadioSenderService::onReadyRead()
 
 void RadioSenderService::processLine(const QByteArray &line)
 {
-    // {Control};{Type};{Bib};{Time:HH:mm:ss.fff};{Status};{Cancellation}
+    // {Control};{Bib};{Time:HH:mm:ss.fff};{Status};{Cancellation}
     enum { ColControl = 0, ColBib, ColTime, ColStatus, ColCancellation };
 	const QList<QByteArray> fields = line.split(';');
 	bool id_ok = false;
