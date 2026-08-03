@@ -42,7 +42,6 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	data.importId = values.value("importId").toInt();
 	data.orisEventKey = values.value("orisEventKey").toString();
 	data.cardCheckTimeSec = values.value("cardChechCheckTimeSec").toInt();
-	data.oneTenthSecResults = values.value("oneTenthSecResults").toInt();
 	data.iofRace = values.value("iofRace").toBool();
 	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
 	data.currentStageId = values.value("currentStageId", 1).toInt();
@@ -78,7 +77,6 @@ QVariantMap EventConfig::toVariantMap() const
 	values.insert("importId", importId);
 	values.insert("orisEventKey", orisEventKey);
 	values.insert("cardChechCheckTimeSec", cardCheckTimeSec);
-	values.insert("oneTenthSecResults", oneTenthSecResults);
 	values.insert("iofRace", iofRace);
 	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
 	values.insert("currentStageId", currentStageId);

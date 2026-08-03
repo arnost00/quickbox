@@ -12,13 +12,12 @@
 #include <qf/core/utils/treetable.h>
 
 namespace qf {
-	namespace core {
-		namespace utils {
-			class Table;
-			class TreeTable;
-			class TreeTableRow;
-		}
+	namespace core::utils {
+		class Table;
+		class TreeTable;
+		class TreeTableRow;
 	}
+
 	namespace gui {
 		class Action;
 		namespace framework {
@@ -29,6 +28,8 @@ namespace qf {
 }
 
 namespace qf::core::sql { class QueryBuilder; }
+
+class RunsWidget;
 
 namespace Runs {
 
@@ -47,7 +48,7 @@ public:
 
 	QF_PROPERTY_IMPL2(int, s, S, electedStageId, 1)
 
-	//qf::gui::framework::PartWidget *partWidget() {return m_partWidget;}
+	RunsWidget *runsWidget() {return m_runsWidget;}
 
 	const qf::core::utils::Table& runnersTable(int stage_id);
 	Q_SLOT void clearRunnersTableCache();
@@ -77,7 +78,7 @@ public:
 
 	Q_INVOKABLE QVariantMap printAwardsOptionsWithDialog(const QVariantMap &opts);
 
-        bool exportStartListStageIofXml30(int stage_id, const QString &file_name, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
+    bool exportStartListStageIofXml30(int stage_id, const QString &file_name, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	bool exportStartListCurrentStageCsvSime(const QString &file_name, bool bibs, QString sql_where);
 	bool exportStartListCurrentStageTvGraphics(const QString &file_name);
 
@@ -91,6 +92,8 @@ public:
 
 	qf::core::sql::QueryBuilder runsQuery(int stage_id, int class_id = 0, bool show_offrace = false);
 	QVariantMap runsRecord(int run_id);
+
+	void computeStageTime(int run_id);
 	void setRunsRecord(int run_id, const QVariant &rec);
 
 	qf::core::sql::QueryBuilder startListQuery();
@@ -124,10 +127,15 @@ public:
 	QString export_resultsHtmlStage(bool with_laps = false);
 	void export_resultsHtmlStageWithLaps();
 	void export_resultsHtmlNStages();
-        QString startListStageIofXml30(int stage_id, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
+    QString startListStageIofXml30(int stage_id, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	QString resultsIofXml30Stage(int stage_id);
 	int competitorForRun(int run_id);
 	int runForCompetitorStage(int competitor_id, int stage_id);
+
+	static QStringList loadRunsTableHiddenColumns();
+	static void saveRunsTableHiddenColumns(const QStringList &hidden_columns);
+	static QStringList loadRunsTableColumnOrder();
+	static void saveRunsTableColumnOrder(const QStringList &ordered_columns);
 private:
 	Q_SLOT void onInstalled();
 
@@ -144,6 +152,7 @@ private:
 	void addStartTimeTextToClass(qf::core::utils::TreeTable &tt2, const int stages_count, const QVector<qint64> &start00_epoch_sec, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
 private:
 	qf::gui::framework::PartWidget *m_partWidget = nullptr;
+	RunsWidget *m_runsWidget = nullptr;
 	qf::core::utils::Table m_runnersTableCache;
 	int m_runnersTableCacheStageId = 0;
 	qf::gui::framework::DockWidget *m_eventStatisticsDockWidget = nullptr;
@@ -153,4 +162,3 @@ private:
 }
 
 #endif // RUNS_RUNSPLUGIN_H
-

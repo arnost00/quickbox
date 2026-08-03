@@ -51,7 +51,6 @@ struct EventConfig
 	int importId = 0;
 	QString orisEventKey;
 	int cardCheckTimeSec = 0;
-	int oneTenthSecResults = 0;
 	bool iofRace = false;
 	int iofXmlRaceNumber = 0;
 	int currentStageId = 1;

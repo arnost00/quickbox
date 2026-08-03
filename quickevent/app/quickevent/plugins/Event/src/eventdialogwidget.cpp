@@ -43,8 +43,6 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 									 static_cast<int>(disc));
 	}
 
-	ui->ed_oneTenthSecResults->setDisabled(true);
-
 	QRegularExpression rx("[a-z][a-z0-9_]*"); // PostgreSQL schema must start with small letter and it may contain small letters, digits and underscores only.
 	QValidator *validator = new QRegularExpressionValidator(rx, this);
 	ui->ed_eventId->setValidator(validator);
@@ -130,7 +128,6 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 	ui->ed_orisRace->setChecked(params.eventConfig.importId > 0);
 	ui->ed_orisEventKey->setText(params.eventConfig.orisEventKey);
 	ui->ed_cardChecCheckTimeSec->setValue(params.eventConfig.cardCheckTimeSec);
-	ui->ed_oneTenthSecResults->setCurrentIndex(params.eventConfig.oneTenthSecResults);
 	ui->ed_iofRace->setChecked(params.eventConfig.iofRace);
 	ui->ed_xmlRaceNumber->setValue(params.eventConfig.iofXmlRaceNumber);
 }
@@ -161,7 +158,6 @@ EventDialogWidget::Params EventDialogWidget::saveParams()
 	params.eventConfig.importId = ui->ed_orisImportId->text().toInt();
 	params.eventConfig.orisEventKey = ui->ed_orisEventKey->text();
 	params.eventConfig.cardCheckTimeSec = ui->ed_cardChecCheckTimeSec->value();
-	params.eventConfig.oneTenthSecResults = ui->ed_oneTenthSecResults->currentIndex();
 	params.eventConfig.iofRace = ui->ed_iofRace->isChecked();
 	params.eventConfig.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
 	return params;

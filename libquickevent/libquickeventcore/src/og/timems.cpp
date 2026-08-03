@@ -3,6 +3,7 @@
 #include <qf/core/log.h>
 
 #include <QString>
+#include <QRegularExpression>
 
 
 
@@ -60,48 +61,30 @@ QString TimeMs::toString(QChar sec_sep, QChar msec_sep) const
 	return ret;
 }
 
-static int str2int(const QString &str)
+QString TimeMs::toString() const
 {
-	int ret = 0;
-	QString s = str.trimmed();
-	if(!s.isEmpty()) {
-		bool ok;
-		ret = s.toInt(&ok);
-		if(!ok)
-			qfWarning() << "Invalid OGTime string" << str;
+	if(msec() % 1000) {
+		return toString('.', '/');
 	}
-	return ret;
+	return toString('.', {});
 }
+
+
 
 TimeMs TimeMs::fromString(const QString &time_str)
 {
 	if(time_str.isEmpty())
 		return TimeMs();
 
-	int msec = 0;
-	int sec = 0;
-	int min = 0;
-	int ix1 = 0;
-
-	int ix2 = time_str.indexOf('.', ix1);
-	if(ix2 < 0)
-		ix2 = time_str.indexOf(':', ix1);
-	if(ix2 < 0)
-		ix2 = time_str.indexOf('-', ix1);
-	if(ix2 < 0)
-		ix2 = time_str.indexOf(',', ix1);
-	if(ix2 < 0)
-		ix2 = time_str.length();
-	min = str2int(time_str.mid(ix1, ix2));
-	ix1 = ix2 + 1;
-
-	ix2 = time_str.indexOf('/', ix1);
-	if(ix2 < 0)
-		ix2 = time_str.length();
-	sec = str2int(time_str.mid(ix1, ix2));
-	ix1 = ix2 + 1;
-
-	msec = str2int(time_str.mid(ix1));
+	static const QRegularExpression re(R"(^(\d+)(?:[.:\-,](\d+)(?:\/(\d+))?)?$)");
+	auto m = re.match(time_str.trimmed());
+	if(!m.hasMatch()) {
+		qfWarning() << "Invalid OGTime string" << time_str;
+		return TimeMs();
+	}
+	int min  = m.captured(1).toInt();
+	int sec  = m.captured(2).toInt();
+	int msec = m.captured(3).toInt();
 
 	return TimeMs(msec + ((sec + (min * 60)) * 1000));
 }

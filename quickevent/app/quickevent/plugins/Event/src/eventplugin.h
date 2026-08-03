@@ -76,8 +76,6 @@ public:
 	Q_INVOKABLE int stageIdForRun(int run_id) const;
 
 	int stageStartMsec(int stage_id) const;
-	QDate stageStartDate(int stage_id) const;
-	QTime stageStartTime(int stage_id) const;
 	QDateTime stageStartDateTime(int stage_id) const;
 	//Q_INVOKABLE int currentStageStartMsec();
 	int msecToStageStartAM(int si_am_time_sec, int msec = 0, int stage_id = 0) const;

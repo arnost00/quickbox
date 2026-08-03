@@ -145,6 +145,8 @@ CREATE TABLE runs (
 	finishTimeMs integer,
 	penaltyTimeMs integer,
 	timeMs integer,
+	startGateTime timestamp,
+	finishGateTime timestamp,
 	isRunning boolean NOT NULL DEFAULT 1,
 	disqualified boolean GENERATED ALWAYS AS (disqualifiedByOrganizer OR  misPunch OR  notStart OR  notFinish OR  badCheck OR  overTime OR notCompeting) STORED,
 	disqualifiedByOrganizer boolean NOT NULL DEFAULT 0,
@@ -174,6 +176,10 @@ CREATE INDEX runs_ix3 ON runs (stageId, siId);
 -- COMMENT ON COLUMN runs.penaltyTimeMs IS 'in miliseconds';
 -- comments not suported for driver: SQLITE
 -- COMMENT ON COLUMN runs.timeMs IS 'in miliseconds';
+-- comments not suported for driver: SQLITE
+-- COMMENT ON COLUMN runs.startGateTime IS 'DateTime when competitor crossed start photocell';
+-- comments not suported for driver: SQLITE
+-- COMMENT ON COLUMN runs.finishGateTime IS 'DateTime when competitor crossed finish photocell';
 -- comments not suported for driver: SQLITE
 -- COMMENT ON COLUMN runs.isRunning IS 'Competitor is running in this stage';
 -- comments not suported for driver: SQLITE
@@ -339,4 +345,4 @@ CREATE TABLE qxchanges (
 ;
 -- insert into table: config;
 INSERT INTO config (ckey, cname, cvalue, ctype) VALUES 
-('db.version', 'Data version', '30500', 'int');
+('db.version', 'Data version', '30600', 'int');

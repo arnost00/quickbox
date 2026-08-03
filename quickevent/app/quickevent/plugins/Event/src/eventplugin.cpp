@@ -15,6 +15,7 @@
 #include "services/emmaclient.h"
 #include "services/qx/qxclientservice.h"
 #include "services/punchingtest/punchingtestservice.h"
+#include "services/radiosender/radiosenderservice.h"
 
 #include <plugins/Core/src/widgets/settingsdialog.h>
 #include <plugins/Event/src/services/oresultsclient.h>
@@ -264,19 +265,9 @@ int EventPlugin::stageIdForRun(int run_id) const
 
 int EventPlugin::stageStartMsec(int stage_id) const
 {
-	QTime start_time = stageStartTime(stage_id);
+	QTime start_time = stageStartDateTime(stage_id).time();
 	int ret = start_time.msecsSinceStartOfDay();
 	return ret;
-}
-
-QDate EventPlugin::stageStartDate(int stage_id) const
-{
-	return stageStartDateTime(stage_id).date();
-}
-
-QTime EventPlugin::stageStartTime(int stage_id) const
-{
-	return stageStartDateTime(stage_id).time();
 }
 
 QDateTime EventPlugin::stageStartDateTime(int stage_id) const
@@ -290,7 +281,7 @@ int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id) 
 		return quickevent::core::og::TimeMs::UNREAL_TIME_MSEC;
 	if(stage_id == 0)
 		stage_id = currentStageId();
-	int stage_start_msec = stageStartMsec(stage_id);
+	int stage_start_msec = stageStartDateTime(stage_id).time().msecsSinceStartOfDay();
 	int time_msec = quickevent::core::og::TimeMs::msecIntervalAM(stage_start_msec, (si_am_time_sec * 1000) + msec);
 	return time_msec;
 }
@@ -396,6 +387,9 @@ void EventPlugin::onInstalled()
 
 	auto shvapi_client = new services::qx::QxClientService(this);
 	services::Service::addService(shvapi_client);
+
+	auto *radio_sender = new services::RadioSenderService(this);
+	services::Service::addService(radio_sender);
 
 	auto *punching_test = new services::PunchingTestService(this);
 	services::Service::addService(punching_test);

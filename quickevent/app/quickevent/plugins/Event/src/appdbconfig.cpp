@@ -3,7 +3,6 @@
 #include "eventplugin.h"
 #include "eventconfig.h"
 
-#include <qcontainerfwd.h>
 #include <qf/core/assert.h>
 #include <qf/core/utils.h>
 #include <qf/core/sql/connection.h>
@@ -25,6 +24,7 @@ constexpr auto STAGE = "stage";
 constexpr auto RECEIPTS = "receipts";
 constexpr auto OFEED = "ofeed";
 constexpr auto ORESULTS = "oresults";
+constexpr auto RADIO_SENDER = "radioSender";
 constexpr auto QX = "qx";
 
 QVariantMap changedValues(const QVariantMap &old_values, const QVariantMap &new_values)
@@ -84,7 +84,7 @@ void AppDbConfig::load()
 			QString type = q.value(2).toString();
 			QVariant v = qf::core::Utils::retypeStringValue(val.toString(), type);
 			const auto group = key.section('.', 0, 0);
-			if (group == EVENT || group == QX) {
+			if (group == EVENT || group == QX || group == RADIO_SENDER) {
 				set_group_value(group, key.section('.', 1), v);
 			} else if (group == STAGE || group == RECEIPTS || group == ORESULTS || group == OFEED) {
 				auto stage_id = key.section('.', 1, 1).toInt();
@@ -99,6 +99,7 @@ void AppDbConfig::load()
 	Q_ASSERT(m_dbVersion > 0);
 
 	m_qxConfig = QxConfig::fromVariantMap(config.value(QX).toMap());
+	m_radioSenderConfig = services::RadioSenderConfig::fromVariantMap(config.value(RADIO_SENDER).toMap());
 	m_eventConfig = EventConfig::fromVariantMap(config.value(EVENT).toMap());
 
 	const auto load_stage_config = [&config](const QString &group, auto &target, auto fromVariantMap) {
@@ -167,6 +168,13 @@ void AppDbConfig::save(const QString &prefix, const QVariantMap &data)
 			q_ins.exec(qf::core::Exception::Throw);
 		}
 	}
+}
+
+void AppDbConfig::setRadioSenderConfig(const services::RadioSenderConfig &config)
+{
+	const QVariantMap changed_values = changedValues(m_radioSenderConfig.toVariantMap(), config.toVariantMap());
+	m_radioSenderConfig = config;
+	save(RADIO_SENDER, changed_values);
 }
 
 void AppDbConfig::setEventConfig(const EventConfig &config)

@@ -1317,4 +1317,3 @@ void CardReaderWidget::readStationBackupMemory()
 }
 
 #include "cardreaderwidget.moc"
-

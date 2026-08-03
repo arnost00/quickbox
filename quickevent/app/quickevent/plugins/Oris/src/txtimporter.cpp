@@ -290,7 +290,7 @@ void TxtImporter::importRunsCzeCSV()
 	}
 
 	int stage_id = getPlugin<EventPlugin>()->currentStageId();
-	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartTime(stage_id).msecsSinceStartOfDay();
+	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartMsec(stage_id);
 
 	try {
 		QFile f(fn);
@@ -404,7 +404,7 @@ void TxtImporter::importRunsIdCSV()
 	}
 
 	int stage_id = getPlugin<EventPlugin>()->currentStageId();
-	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartTime(stage_id).msecsSinceStartOfDay();
+	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartMsec(stage_id);
 
 	try {
 		QFile f(fn);
@@ -518,7 +518,7 @@ void TxtImporter::importRunsIofCSV()
 	}
 
 	int stage_id = getPlugin<EventPlugin>()->currentStageId();
-	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartTime(stage_id).msecsSinceStartOfDay();
+	auto start00_day_msec = getPlugin<EventPlugin>()->stageStartMsec(stage_id);
 
 	try {
 		QFile f(fn);

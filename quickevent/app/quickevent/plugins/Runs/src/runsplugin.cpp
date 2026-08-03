@@ -2,6 +2,7 @@
 
 #include "nstagesreportoptionsdialog.h"
 #include "runstablemodel.h"
+#include "runssettingspage.h"
 #include "runswidget.h"
 #include "runstabledialogwidget.h"
 #include "eventstatisticswidget.h"
@@ -10,6 +11,8 @@
 #include "partwidget.h"
 // #include "../../Competitors/src/competitorwidget.h"
 #include "../../CardReader/src/cardreaderplugin.h"
+#include "../../Core/src/coreplugin.h"
+#include "../../Core/src/widgets/settingsdialog.h"
 #include "../../Event/src/eventplugin.h"
 #include "../../Event/src/services/qx/qxlateregistrationswidget.h"
 
@@ -18,6 +21,7 @@
 #include <quickevent/core/si/punchrecord.h>
 #include <quickevent/core/runstatus.h>
 
+#include <qf/gui/framework/application.h>
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/framework/dockwidget.h>
 #include <qf/gui/action.h>
@@ -114,7 +118,10 @@ void RunsPlugin::onInstalled()
 {
 	qfLogFuncFrame();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	m_partWidget = qff::initPluginWidget<RunsWidget, PartWidget>(tr("&Runs"), featureId());
+	auto [part_widget, runs_widget] = qff::initPluginWidget<RunsWidget, PartWidget>(tr("&Runs"), featureId());
+	m_partWidget = part_widget;
+	m_runsWidget = runs_widget;
+	getPlugin<Core::CorePlugin>()->settingsDialog()->addPage(new RunsSettingsPage());
 
 	//connect(getPlugin<CompetitorsPlugin>(), &CompetitorsPlugin::competitorEdited, this, &RunsPlugin::clearRunnersTableCache);
 	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::dbEventNotify, this, [this](const QString &domain, const QVariant &payload) {
@@ -1350,6 +1357,66 @@ QVariantMap RunsPlugin::runsRecord(int run_id)
 	}
 	return {};
 }
+
+// timeMs = effective_finish - effective_start + penaltyTimeMs
+// effective_start  = startGateTime (as ms from stage start) if within tolerance, else startTimeMs
+// effective_finish = finishGateTime (as ms from stage start) if within tolerance, else finishTimeMs
+void RunsPlugin::computeStageTime(int run_id)
+{
+	static constexpr auto FLD_STAGE_ID = "stageid";
+	static constexpr auto FLD_START_TIME_MS = "starttimems";
+	static constexpr auto FLD_FINISH_TIME_MS = "finishtimems";
+	static constexpr auto FLD_START_GATE_TIME = "startgatetime";
+	static constexpr auto FLD_FINISH_GATE_TIME = "finishgatetime";
+	static constexpr auto FLD_PENALTY_TIME_MS = "penaltytimems";
+	static constexpr auto FLD_TIME_MS = "timems";
+
+	const auto run = qff::Application::instance()->readDbRecord("runs", run_id,
+		QStringList{
+			FLD_STAGE_ID,
+			FLD_START_TIME_MS,
+			FLD_FINISH_TIME_MS,
+			FLD_START_GATE_TIME,
+			FLD_FINISH_GATE_TIME,
+			FLD_PENALTY_TIME_MS,
+			FLD_TIME_MS
+		});
+	if(!run) {
+		qfWarning() << Q_FUNC_INFO << "run not found, run_id:" << run_id;
+		return;
+	}
+	const QVariant start_ms_v = run->value(FLD_START_TIME_MS);
+	const QVariant finish_ms_v = run->value(FLD_FINISH_TIME_MS);
+	const QVariant orig_time_ms_v = run->value(FLD_TIME_MS);
+	QVariant time_ms_v;
+	if(start_ms_v.isValid() && finish_ms_v.isValid()) {
+		const int stage_id = run->value(FLD_STAGE_ID).toInt();
+		auto *event_plugin = getPlugin<EventPlugin>();
+		const QDateTime stage_start_dt = event_plugin->stageStartDateTime(stage_id);
+		const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+		const qint64 start_ms = start_ms_v.toLongLong();
+		const qint64 finish_ms = finish_ms_v.toLongLong();
+
+		const auto start_gate_dt = run->value(FLD_START_GATE_TIME).toDateTime();
+		const qint64 start_gate_ms = stage_start_dt.msecsTo(start_gate_dt);
+		const bool use_start_gate = start_gate_dt.isValid()
+			&& std::abs(start_gate_ms - start_ms) <= config.startToleranceMs;
+
+		const auto finish_gate_dt = run->value(FLD_FINISH_GATE_TIME).toDateTime();
+		const qint64 finish_gate_ms = stage_start_dt.msecsTo(finish_gate_dt);
+		const bool use_finish_gate = finish_gate_dt.isValid()
+			&& std::abs(finish_gate_ms - finish_ms) <= config.finishToleranceMs;
+
+		const int penalty_ms = run->value(FLD_PENALTY_TIME_MS).toInt();
+		const qint64 time_ms = (use_finish_gate ? finish_gate_ms : finish_ms)
+			- (use_start_gate ? start_gate_ms : start_ms)
+			+ penalty_ms;
+		time_ms_v = time_ms;
+	}
+	qff::Application::instance()->updateDbRecord(
+		QStringLiteral("runs"), run_id, {{FLD_TIME_MS, time_ms_v}}, this);
+}
+
 
 void RunsPlugin::setRunsRecord(int run_id, const QVariant &rec)
 {
@@ -3035,6 +3102,65 @@ bool RunsPlugin::exportStartListCurrentStageTvGraphics(const QString &file_name)
 	qfInfo() << "exported:" << file_name;
 	return true;
 }
+namespace {
+    constexpr auto HIDDEN_COLUMNS_CONFIG_KEY = "runs.hiddenColumns";
+    constexpr auto COLUMN_ORDER_CONFIG_KEY = "runs.columnOrder";
+}
+QStringList RunsPlugin::loadRunsTableHiddenColumns()
+{
+    qf::core::sql::Query q;
+	q.prepare(QStringLiteral("SELECT cvalue FROM config WHERE ckey=:key"), qf::core::Exception::Throw);
+	q.bindValue(QStringLiteral(":key"), QLatin1String(HIDDEN_COLUMNS_CONFIG_KEY));
+	q.exec(qf::core::Exception::Throw);
+	if(q.next()) {
+		const auto hidden_columns = q.value("cvalue").toString().split(',', Qt::SkipEmptyParts);
+		return hidden_columns;
+	}
+	return QStringList();
+}
+void RunsPlugin::saveRunsTableHiddenColumns(const QStringList &hidden_columns)
+{
+    using namespace qf::core::sql;
+	const auto hidden_columns_value = hidden_columns.join(',');
 
+	auto exec_query = [](const QString &sql, const QString &key, const QString &value) {
+		Query query(Connection::forName());
+		query.prepare(sql, qf::core::Exception::Throw);
+		query.bindValue(":key", key);
+		query.bindValue(":value", value);
+		query.exec(qf::core::Exception::Throw);
+		return query.numRowsAffected();
+	};
 
+	if(exec_query("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value) < 1) {
+		exec_query("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", HIDDEN_COLUMNS_CONFIG_KEY, hidden_columns_value);
+	}
+}
+QStringList RunsPlugin::loadRunsTableColumnOrder()
+{
+	qf::core::sql::Query q;
+	q.prepare(QStringLiteral("SELECT cvalue FROM config WHERE ckey=:key"), qf::core::Exception::Throw);
+	q.bindValue(QStringLiteral(":key"), QLatin1String(COLUMN_ORDER_CONFIG_KEY));
+	q.exec(qf::core::Exception::Throw);
+	if(q.next()) {
+		return q.value("cvalue").toString().split(',', Qt::SkipEmptyParts);
+	}
+	return QStringList();
+}
+void RunsPlugin::saveRunsTableColumnOrder(const QStringList &ordered_columns)
+{
+	using namespace qf::core::sql;
+	const auto value = ordered_columns.join(',');
+	auto exec_query = [](const QString &sql, const QString &key, const QString &val) {
+		Query query(Connection::forName());
+		query.prepare(sql, qf::core::Exception::Throw);
+		query.bindValue(":key", key);
+		query.bindValue(":value", val);
+		query.exec(qf::core::Exception::Throw);
+		return query.numRowsAffected();
+	};
+	if(exec_query("UPDATE config SET cvalue=:value, ctype='QString' WHERE ckey=:key", COLUMN_ORDER_CONFIG_KEY, value) < 1) {
+		exec_query("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, 'QString')", COLUMN_ORDER_CONFIG_KEY, value);
+	}
+}
 }
