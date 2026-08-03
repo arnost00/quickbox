@@ -136,8 +136,8 @@ void TestCardReader::onSiTaskFinished(int task_type, QVariant result)
 {
 	auto tt = static_cast<siut::SiTask::Type>(task_type);
 	if(tt == siut::SiTask::Type::CardRead) {
-		siut::SICard card(result.toMap());
-		if(card.isEmpty())
+		siut::SICard card = siut::SICard::fromVariantMap(result.toMap());
+		if(card.cardNumber == 0)
 			QF_EXCEPTION("Empty card received");
 		qfInfo() << card.toString();
 	}

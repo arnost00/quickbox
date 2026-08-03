@@ -3,53 +3,52 @@
 
 #include "sipunch.h"
 
-#include <qf/core/utils.h>
-
-#include <QSharedDataPointer>
-#include <QVariantMap>
 #include <QCoreApplication>
+#include <QString>
+#include <QList>
+#include <QVariantMap>
+
+#include <optional>
 
 namespace siut {
 
-class SIUT_DECL_EXPORT SiCardBatteryStatus : public QVariantMap
+struct SIUT_DECL_EXPORT SiCardBatteryStatus
 {
-	using Super = QVariantMap;
-public:
-	SiCardBatteryStatus() = default;
-	SiCardBatteryStatus(const QVariantMap &o) : Super(o) {}
+	double voltage = 0.0;
+	double referenceVoltage = 0.0;
+	bool isLow = false;
+	QString replaceDate;
 
-	QF_VARIANTMAP_FIELD(double, v, setV, oltage)
-	QF_VARIANTMAP_FIELD(double, r, setR, eferenceVoltage)
-	QF_VARIANTMAP_FIELD(bool, is, set, Low)
-	QF_VARIANTMAP_FIELD(QString, r, setR, eplaceDate)
+	static SiCardBatteryStatus fromVariantMap(const QVariantMap &m);
+	QVariantMap toVariantMap() const;
 };
 
-class SIUT_DECL_EXPORT SICard : public QVariantMap
+struct SIUT_DECL_EXPORT SICard
 {
 	Q_DECLARE_TR_FUNCTIONS(SICard)
-	using Super = QVariantMap;
 public:
-	using PunchList = QVariantList;
+	using PunchList = QList<SIPunch>;
 	static constexpr int INVALID_SI_TIME = 0xEEEE;
 
-	SICard() = default;
-	SICard(const QVariantMap &o) : Super(o) {}
-	SICard(int card_number);
+	int stationNumber = 0;
+	int cardNumber = 0;
+	int checkTime = 0;
+	int startTime = 0;
+	int finishTime = 0;
+	int finishTimeMs = 0;
+	PunchList punches;
+	std::optional<SiCardBatteryStatus> batteryStatus;
 
-	QF_VARIANTMAP_FIELD(int, s, setS, tationNumber)
-	QF_VARIANTMAP_FIELD(int, c, setC, ardNumber)
-	QF_VARIANTMAP_FIELD(int, c, setC, heckTime)
-	QF_VARIANTMAP_FIELD(int, s, setS, tartTime)
-	QF_VARIANTMAP_FIELD(int, f, setF, inishTime)
-	QF_VARIANTMAP_FIELD(int, f, setF, inishTimeMs)
-	QF_VARIANTMAP_FIELD(QVariantList, p, setP, unches)
-	QF_VARIANTMAP_FIELD(SiCardBatteryStatus, b, setB, atteryStatus)
+	SICard() = default;
+	SICard(int card_number) : cardNumber(card_number) {}
+
+	static SICard fromVariantMap(const QVariantMap &m);
+	QVariantMap toVariantMap() const;
 
 	QString toString() const;
 
 	int punchCount() const;
 	SIPunch punchAt(int i) const;
-	//void addPunch(const SIPunch &p);
 	QList<SIPunch> punchList() const;
 
 	static bool isTimeValid(int time);
@@ -58,7 +57,5 @@ public:
 };
 
 }
-
-//Q_DECLARE_METATYPE(siut::SICard)
 
 #endif // SICARD_H

@@ -5,8 +5,8 @@ add_library(libsiut SHARED
     src/device/sidevicedriver.cpp
     src/device/sitask.cpp
     src/message/simessagedata.cpp
-    src/sicard.cpp
-    src/sipunch.cpp
+    src/sicard.cpp src/sicard.h
+    src/sipunch.cpp src/sipunch.h
     )
 
 # Single source of truth for this project's translations: every libsiut-<locale>.ts

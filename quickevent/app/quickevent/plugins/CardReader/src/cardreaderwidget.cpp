@@ -666,15 +666,15 @@ void CardReaderWidget::onSiTaskFinished(int task_type, QVariant result)
 	qfLogFuncFrame();
 	auto tt = static_cast<siut::SiTask::Type>(task_type);
 	if(tt == siut::SiTask::Type::CardRead) {
-		siut::SICard card(result.toMap());
-		if(card.isEmpty())
+		siut::SICard card = siut::SICard::fromVariantMap(result.toMap());
+		if(card.cardNumber == 0)
 			qfError() << "Empty card received";
 		else
 			processSICard(card);
 	}
 	else if(tt == siut::SiTask::Type::Punch) {
-		siut::SIPunch punch(result.toMap());
-		if(punch.isEmpty())
+		siut::SIPunch punch = siut::SIPunch::fromVariantMap(result.toMap());
+		if(punch.code == 0)
 			qfError() << "Empty punch received";
 		else
 			processSIPunch(punch);
@@ -702,36 +702,36 @@ void CardReaderWidget::logDriverRawData(const QByteArray& data)
 
 void CardReaderWidget::processSICard(const siut::SICard &card)
 {
-	if(card.cardNumber() == 0) {
+	if(card.cardNumber == 0) {
 		qfWarning() << "SIID == 0 was read!";
 		return;
 	}
 	appendLog(NecroLog::Level::Debug, card.toString());
-	appendLog(NecroLog::Level::Info, tr("card: %1").arg(card.cardNumber()));
+	appendLog(NecroLog::Level::Info, tr("card: %1").arg(card.cardNumber));
 
 	if(currentReaderMode() == CardReaderSettings::ReaderMode::EditOnPunch) {
-		getPlugin<RunsPlugin>()->editCompetitorOnPunch(card.cardNumber());
+		getPlugin<RunsPlugin>()->editCompetitorOnPunch(card.cardNumber);
 		return;
 	}
 
 	QString err_msg;
-	int run_id = getPlugin<CardReaderPlugin>()->findRunId(card.cardNumber(), card.finishTime(), &err_msg);
+	int run_id = getPlugin<CardReaderPlugin>()->findRunId(card.cardNumber, card.finishTime, &err_msg);
 
 	if(run_id == 0) {
 		operatorAudioWakeUp();
 		appendLog(NecroLog::Level::Error, err_msg);
 	}
 	else {
-		bool card_lent = getPlugin<CardReaderPlugin>()->isCardLent(card.cardNumber(), card.finishTime(), run_id);
+		bool card_lent = getPlugin<CardReaderPlugin>()->isCardLent(card.cardNumber, card.finishTime, run_id);
 		if(card_lent)
 			operatorAudioNotify();
 	}
-	quickevent::core::si::ReadCard read_card(card);
+	quickevent::core::si::ReadCard read_card(card.toVariantMap());
 	read_card.setRunId(run_id);
 	read_card.setRunIdAssignError(err_msg);
-	if (card.batteryStatus_isset()) {
+	if (card.batteryStatus.has_value()) {
 		auto data = read_card.data();
-		data["batteryStatus"] = card.batteryStatus();
+		data["batteryStatus"] = card.batteryStatus->toVariantMap();
 		read_card.setData(data);
 	}
 	processReadCardInTransaction(read_card);
@@ -766,19 +766,19 @@ void CardReaderWidget::processReadCard(const quickevent::core::si::ReadCard &rea
 
 void CardReaderWidget::processSIPunch(const siut::SIPunch &rec)
 {
-	quickevent::core::si::PunchRecord punch(rec);
-	punch.setsiid(rec.cardNumber());
+	quickevent::core::si::PunchRecord punch(rec.toVariantMap());
+	punch.setsiid(rec.cardNumber);
 	if(currentReaderMode() == CardReaderSettings::ReaderMode::Readout) {
-		int run_id = getPlugin<CardReaderPlugin>()->findRunId(rec.cardNumber(), siut::SICard::INVALID_SI_TIME);
+		int run_id = getPlugin<CardReaderPlugin>()->findRunId(rec.cardNumber, siut::SICard::INVALID_SI_TIME);
 		if(run_id == 0) {
-			appendLog(NecroLog::Level::Error, tr("Cannot find run for punch record SI: %1").arg(rec.cardNumber()));
+			appendLog(NecroLog::Level::Error, tr("Cannot find run for punch record SI: %1").arg(rec.cardNumber));
 		} else {
 			punch.setrunid(run_id);
 		}
 	}
 	int punch_id = getPlugin<CardReaderPlugin>()->savePunchRecordToSql(punch);
 	if(punch_id > 0) {
-		appendLog(NecroLog::Level::Debug, tr("Saved punch: %1 %2").arg(rec.cardNumber()).arg(rec.code()));
+		appendLog(NecroLog::Level::Debug, tr("Saved punch: %1 %2").arg(rec.cardNumber).arg(rec.code));
 		punch.setid(punch_id);
 		getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_PUNCH_RECEIVED, punch, true);
 	}

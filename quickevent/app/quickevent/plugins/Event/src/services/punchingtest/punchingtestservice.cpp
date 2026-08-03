@@ -189,7 +189,7 @@ void PunchingTestService::onTimerTick()
 		total_weight += w;
 	}
 
-	QVariantList punches;
+	siut::SICard::PunchList punches;
 	double cumulative_w = 0.0;
 	for (int k = 0; k < n_controls; ++k) {
 		cumulative_w += weights[k];
@@ -199,15 +199,14 @@ void PunchingTestService::onTimerTick()
 		double t = cumulative_w / total_weight;
 		int ctrl_ms = abs_start_ms + static_cast<int>(t * (abs_finish_ms - abs_start_ms));
 		int ctrl_sec = (ctrl_ms / 1000) % SI_HALF_DAY_SEC;
-		siut::SIPunch punch(cd.code(), ctrl_sec);
-		punches << QVariant(static_cast<QVariantMap>(punch));
+		punches << siut::SIPunch(cd.code(), ctrl_sec);
 	}
 
 	// Extra punch: a wrong control inserted at a chronologically correct position
 	if (rng.bounded(static_cast<quint32>(ss.extraPunchRate())) == 0) {
 		QSet<int> course_codes;
 		for (const auto &v : punches)
-			course_codes.insert(siut::SIPunch(v.toMap()).code());
+			course_codes.insert(v.code);
 		int extra_code = 0;
 		const int code_range = quickevent::core::CodeDef::PUNCH_CODE_MAX
 			- quickevent::core::CodeDef::PUNCH_CODE_MIN + 1;
@@ -225,27 +224,27 @@ void PunchingTestService::onTimerTick()
 			// Insert at the position that keeps the list in chronological order
 			int insert_at = punches.size();
 			for (int i = 0; i < punches.size(); ++i) {
-				if (extra_sec < siut::SIPunch(punches[i].toMap()).time()) {
+				if (extra_sec < punches[i].time) {
 					insert_at = i;
 					break;
 				}
 			}
-			punches.insert(insert_at, QVariant(static_cast<QVariantMap>(extra_punch)));
+			punches.insert(insert_at, extra_punch);
 		}
 	}
 
 	siut::SICard card;
-	card.setCardNumber(si_id);
-	card.setCheckTime(si_check_sec);
-	card.setStartTime(si_start_sec);
-	card.setFinishTime(si_finish_sec);
-	card.setPunches(punches);
+	card.cardNumber = si_id;
+	card.checkTime  = si_check_sec;
+	card.startTime  = si_start_sec;
+	card.finishTime = si_finish_sec;
+	card.punches    = punches;
 
 	setStatusMessage(tr("Card SI %1, %2 controls").arg(si_id).arg(punches.size()));
 
 	getPlugin<CardReader::CardReaderPlugin>()->emitSiTaskFinished(
 		static_cast<int>(siut::SiTask::Type::CardRead),
-		QVariant(static_cast<QVariantMap>(card)));
+		card.toVariantMap());
 }
 
 qf::gui::framework::DialogWidget *PunchingTestService::createDetailWidget()

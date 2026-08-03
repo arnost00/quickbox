@@ -502,20 +502,20 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 	QByteArray payload = message.mid(4);
 	SICard card = buildSICard(payload);
 
-	if (card.cardNumber() <= 0) {
+	if (card.cardNumber <= 0) {
 		emitInfo(NecroLog::Level::Warning, tr("Received card readout with invalid card number."));
 		return;
 	}
 
-	card.setStationNumber(m_lastStationNumber);
+	card.stationNumber = m_lastStationNumber;
 
-	qfDebug() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber();
+	qfDebug() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber;
 	emitInfo(NecroLog::Level::Info,
 	         tr("SI card %1 readout complete (%2 punches).")
-	             .arg(card.cardNumber())
+	             .arg(card.cardNumber)
 	             .arg(card.punchCount()));
 
-	emit siTaskFinished(static_cast<int>(SiTask::Type::CardRead), QVariant(static_cast<QVariantMap>(card)));
+	emit siTaskFinished(static_cast<int>(SiTask::Type::CardRead), QVariant(card.toVariantMap()));
 }
 
 // ===========================================================================
@@ -543,15 +543,15 @@ SICard BtSiDeviceDriver::buildSICard(const QByteArray &payload)
 	// quint8 cardFamily  = static_cast<quint8>(payload[4]);  // unused for now
 	quint16 punchCount  = readU16LE(payload, 5);
 
-	card.setCardNumber(static_cast<int>(cardNumber));
+	card.cardNumber = static_cast<int>(cardNumber);
 
 	// Defaults — mark times as invalid
-	card.setCheckTime(SICard::INVALID_SI_TIME);
-	card.setStartTime(SICard::INVALID_SI_TIME);
-	card.setFinishTime(SICard::INVALID_SI_TIME);
-	card.setFinishTimeMs(0);
+	card.checkTime    = SICard::INVALID_SI_TIME;
+	card.startTime    = SICard::INVALID_SI_TIME;
+	card.finishTime   = SICard::INVALID_SI_TIME;
+	card.finishTimeMs = 0;
 
-	QVariantList controlPunches;
+	SICard::PunchList controlPunches;
 
 	const int punchBase = 7;
 	for (int i = 0; i < static_cast<int>(punchCount); ++i) {
@@ -574,26 +574,26 @@ SICard BtSiDeviceDriver::buildSICard(const QByteArray &payload)
 
 		switch (punchType) {
 		case PUNCH_TYPE_CHECK:
-			card.setCheckTime(t12Sec);
+			card.checkTime = t12Sec;
 			break;
 
 		case PUNCH_TYPE_START:
-			card.setStartTime(t12Sec);
+			card.startTime = t12Sec;
 			break;
 
 		case PUNCH_TYPE_FINISH:
-			card.setFinishTime(t12Sec);
-			card.setFinishTimeMs(msecPart);
+			card.finishTime   = t12Sec;
+			card.finishTimeMs = msecPart;
 			break;
 
 		case PUNCH_TYPE_CONTROL: {
 			SIPunch punch;
-			punch.setCode(static_cast<int>(controlCode));
-			punch.setTime(t12Sec);
-			punch.setMsec(msecPart);
-			punch.setPmFlag(pmFlag);
-			punch.setDayOfWeek(dayOfWeek);
-			controlPunches.append(static_cast<QVariantMap>(punch));
+			punch.code      = static_cast<int>(controlCode);
+			punch.time      = t12Sec;
+			punch.msec      = msecPart;
+			punch.pmFlag    = pmFlag;
+			punch.dayOfWeek = dayOfWeek;
+			controlPunches.append(punch);
 			break;
 		}
 
@@ -607,7 +607,7 @@ SICard BtSiDeviceDriver::buildSICard(const QByteArray &payload)
 		}
 	}
 
-	card.setPunches(controlPunches);
+	card.punches = controlPunches;
 	return card;
 }
 
