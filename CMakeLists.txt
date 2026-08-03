@@ -36,7 +36,7 @@ if (NOT TARGET libnecrolog)
 endif()
 
 set(USE_QT6 ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network Bluetooth)
 set(Qt_FOUND ${Qt6_FOUND})
 
 if(Qt_FOUND)

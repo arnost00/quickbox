@@ -25,7 +25,7 @@ namespace framework { class PartWidget; class Plugin; }
 }
 
 
-namespace siut { class DeviceDriver; class CommPort; class SICard; class SIPunch; }
+namespace siut { class DeviceDriver; class CommPort; class BtSiDeviceDriver; class SICard; class SIPunch; }
 
 namespace quickevent { namespace gui { namespace audio { class Player; }}}
 namespace quickevent { namespace core { namespace si { class ReadCard; class CheckedCard; }}}
@@ -87,6 +87,8 @@ private:
 	siut::DeviceDriver *siDriver();
 	siut::CommPort *commPort();
 	void onComOpenChanged(bool comm_is_open);
+	siut::BtSiDeviceDriver *btDriver();
+	void onBtConnectionChanged(bool connected);
 
 	void processSICard(const siut::SICard &card);
 	void processSIPunch(const siut::SIPunch &rec);
@@ -115,6 +117,7 @@ private:
 	quickevent::gui::audio::Player *m_audioPlayer = nullptr;
 	siut::DeviceDriver *f_siDriver = nullptr;
 	siut::CommPort *m_commPort = nullptr;
+	siut::BtSiDeviceDriver *m_btDriver = nullptr;
 };
 
 #endif // CARDREADERWIDGET_H

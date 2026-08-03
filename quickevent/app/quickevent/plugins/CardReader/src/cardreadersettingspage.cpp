@@ -34,8 +34,16 @@ CardReaderSettingsPage::CardReaderSettingsPage(QWidget *parent)
 	ui->setupUi(this);
 
 	connect(ui->btTestConnection, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onTestConnectionClicked);
+	connect(ui->cbxReaderType, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	        this, &CardReaderSettingsPage::onReaderTypeChanged);
 
 	m_caption = tr("Card reader");
+
+	{
+		auto *cbx = ui->cbxReaderType;
+		cbx->addItem(tr("Serial (RS232/USB)"), QStringLiteral("Serial"));
+		cbx->addItem(tr("BT SI Reader (Bluetooth LE)"), QStringLiteral("BTSIReader"));
+	}
 	{
 		auto *cbx = ui->cbxCardCheckType;
 		for(auto *checker : qf::gui::framework::getPlugin<CardReaderPlugin>()->cardCheckers()) {
@@ -45,10 +53,8 @@ CardReaderSettingsPage::CardReaderSettingsPage(QWidget *parent)
 	{
 		auto *cbx = ui->cbxReaderMode;
 		cbx->addItem(tr("Readout"), "Readout");
-		//cbx->setItemData(0, CardReaderSettings::ReaderMode::Readout, Qt::UserRole + 1);
 		cbx->setItemData(0, tr("Readout mode - default"), Qt::ToolTipRole);
 		cbx->addItem(tr("Edit on punch"), "EditOnPunch");
-		//cbx->setItemData(0, CardReaderSettings::ReaderMode::EditOnPunch, Qt::UserRole + 1);
 		cbx->setItemData(1, tr("Show Edit/Insert competitor dialog when SI Card is inserted into the reader station"), Qt::ToolTipRole);
 	}
 
@@ -80,16 +86,30 @@ void load_combo_text(QComboBox *cbx, const QVariant &val, bool init_current_inde
 
 void CardReaderSettingsPage::load()
 {
+	CardReaderSettings settings;
+
+	// Reader type (must be loaded first so updateReaderTypeVisibility works)
+	{
+		auto *cbx = ui->cbxReaderType;
+		cbx->setCurrentIndex(-1);
+		for(int i = 0; i < cbx->count(); ++i) {
+			if(cbx->itemData(i).toString() == settings.readerType()) {
+				cbx->setCurrentIndex(i);
+				break;
+			}
+		}
+		if(cbx->currentIndex() < 0)
+			cbx->setCurrentIndex(0);
+	}
+
+	// Serial settings
 	{
 		ui->lstDevice->clear();
 		QList<QSerialPortInfo> port_list = QSerialPortInfo::availablePorts();
 		for(const auto &port : port_list) {
-			//ui->lstDevice->addItem(QString("n:%1 l:%2").arg(port.portName()).arg(port.systemLocation()));
 			ui->lstDevice->addItem(port.systemLocation());
 		}
-
 	}
-	CardReaderSettings settings;
 	load_combo_text(ui->lstDevice, settings.device(), false);
 	load_combo_text(ui->lstBaudRate, settings.baudRate());
 	load_combo_text(ui->lstDataBits, settings.dataBits());
@@ -97,6 +117,9 @@ void CardReaderSettingsPage::load()
 	load_combo_text(ui->lstParity, settings.parity());
 	ui->chkShowRawComData->setChecked(settings.isShowRawComData());
 	ui->chkDisableCRCCheck->setChecked(settings.isDisableCRCCheck());
+
+	// BT SI Reader settings
+	ui->edBtsiAddress->setText(settings.btsiAddress());
 
 	{
 		auto *cbx = ui->cbxCardCheckType;
@@ -126,11 +149,15 @@ void CardReaderSettingsPage::load()
 			settings.setReaderMode(cbx->currentData().toString());
 		}
 	}
+
+	updateReaderTypeVisibility();
 }
 
 void CardReaderSettingsPage::save()
 {
 	CardReaderSettings settings;
+
+	settings.setReaderType(ui->cbxReaderType->currentData().toString());
 	settings.setDevice(ui->lstDevice->currentText());
 	settings.setBaudRate(ui->lstBaudRate->currentText().toInt());
 	settings.setDataBits(ui->lstDataBits->currentText().toInt());
@@ -138,11 +165,40 @@ void CardReaderSettingsPage::save()
 	settings.setParity(ui->lstParity->currentText());
 	settings.setShowRawComData(ui->chkShowRawComData->isChecked());
 	settings.setDisableCRCCheck(ui->chkDisableCRCCheck->isChecked());
+	settings.setBtsiAddress(ui->edBtsiAddress->text().trimmed().toUpper());
 
 	settings.setCardCheckType(ui->cbxCardCheckType->currentData().toString());
 	settings.setReaderMode(ui->cbxReaderMode->currentData().toString());
 }
 
+void CardReaderSettingsPage::onReaderTypeChanged(int /*index*/)
+{
+	updateReaderTypeVisibility();
+}
+
+void CardReaderSettingsPage::updateReaderTypeVisibility()
+{
+	bool is_bt = (ui->cbxReaderType->currentData().toString() == QStringLiteral("BTSIReader"));
+
+	// Serial-only widgets
+	ui->textLabel1->setVisible(!is_bt);
+	ui->lstDevice->setVisible(!is_bt);
+	ui->textLabel2->setVisible(!is_bt);
+	ui->lstBaudRate->setVisible(!is_bt);
+	ui->textLabel3->setVisible(!is_bt);
+	ui->lstDataBits->setVisible(!is_bt);
+	ui->textLabel5->setVisible(!is_bt);
+	ui->lstStopBits->setVisible(!is_bt);
+	ui->textLabel4->setVisible(!is_bt);
+	ui->lstParity->setVisible(!is_bt);
+	ui->btTestConnection->setVisible(!is_bt);
+	ui->textLabel4_2->setVisible(!is_bt);
+	ui->frame3->setVisible(!is_bt);
+
+	// BT-only widgets
+	ui->lblBtsiAddress->setVisible(is_bt);
+	ui->edBtsiAddress->setVisible(is_bt);
+}
 
 void CardReaderSettingsPage::onTestConnectionClicked()
 {

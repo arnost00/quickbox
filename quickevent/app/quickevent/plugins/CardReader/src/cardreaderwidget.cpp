@@ -18,6 +18,7 @@
 
 #include <siut/sidevicedriver.h>
 #include <siut/commport.h>
+#include <siut/btsidevicedriver.h>
 #include <siut/sicard.h>
 #include <siut/sitask.h>
 
@@ -217,7 +218,7 @@ CardReaderWidget::CardReaderWidget(QWidget *parent)
 	createActions();
 
 	{
-		ui->btComPort->setToolTip(tr("Open COM to connect SI reader"));
+		ui->btComPort->setToolTip(tr("Connect to SI reader (serial or BT)"));
 		connect(ui->btComPort, &QPushButton::toggled, this, &CardReaderWidget::onOpenCommTriggered);
 	}
 	ui->lblConnectionInfo->setText(tr("SI station not connected"));
@@ -571,6 +572,29 @@ siut::CommPort *CardReaderWidget::commPort()
 	return m_commPort;
 }
 
+siut::BtSiDeviceDriver *CardReaderWidget::btDriver()
+{
+	if(!m_btDriver) {
+		m_btDriver = new siut::BtSiDeviceDriver(this);
+		connect(m_btDriver, &siut::BtSiDeviceDriver::siTaskFinished, this, &CardReaderWidget::onSiTaskFinished);
+		connect(m_btDriver, &siut::BtSiDeviceDriver::driverInfo, this, &CardReaderWidget::processDriverInfo, Qt::QueuedConnection);
+		connect(m_btDriver, &siut::BtSiDeviceDriver::connectionStateChanged, this, &CardReaderWidget::onBtConnectionChanged);
+	}
+	return m_btDriver;
+}
+
+void CardReaderWidget::onBtConnectionChanged(bool connected)
+{
+	if(connected) {
+		CardReaderSettings settings;
+		ui->lblConnectionInfo->setText(
+			tr("Connected to BT SI Reader %1.").arg(settings.btsiAddress()));
+	} else {
+		ui->lblConnectionInfo->setText(tr("BT SI Reader not connected"));
+		ui->btComPort->setChecked(false);
+	}
+}
+
 void CardReaderWidget::onComOpenChanged(bool comm_is_open)
 {
 	if(comm_is_open) {
@@ -593,21 +617,37 @@ void CardReaderWidget::onComOpenChanged(bool comm_is_open)
 void CardReaderWidget::onOpenCommTriggered(bool checked)
 {
 	qfLogFuncFrame() << "checked:" << checked;
-	if(checked) {
-		CardReaderSettings settings;
-		QString device = settings.device();
-		int baud_rate = settings.baudRate();
-		int data_bits = settings.dataBits();
-		int stop_bits = settings.stopBits();
-		QString parity = settings.parity();
-		if(!commPort()->openComm(device, baud_rate, data_bits, parity, stop_bits > 1)) {
-			QString error_msg = commPort()->errorToUserHint();
-			qf::gui::dialogs::MessageBox::showError(this, tr("Error open device %1 - %2").arg(device).arg(error_msg));
+	CardReaderSettings settings;
+	if(settings.readerTypeEnum() == CardReaderSettings::ReaderType::BTSIReader) {
+		if(checked) {
+			QString address = settings.btsiAddress();
+			if(address.isEmpty()) {
+				qf::gui::dialogs::MessageBox::showError(
+					this, tr("BT SI Reader: no device address configured.\n"
+					         "Please set it in Settings → Card reader."));
+				ui->btComPort->setChecked(false);
+				return;
+			}
+			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1…").arg(address));
+			btDriver()->connectToDevice(address);
+		} else {
+			btDriver()->disconnectFromDevice();
 		}
-		//theApp()->scriptDriver()->callExtensionFunction("onCommConnect", QVariantList() << device);
-	}
-	else {
-		commPort()->closeComm();
+	} else {
+		if(checked) {
+			QString device = settings.device();
+			int baud_rate = settings.baudRate();
+			int data_bits = settings.dataBits();
+			int stop_bits = settings.stopBits();
+			QString parity = settings.parity();
+			if(!commPort()->openComm(device, baud_rate, data_bits, parity, stop_bits > 1)) {
+				QString error_msg = commPort()->errorToUserHint();
+				qf::gui::dialogs::MessageBox::showError(
+					this, tr("Error open device %1 - %2").arg(device, error_msg));
+			}
+		} else {
+			commPort()->closeComm();
+		}
 	}
 }
 
