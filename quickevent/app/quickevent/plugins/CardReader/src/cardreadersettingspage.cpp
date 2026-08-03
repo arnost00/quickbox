@@ -179,25 +179,7 @@ void CardReaderSettingsPage::onReaderTypeChanged(int /*index*/)
 void CardReaderSettingsPage::updateReaderTypeVisibility()
 {
 	bool is_bt = (ui->cbxReaderType->currentData().toString() == QStringLiteral("BTSIReader"));
-
-	// Serial-only widgets
-	ui->textLabel1->setVisible(!is_bt);
-	ui->lstDevice->setVisible(!is_bt);
-	ui->textLabel2->setVisible(!is_bt);
-	ui->lstBaudRate->setVisible(!is_bt);
-	ui->textLabel3->setVisible(!is_bt);
-	ui->lstDataBits->setVisible(!is_bt);
-	ui->textLabel5->setVisible(!is_bt);
-	ui->lstStopBits->setVisible(!is_bt);
-	ui->textLabel4->setVisible(!is_bt);
-	ui->lstParity->setVisible(!is_bt);
-	ui->btTestConnection->setVisible(!is_bt);
-	ui->textLabel4_2->setVisible(!is_bt);
-	ui->frame3->setVisible(!is_bt);
-
-	// BT-only widgets
-	ui->lblBtsiAddress->setVisible(is_bt);
-	ui->edBtsiAddress->setVisible(is_bt);
+	ui->stackedReaderSettings->setCurrentWidget(is_bt ? ui->pageBtSiReader : ui->pageSerial);
 }
 
 void CardReaderSettingsPage::onTestConnectionClicked()
