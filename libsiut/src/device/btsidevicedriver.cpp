@@ -17,6 +17,8 @@
 #include <QLowEnergyDescriptor>
 #include <QVariantList>
 
+#include <ios>
+
 namespace siut {
 
 // ===========================================================================
@@ -456,7 +458,7 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_STATE) {
 		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardState notification:"
-		          << Qt::hex << msgId;
+		          << std::hex << msgId;
 		return;
 	}
 
@@ -494,7 +496,7 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_MINIMAL && msgId != MSG_CARD_COMPLETE) {
 		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardData notification:"
-		          << Qt::hex << msgId;
+		           << std::hex << msgId;
 		return;
 	}
 
