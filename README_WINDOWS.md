@@ -40,7 +40,7 @@ Set `$QT_ROOT` to your Qt install folder. Everything else is derived from it:
 
 ```powershell
 $QT_ROOT = "C:\dev\Qtx86"   # adjust to your actual Qt install root
-$QT_VER  = "6.10.3"         # adjust to the installed Qt version
+$QT_VER  = "6.11.1"         # adjust to the installed Qt version
 $MINGW_VER = "mingw1310_64" # adjust to the installed Qt version
 $QUICKBOX_ROOT = $PWD       # adjust to the quickbox repo root if necessary
 ```
