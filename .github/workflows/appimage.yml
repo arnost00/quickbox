@@ -25,7 +25,7 @@ jobs:
         with:
           qt_version: 6.11.1
           use_qt6: ON
-          modules: qtserialport qtmultimedia qtbluetooth
+          modules: qtserialport qtmultimedia qtconnectivity
           additional_cmake_args: -DCMAKE_INSTALL_PREFIX='${{ github.workspace }}/install/usr'
 
       - name: Create AppImage

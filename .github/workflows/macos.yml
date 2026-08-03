@@ -25,7 +25,7 @@ jobs:
           cache: true
           version: 6.11.1
           install-deps: false
-          modules: qtserialport qtmultimedia qtbluetooth
+          modules: qtserialport qtmultimedia qtconnectivity
 
       - name: Get Git SHA
         run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV

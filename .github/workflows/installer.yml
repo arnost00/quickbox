@@ -65,7 +65,7 @@ jobs:
           qt_version: 6.11.1
           qt_arch: win64_mingw
           use_qt6: ON
-          modules: qtserialport qtmultimedia qtbluetooth
+          modules: qtserialport qtmultimedia qtconnectivity
           additional_cmake_args: -DCMAKE_INSTALL_PREFIX='${{ github.workspace }}/install'
 
       - name: Build
