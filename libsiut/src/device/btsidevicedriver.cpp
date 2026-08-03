@@ -83,7 +83,7 @@ QByteArray BtSiReassembler::feed(const QByteArray &chunk)
 	if (chunk.size() < 4 + payloadLen || payloadLen < 1)
 		return {};
 
-	quint8 flag = static_cast<quint8>(chunk[4]);
+	auto flag = static_cast<quint8>(chunk[4]);
 
 	if (flag == WRAP_FLAG_FIRST) {
 		// payload[1..5] = total_len (u32le), payload[5..] = data
@@ -467,9 +467,9 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 		return;
 	}
 
-	quint32 cardNumber  = readU32LE(message, 4);
-	quint8  state       = static_cast<quint8>(message[8]);
-	quint16 codeNumber  = readU16LE(message, 9);
+	auto cardNumber  = readU32LE(message, 4);
+	auto state       = static_cast<quint8>(message[8]);
+	auto codeNumber  = readU16LE(message, 9);
 
 	m_lastStationNumber = static_cast<int>(codeNumber);
 
@@ -560,17 +560,17 @@ SICard BtSiDeviceDriver::buildSICard(const QByteArray &payload)
 			break;
 
 		// quint8 controlInfo = static_cast<quint8>(payload[offset]);  // unused
-		quint8  punchType   = static_cast<quint8>(payload[offset + 1]);
-		quint16 controlCode = readU16LE(payload, offset + 2);
-		quint32 timeMs      = readU32LE(payload, offset + 4);
+		auto punchType   = static_cast<quint8>(payload[offset + 1]);
+		auto controlCode = readU16LE(payload, offset + 2);
+		auto timeMs      = readU32LE(payload, offset + 4);
 
 		// Time conversion: ms since Sunday 00:00:00.000
-		int todMs      = static_cast<int>(timeMs % 86400000u);
+		int todMs      = static_cast<int>(timeMs % 86400000U);
 		int t12Ms      = todMs % 43200000;
 		int t12Sec     = t12Ms / 1000;
-		int msecPart   = static_cast<int>(timeMs % 1000u);
+		int msecPart   = static_cast<int>(timeMs % 1000U);
 		bool pmFlag    = todMs >= 43200000;
-		int dayOfWeek  = static_cast<int>((timeMs / 86400000u) % 7u);
+		int dayOfWeek  = static_cast<int>((timeMs / 86400000U) % 7U);
 
 		switch (punchType) {
 		case PUNCH_TYPE_CHECK:
