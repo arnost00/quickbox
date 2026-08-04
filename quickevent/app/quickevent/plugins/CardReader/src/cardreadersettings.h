@@ -21,7 +21,9 @@ public:
 	SETTINGS_FIELD(bool, isD, setD, isableCRCCheck, "comm/debug/disableCRCCheck", false);
 	// BT SI Reader connection
 	SETTINGS_FIELD(bool, isB, setB, tEnabled, "comm/btEnabled", false);
-	SETTINGS_FIELD(QString, b, setB, tsiAddress, "comm/btle/address", {});
+	/// Serialized QBluetoothDeviceInfo for the configured BT SI reader.
+	/// Keys: "name", "address", "deviceUuid", "coreConfigurations".
+	SETTINGS_FIELD(QVariantMap, b, setB, tsiDeviceInfoMap, "comm/btle/deviceInfo", {});
 	// Reader behaviour
 	SETTINGS_FIELD1(QString, c, setC, ardCheckType, "Classic");
 	SETTINGS_FIELD1(QString, r, setR, eaderMode, "Readout");

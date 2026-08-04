@@ -7,11 +7,13 @@
 
 #include "cardreadersettingspage.h"
 #include "ui_cardreadersettingspage.h"
+#include "btdeviceinfoutil.h"
 #include "cardchecker.h"
 //#include "cardreaderwidget.h"
 #include "cardreaderplugin.h"
 #include "cardreadersettings.h"
 
+#include <qbluetoothdeviceinfo.h>
 #include <siut/commport.h>
 #include <siut/sidevicedriver.h>
 
@@ -38,9 +40,6 @@ CardReaderSettingsPage::CardReaderSettingsPage(QWidget *parent)
 
 	connect(ui->btTestConnection, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onTestConnectionClicked);
 	connect(ui->btScanBt, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onScanBtClicked);
-	connect(ui->cbxBtsiAddress, qOverload<int>(&QComboBox::activated), this, [this](int index) {
-		ui->cbxBtsiAddress->setCurrentText(ui->cbxBtsiAddress->itemData(index).toString());
-	});
 
 	m_caption = tr("Card reader");
 
@@ -82,6 +81,14 @@ void load_combo_text(QComboBox *cbx, const QVariant &val, bool init_current_inde
 		}
 	}
 }
+
+/// Returns the display address for the configured BT SI reader,
+/// or an empty string if no device has been scanned and saved yet.
+QString btsiDisplayAddress(const QBluetoothDeviceInfo &info)
+{
+	return QStringLiteral("%2 (%1)").arg(info.name()).arg(info.address().toString());
+}
+
 }
 
 void CardReaderSettingsPage::load()
@@ -107,9 +114,28 @@ void CardReaderSettingsPage::load()
 	load_combo_text(ui->lstParity, settings.parity());
 	ui->chkShowRawComData->setChecked(settings.isShowRawComData());
 	ui->chkDisableCRCCheck->setChecked(settings.isDisableCRCCheck());
-
-	// BT SI Reader settings
-	ui->cbxBtsiAddress->setCurrentText(settings.btsiAddress());
+	{
+		// BT SI Reader settings — select the item whose data matches the saved address
+		{
+			const auto bt_info_map = settings.btsiDeviceInfoMap();
+			const auto bt_info = btDeviceInfoFromMap(bt_info_map);
+			if (bt_info.isValid()) {
+				int matchIndex = -1;
+				for (int i = 0; i < ui->cbxBtsiAddress->count(); ++i) {
+					if (ui->cbxBtsiAddress->itemData(i).toMap() == bt_info_map) {
+						matchIndex = i;
+						break;
+					}
+				}
+				if (matchIndex < 0) {
+					ui->cbxBtsiAddress->addItem(btsiDisplayAddress(bt_info), btDeviceInfoToMap(bt_info));
+					ui->cbxBtsiAddress->setCurrentIndex(ui->cbxBtsiAddress->count() - 1);
+				} else {
+					ui->cbxBtsiAddress->setCurrentIndex(matchIndex);
+				}
+			}
+		}
+	}
 
 	{
 		auto *cbx = ui->cbxCardCheckType;
@@ -157,10 +183,12 @@ void CardReaderSettingsPage::save()
 	settings.setDisableCRCCheck(ui->chkDisableCRCCheck->isChecked());
 	{
 		const int ix = ui->cbxBtsiAddress->currentIndex();
-		const QString addr = (ix >= 0)
-			? ui->cbxBtsiAddress->currentData().toString()
-			: ui->cbxBtsiAddress->currentText();
-		settings.setBtsiAddress(addr.trimmed().toUpper());
+		if (ix >= 0) {
+			const auto map = ui->cbxBtsiAddress->itemData(ix).toMap();
+			settings.setBtsiDeviceInfoMap(map);
+		} else {
+			settings.setBtsiDeviceInfoMap({});
+		}
 	}
 
 	settings.setCardCheckType(ui->cbxCardCheckType->currentData().toString());
@@ -191,15 +219,13 @@ void CardReaderSettingsPage::onScanBtClicked()
 			if (dev.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
 				bleDevices.append(dev);
 		}
-		std::stable_sort(bleDevices.begin(), bleDevices.end(), [](const QBluetoothDeviceInfo &a, const QBluetoothDeviceInfo &b) {
+		std::ranges::stable_sort(bleDevices, [](const QBluetoothDeviceInfo &a, const QBluetoothDeviceInfo &b) {
 			return a.name().startsWith(QLatin1String("Reader BT")) > b.name().startsWith(QLatin1String("Reader BT"));
 		});
 		const QString current = ui->cbxBtsiAddress->currentText();
 		ui->cbxBtsiAddress->clear();
-		for (const auto &dev : bleDevices) {
-			const QString address = dev.address().isNull() ? dev.name() : dev.address().toString().toUpper();
-			const QString label = dev.name().isEmpty() ? address : QStringLiteral("%1  (%2)").arg(dev.name(), address);
-			ui->cbxBtsiAddress->addItem(label, address);
+		for (const auto &bt_info : bleDevices) {
+			ui->cbxBtsiAddress->addItem(btsiDisplayAddress(bt_info), btDeviceInfoToMap(bt_info));
 		}
 		ui->cbxBtsiAddress->setCurrentText(current);
 	});

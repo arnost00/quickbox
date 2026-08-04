@@ -3,6 +3,7 @@
 #include "ui_cardreaderwidget.h"
 #include "cardreadersettings.h"
 
+#include "btdeviceinfoutil.h"
 #include "cardreaderplugin.h"
 #include "testcardreader.h"
 #include "../../Core/src/coreplugin.h"
@@ -613,11 +614,12 @@ void CardReaderWidget::updateButtonsEnabled()
 void CardReaderWidget::updateConnectionInfoLabel()
 {
 	QStringList parts;
-	if(m_commPort && m_commPort->isOpen())
+	if(m_commPort && m_commPort->isOpen()) {
 		parts << tr("USB: %1").arg(m_commPort->portName());
+	}
 	if(m_btDriver && m_btDriver->isConnected()) {
 		CardReaderSettings settings;
-		parts << tr("BT: %1").arg(settings.btsiAddress());
+		parts << tr("BT: %1").arg(m_btDriver->deviceInfo().address().toString());
 	}
 	setConnectionInfoLabel(parts.isEmpty() ? tr("Not connected") : parts.join(QLatin1String(" | ")), NecroLog::Level::Info);
 }
@@ -675,17 +677,15 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 	qfLogFuncFrame() << "checked:" << checked;
 	if(checked) {
 		CardReaderSettings settings;
-		QString address = settings.btsiAddress();
-		if(address.isEmpty()) {
+		const QBluetoothDeviceInfo bt_info = CardReader::btDeviceInfoFromMap(settings.btsiDeviceInfoMap());
+		if (bt_info.isValid()) {
+			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(bt_info.address().toString()));
+			btDriver()->connectToDevice(bt_info);
+		} else {
 			qf::gui::dialogs::MessageBox::showError(
 				this, tr("BT SI Reader: no device address configured.\n"
-				         "Please set it in Settings \u2192 Card reader."));
-			QSignalBlocker blocker(ui->btBtReader);
-			ui->btBtReader->setChecked(false);
-			return;
+				         "Please set it in Settings Card reader."));
 		}
-		ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1\u2026").arg(address));
-		btDriver()->connectToDevice(address);
 	} else {
 		btDriver()->disconnectFromDevice();
 	}

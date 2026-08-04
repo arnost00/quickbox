@@ -13,9 +13,6 @@ namespace siut { class SIMessageData; }
 namespace CardReader {
 
 class CardChecker;
-class ReadCard;
-class PunchRecord;
-class CheckedCard;
 
 class CardReaderPlugin : public qf::gui::framework::Plugin
 {

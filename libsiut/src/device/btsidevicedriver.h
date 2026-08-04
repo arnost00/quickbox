@@ -20,6 +20,7 @@
 #include <QLowEnergyService>
 #include <QObject>
 #include <QVariantMap>
+#include <qbluetoothdeviceinfo.h>
 
 namespace siut {
 
@@ -61,18 +62,18 @@ public:
 	explicit BtSiDeviceDriver(QObject *parent = nullptr);
 	~BtSiDeviceDriver() override;
 
-	void connectToDevice(const QString &address);
+	// void connectToDevice(const QString &address);
+	void connectToDevice(const QBluetoothDeviceInfo &info);
 	void disconnectFromDevice();
 	bool isConnected() const;
+
+	const QBluetoothDeviceInfo& deviceInfo() const { return m_deviceInfo; }
 
 	Q_SIGNAL void driverInfo(NecroLog::Level level, const QString &msg);
 	Q_SIGNAL void siTaskFinished(int task_type, QVariant result);
 	Q_SIGNAL void connectionStateChanged(bool connected);
 
-private Q_SLOTS:
-	void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
-	void onScanFinished();
-	void onScanError(QBluetoothDeviceDiscoveryAgent::Error error);
+private:
 	void onControllerConnected();
 	void onControllerDisconnected();
 	void onControllerError(QLowEnergyController::Error error);
@@ -99,24 +100,23 @@ private:
 
 	void emitInfo(NecroLog::Level level, const QString &msg);
 
-	// Target device
-	QString m_targetAddress;
+	QBluetoothDeviceInfo m_deviceInfo;
 
 	// Qt Bluetooth objects
-	QBluetoothDeviceDiscoveryAgent	*m_discoveryAgent = nullptr;
-	QLowEnergyController		*m_controller = nullptr;
+	// QBluetoothDeviceDiscoveryAgent *m_discoveryAgent = nullptr;
+	QLowEnergyController *m_controller = nullptr;
 	QList<QLowEnergyService *>	m_services;
 
 	// Known characteristic UUIDs
-	QBluetoothUuid	m_cardStateUuid;
-	QBluetoothUuid	m_cardDataUuid;
+	QBluetoothUuid m_cardStateUuid;
+	QBluetoothUuid m_cardDataUuid;
 
 	// State
-	bool	m_connected = false;
-	bool	m_cardStateSubscribed = false;
-	bool	m_cardDataSubscribed = false;
-	int	m_pendingServices = 0;
-	int	m_lastStationNumber = 0;
+	bool m_connected = false;
+	bool m_cardStateSubscribed = false;
+	bool m_cardDataSubscribed = false;
+	int m_pendingServices = 0;
+	int m_lastStationNumber = 0;
 
 	// Reassemblers — one per characteristic
 	BtSiReassembler m_cardStateReassembler;

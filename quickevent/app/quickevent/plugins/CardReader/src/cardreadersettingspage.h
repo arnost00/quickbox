@@ -1,14 +1,11 @@
-
-//
-// Author: Frantisek Vacek <fanda.vacek@volny.cz>, (C) 2011
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-
 #ifndef CARDREADERSETTINGSPAGE_H
 #define CARDREADERSETTINGSPAGE_H
 
 #include "../../Core/src/widgets/settingspage.h"
+
+#include <QBluetoothDeviceInfo>
+#include <QMap>
+#include <QString>
 
 class QBluetoothDeviceDiscoveryAgent;
 
@@ -26,6 +23,7 @@ class  CardReaderSettingsPage : public Core::SettingsPage
 private:
 	Ui::CardReaderSettingsPage *ui;
 	QBluetoothDeviceDiscoveryAgent *m_btDiscoveryAgent = nullptr;
+	// QMap<QString, QBluetoothDeviceInfo> m_scannedBtSiDevices;
 protected:
 	void load();
 	void save();
@@ -38,4 +36,3 @@ private:
 };
 }
 #endif // CARDREADERSETTINGSPAGE_H
-

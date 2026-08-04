@@ -213,12 +213,6 @@
          </item>
          <item row="0" column="1">
           <widget class="QComboBox" name="cbxBtsiAddress">
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <property name="placeholderText">
-            <string>e.g. CC:DA:B5:74:95:82</string>
-           </property>
           </widget>
          </item>
          <item row="1" column="1">

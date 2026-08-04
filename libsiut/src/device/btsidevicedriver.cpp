@@ -165,19 +165,19 @@ BtSiDeviceDriver::BtSiDeviceDriver(QObject *parent)
 	, m_cardStateUuid(QString(CARD_STATE_UUID))
 	, m_cardDataUuid(QString(CARD_DATA_UUID))
 {
-	m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-	m_discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
+	// m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+	// m_discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
 
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BtSiDeviceDriver::onDeviceDiscovered);
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &BtSiDeviceDriver::onScanFinished);
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this, &BtSiDeviceDriver::onScanError);
+	// connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BtSiDeviceDriver::onDeviceDiscovered);
+	// connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &BtSiDeviceDriver::onScanFinished);
+	// connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this, &BtSiDeviceDriver::onScanError);
 }
 
 BtSiDeviceDriver::~BtSiDeviceDriver()
 {
 	// Disconnect without emitting signals from a partially-destroyed object
-	if (m_discoveryAgent->isActive())
-		m_discoveryAgent->stop();
+	// if (m_discoveryAgent->isActive())
+	// 	m_discoveryAgent->stop();
 
 	for (auto *svc : m_services)
 		svc->deleteLater();
@@ -199,22 +199,34 @@ bool BtSiDeviceDriver::isConnected() const
 	return m_connected;
 }
 
-void BtSiDeviceDriver::connectToDevice(const QString &address)
+// void BtSiDeviceDriver::connectToDevice(const QString &address)
+// {
+// 	if (address.isEmpty()) {
+// 		emitInfo(NecroLog::Level::Error, tr("connectToDevice: empty address."));
+// 		return;
+// 	}
+// 	m_targetAddress = address.toUpper().trimmed();
+// 	emitInfo(NecroLog::Level::Info,
+// 	         tr("Starting BLE scan for device %1 ...").arg(m_targetAddress));
+// 	startScan();
+// }
+
+void BtSiDeviceDriver::connectToDevice(const QBluetoothDeviceInfo &info)
 {
-	if (address.isEmpty()) {
-		emitInfo(NecroLog::Level::Error, tr("connectToDevice: empty address."));
+	if (!info.isValid()) {
+		emitInfo(NecroLog::Level::Error, tr("connectToDevice: invalid QBluetoothDeviceInfo."));
 		return;
 	}
-	m_targetAddress = address.toUpper().trimmed();
+	m_deviceInfo = info;
 	emitInfo(NecroLog::Level::Info,
-	         tr("Starting BLE scan for device %1 ...").arg(m_targetAddress));
-	startScan();
+	         tr("Connecting to BLE device %1 %2 ...").arg(info.address().toString().toUpper()).arg(info.name()));
+	createController(info);
 }
 
 void BtSiDeviceDriver::disconnectFromDevice()
 {
-	if (m_discoveryAgent->isActive())
-		m_discoveryAgent->stop();
+	// if (m_discoveryAgent->isActive())
+	// 	m_discoveryAgent->stop();
 
 	for (auto *svc : m_services)
 		svc->deleteLater();
@@ -242,55 +254,52 @@ void BtSiDeviceDriver::disconnectFromDevice()
 // BtSiDeviceDriver — scan
 // ===========================================================================
 
-void BtSiDeviceDriver::startScan()
-{
-	if (m_discoveryAgent->isActive())
-		m_discoveryAgent->stop();
-	m_discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
-}
+// void BtSiDeviceDriver::startScan()
+// {
+// 	if (m_discoveryAgent->isActive())
+// 		m_discoveryAgent->stop();
+// 	m_discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+// }
 
-void BtSiDeviceDriver::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
-{
-	if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
-		return;
+// void BtSiDeviceDriver::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
+// {
+// 	if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
+// 		return;
 
-	bool matches = false;
+// 	bool matches = false;
+// 	qfInfo() << "BT device discovered:" << info.address().toString().toUpper() << info.name();
+// 	// MAC address format (Linux, Windows)
+// 	if (m_targetAddress.contains(':')) {
+// 		matches = info.address().toString().toUpper() == m_targetAddress;
+// 		// macOS: address() is always empty, fall back to name matching
+// 		if (!matches && info.address().isNull())
+// 			matches = !info.name().isEmpty() &&
+// 			          info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
+// 	} else {
+// 		// User entered a device name (useful on macOS where addresses are unavailable)
+// 		matches = info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
+// 	}
 
-	// MAC address format (Linux, Windows)
-	if (m_targetAddress.contains(':')) {
-		matches = info.address().toString().toUpper() == m_targetAddress;
-		// macOS: address() is always empty, fall back to name matching
-		if (!matches && info.address().isNull())
-			matches = !info.name().isEmpty() &&
-			          info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
-	} else {
-		// User entered a device name (useful on macOS where addresses are unavailable)
-		matches = info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
-	}
+// 	if (matches) {
+// 		emitInfo(NecroLog::Level::Info, tr("Found BLE device: %1 (%2)").arg(info.name(), info.address().toString()));
+// 		m_discoveryAgent->stop();
+// 		createController(info);
+// 	}
+// }
 
-	if (matches) {
-		emitInfo(NecroLog::Level::Info,
-		         tr("Found BLE device: %1 (%2)").arg(info.name(), info.address().toString()));
-		m_discoveryAgent->stop();
-		createController(info);
-	}
-}
+// void BtSiDeviceDriver::onScanFinished()
+// {
+// 	// Scan ended without finding the device (it would have been stopped early on match)
+// 	if (!m_controller) {
+// 		emitInfo(NecroLog::Level::Warning, tr("BLE scan finished — device %1 not found.").arg(m_targetAddress));
+// 	}
+// }
 
-void BtSiDeviceDriver::onScanFinished()
-{
-	// Scan ended without finding the device (it would have been stopped early on match)
-	if (!m_controller) {
-		emitInfo(NecroLog::Level::Warning,
-		         tr("BLE scan finished — device %1 not found.").arg(m_targetAddress));
-	}
-}
-
-void BtSiDeviceDriver::onScanError(QBluetoothDeviceDiscoveryAgent::Error error)
-{
-	Q_UNUSED(error)
-	emitInfo(NecroLog::Level::Error,
-	         tr("BLE scan error: %1").arg(m_discoveryAgent->errorString()));
-}
+// void BtSiDeviceDriver::onScanError(QBluetoothDeviceDiscoveryAgent::Error error)
+// {
+// 	Q_UNUSED(error)
+// 	emitInfo(NecroLog::Level::Error, tr("BLE scan error: %1").arg(m_discoveryAgent->errorString()));
+// }
 
 // ===========================================================================
 // BtSiDeviceDriver — GATT controller
@@ -306,7 +315,6 @@ void BtSiDeviceDriver::createController(const QBluetoothDeviceInfo &info)
 	connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BtSiDeviceDriver::onServiceDiscoveryFinished);
 
 	m_controller->connectToDevice();
-	emitInfo(NecroLog::Level::Info, tr("Connecting to BT SI device %1 ...").arg(m_targetAddress));
 }
 
 void BtSiDeviceDriver::onControllerConnected()
@@ -417,12 +425,11 @@ void BtSiDeviceDriver::checkAllServicesReady()
 	} else {
 		emitInfo(NecroLog::Level::Warning,
 		         tr("BT SI Reader: SI characteristics not found on device %1.")
-		             .arg(m_targetAddress));
+		             .arg(deviceInfo().address().toString()));
 	}
 }
 
-void BtSiDeviceDriver::onCharacteristicChanged(const QLowEnergyCharacteristic &ch,
-                                               const QByteArray &value)
+void BtSiDeviceDriver::onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value)
 {
 	if (ch.uuid() == m_cardStateUuid) {
 		QByteArray msg = m_cardStateReassembler.feed(value);
@@ -470,11 +477,9 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 	          << "state=" << state << "station=" << codeNumber;
 
 	if (state == 0) {
-		emitInfo(NecroLog::Level::Info,
-		         tr("SI card %1 removed from station %2.").arg(cardNumber).arg(codeNumber));
+		emitInfo(NecroLog::Level::Info, tr("SI card %1 removed from station %2.").arg(cardNumber).arg(codeNumber));
 	} else {
-		emitInfo(NecroLog::Level::Info,
-		         tr("SI card %1 inserted at station %2.").arg(cardNumber).arg(codeNumber));
+		emitInfo(NecroLog::Level::Info, tr("SI card %1 inserted at station %2.").arg(cardNumber).arg(codeNumber));
 	}
 }
 
