@@ -24,7 +24,7 @@ SIPunch::SIPunch(const QByteArray &card_data, int ix)
 	*/
 	time = static_cast<int>(getUnsigned(card_data, ix + 2, 2));
 	auto pdt = static_cast<uint8_t>(card_data[ix]);
-	uint16_t code_complete = static_cast<uint16_t>(((pdt & 0x60) >> 6) << 8);
+	auto code_complete = static_cast<uint16_t>(((pdt & 0x60) >> 6) << 8);
 	code_complete += static_cast<uint8_t>(card_data[ix + 1]);
 	code     = code_complete;
 	pmFlag   = pdt & 1;
