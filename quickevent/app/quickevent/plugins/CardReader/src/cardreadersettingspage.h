@@ -31,8 +31,6 @@ public:
 	virtual ~CardReaderSettingsPage();
 private:
 	void onTestConnectionClicked();
-	void onReaderTypeChanged(int index);
-	void updateReaderTypeVisibility();
 };
 }
 #endif // CARDREADERSETTINGSPAGE_H

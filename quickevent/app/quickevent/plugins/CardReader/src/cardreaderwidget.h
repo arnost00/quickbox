@@ -25,7 +25,7 @@ namespace framework { class PartWidget; class Plugin; }
 }
 
 
-namespace siut { class DeviceDriver; class CommPort; class BtSiDeviceDriver; class SICard; class SIPunch; }
+namespace siut { class DeviceDriver; class CommPort; class BtSiDeviceDriver; struct SICard; struct SIPunch; }
 
 namespace quickevent { namespace gui { namespace audio { class Player; }}}
 namespace quickevent { namespace core { namespace si { class ReadCard; class CheckedCard; }}}
@@ -56,7 +56,7 @@ class CardReaderWidget : public QFrame
 private:
 	typedef QFrame Super;
 public:
-	explicit CardReaderWidget(QWidget *parent = 0);
+	explicit CardReaderWidget(QWidget *parent = nullptr);
 	~CardReaderWidget() Q_DECL_OVERRIDE;
 
 	Q_SIGNAL void logRequest(NecroLog::Level level, const QString &msg);
@@ -68,12 +68,17 @@ public:
 	Q_SLOT void reload();
 
 private:
-        void onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source);
+	void onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source);
 	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
 	void appendLog(NecroLog::Level level, const QString &msg);
 	void processDriverInfo(NecroLog::Level level, const QString &msg);
 	void logDriverRawData(const QByteArray &data);
-	void onOpenCommTriggered(bool checked);
+	void onOpenUsbTriggered(bool checked);
+	void onOpenBtTriggered(bool checked);
+	void updateButtonsEnabled();
+
+	void updateConnectionInfoLabel();
+	void setConnectionInfoLabel(const QString &info, NecroLog::Level level);
 
 	void onSiTaskFinished(int task_type, QVariant result);
 

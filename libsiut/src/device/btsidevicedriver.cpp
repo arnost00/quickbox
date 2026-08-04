@@ -168,12 +168,9 @@ BtSiDeviceDriver::BtSiDeviceDriver(QObject *parent)
 	m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
 	m_discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
 
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-	        this, &BtSiDeviceDriver::onDeviceDiscovered);
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
-	        this, &BtSiDeviceDriver::onScanFinished);
-	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred,
-	        this, &BtSiDeviceDriver::onScanError);
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BtSiDeviceDriver::onDeviceDiscovered);
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &BtSiDeviceDriver::onScanFinished);
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this, &BtSiDeviceDriver::onScanError);
 }
 
 BtSiDeviceDriver::~BtSiDeviceDriver()
@@ -303,18 +300,13 @@ void BtSiDeviceDriver::createController(const QBluetoothDeviceInfo &info)
 {
 	m_controller = QLowEnergyController::createCentral(info, this);
 
-	connect(m_controller, &QLowEnergyController::connected,
-	        this, &BtSiDeviceDriver::onControllerConnected);
-	connect(m_controller, &QLowEnergyController::disconnected,
-	        this, &BtSiDeviceDriver::onControllerDisconnected);
-	connect(m_controller, &QLowEnergyController::errorOccurred,
-	        this, &BtSiDeviceDriver::onControllerError);
-	connect(m_controller, &QLowEnergyController::discoveryFinished,
-	        this, &BtSiDeviceDriver::onServiceDiscoveryFinished);
+	connect(m_controller, &QLowEnergyController::connected, this, &BtSiDeviceDriver::onControllerConnected);
+	connect(m_controller, &QLowEnergyController::disconnected, this, &BtSiDeviceDriver::onControllerDisconnected);
+	connect(m_controller, &QLowEnergyController::errorOccurred, this, &BtSiDeviceDriver::onControllerError);
+	connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BtSiDeviceDriver::onServiceDiscoveryFinished);
 
 	m_controller->connectToDevice();
-	emitInfo(NecroLog::Level::Info,
-	         tr("Connecting to BT SI device %1 ...").arg(m_targetAddress));
+	emitInfo(NecroLog::Level::Info, tr("Connecting to BT SI device %1 ...").arg(m_targetAddress));
 }
 
 void BtSiDeviceDriver::onControllerConnected()
@@ -365,8 +357,7 @@ void BtSiDeviceDriver::onServiceDiscoveryFinished()
 			continue;
 		}
 		m_services.append(svc);
-		connect(svc, &QLowEnergyService::stateChanged,
-		        this, &BtSiDeviceDriver::onServiceStateChanged);
+		connect(svc, &QLowEnergyService::stateChanged, this, &BtSiDeviceDriver::onServiceStateChanged);
 		svc->discoverDetails();
 	}
 

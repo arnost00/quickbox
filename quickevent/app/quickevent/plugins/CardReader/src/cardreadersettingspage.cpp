@@ -34,16 +34,9 @@ CardReaderSettingsPage::CardReaderSettingsPage(QWidget *parent)
 	ui->setupUi(this);
 
 	connect(ui->btTestConnection, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onTestConnectionClicked);
-	connect(ui->cbxReaderType, QOverload<int>::of(&QComboBox::currentIndexChanged),
-	        this, &CardReaderSettingsPage::onReaderTypeChanged);
 
 	m_caption = tr("Card reader");
 
-	{
-		auto *cbx = ui->cbxReaderType;
-		cbx->addItem(tr("Serial (RS232/USB)"), QStringLiteral("Serial"));
-		cbx->addItem(tr("BT SI Reader (Bluetooth LE)"), QStringLiteral("BTSIReader"));
-	}
 	{
 		auto *cbx = ui->cbxCardCheckType;
 		for(auto *checker : qf::gui::framework::getPlugin<CardReaderPlugin>()->cardCheckers()) {
@@ -88,19 +81,9 @@ void CardReaderSettingsPage::load()
 {
 	CardReaderSettings settings;
 
-	// Reader type (must be loaded first so updateReaderTypeVisibility works)
-	{
-		auto *cbx = ui->cbxReaderType;
-		cbx->setCurrentIndex(-1);
-		for(int i = 0; i < cbx->count(); ++i) {
-			if(cbx->itemData(i).toString() == settings.readerType()) {
-				cbx->setCurrentIndex(i);
-				break;
-			}
-		}
-		if(cbx->currentIndex() < 0)
-			cbx->setCurrentIndex(0);
-	}
+	// Reader enable flags
+	ui->grpSerial->setChecked(settings.isSerialEnabled());
+	ui->grpBt->setChecked(settings.isBtEnabled());
 
 	// Serial settings
 	{
@@ -150,14 +133,14 @@ void CardReaderSettingsPage::load()
 		}
 	}
 
-	updateReaderTypeVisibility();
 }
 
 void CardReaderSettingsPage::save()
 {
 	CardReaderSettings settings;
 
-	settings.setReaderType(ui->cbxReaderType->currentData().toString());
+	settings.setSerialEnabled(ui->grpSerial->isChecked());
+	settings.setBtEnabled(ui->grpBt->isChecked());
 	settings.setDevice(ui->lstDevice->currentText());
 	settings.setBaudRate(ui->lstBaudRate->currentText().toInt());
 	settings.setDataBits(ui->lstDataBits->currentText().toInt());
@@ -171,16 +154,7 @@ void CardReaderSettingsPage::save()
 	settings.setReaderMode(ui->cbxReaderMode->currentData().toString());
 }
 
-void CardReaderSettingsPage::onReaderTypeChanged(int /*index*/)
-{
-	updateReaderTypeVisibility();
-}
 
-void CardReaderSettingsPage::updateReaderTypeVisibility()
-{
-	bool is_bt = (ui->cbxReaderType->currentData().toString() == QStringLiteral("BTSIReader"));
-	ui->stackedReaderSettings->setCurrentWidget(is_bt ? ui->pageBtSiReader : ui->pageSerial);
-}
 
 void CardReaderSettingsPage::onTestConnectionClicked()
 {

@@ -1,9 +1,12 @@
 #include "cardreaderwidget.h"
+#include "necrolog/necrologlevel.h"
 #include "ui_cardreaderwidget.h"
 #include "cardreadersettings.h"
 
 #include "cardreaderplugin.h"
 #include "testcardreader.h"
+#include "../../Core/src/coreplugin.h"
+#include "../../Core/src/widgets/settingsdialog.h"
 
 #include <quickevent/gui/og/itemdelegate.h>
 #include <quickevent/gui/audio/player.h>
@@ -69,6 +72,7 @@ namespace qfd = qf::gui::dialogs;
 using qf::gui::framework::getPlugin;
 using Event::EventPlugin;
 using CardReader::CardReaderPlugin;
+using Core::CorePlugin;
 using Receipts::ReceiptsPlugin;
 using Runs::RunsPlugin;
 
@@ -218,10 +222,11 @@ CardReaderWidget::CardReaderWidget(QWidget *parent)
 	createActions();
 
 	{
-		ui->btComPort->setToolTip(tr("Connect to SI reader (serial or BT)"));
-		connect(ui->btComPort, &QPushButton::toggled, this, &CardReaderWidget::onOpenCommTriggered);
+		connect(ui->btUsbReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenUsbTriggered);
+		connect(ui->btBtReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenBtTriggered);
 	}
-	ui->lblConnectionInfo->setText(tr("SI station not connected"));
+	ui->lblConnectionInfo->setText(tr("Not connected"));
+	updateButtonsEnabled();
 #ifdef QT_DEBUG
 	{
 		connect(ui->btTest, &QPushButton::clicked, this, &CardReaderWidget::onTestButtonClicked2);
@@ -476,6 +481,7 @@ void CardReaderWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		}
 	}
 	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::dbEventNotify, this, &CardReaderWidget::onDbEventNotify, Qt::QueuedConnection);
+	connect(getPlugin<CorePlugin>()->settingsDialog(), &QDialog::finished, this, &CardReaderWidget::updateButtonsEnabled);
 }
 
 void CardReaderWidget::reset()
@@ -583,16 +589,43 @@ siut::BtSiDeviceDriver *CardReaderWidget::btDriver()
 	return m_btDriver;
 }
 
+void CardReaderWidget::setConnectionInfoLabel(const QString &info, NecroLog::Level level)
+{
+	ui->lblConnectionInfo->setText(info);
+	ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "bacground: salmon": "");
+}
+
+void CardReaderWidget::updateButtonsEnabled()
+{
+	CardReaderSettings settings;
+	bool serial_enabled = settings.isSerialEnabled();
+	bool bt_enabled = settings.isBtEnabled();
+	ui->btUsbReader->setEnabled(serial_enabled);
+	if(!serial_enabled && ui->btUsbReader->isChecked())
+		ui->btUsbReader->setChecked(false); // triggers onOpenUsbTriggered(false) -> closeComm
+	ui->btBtReader->setEnabled(bt_enabled);
+	if(!bt_enabled && ui->btBtReader->isChecked())
+		ui->btBtReader->setChecked(false); // triggers onOpenBtTriggered(false) -> disconnectFromDevice
+}
+
+void CardReaderWidget::updateConnectionInfoLabel()
+{
+	QStringList parts;
+	if(m_commPort && m_commPort->isOpen())
+		parts << tr("USB: %1").arg(m_commPort->portName());
+	if(m_btDriver && m_btDriver->isConnected()) {
+		CardReaderSettings settings;
+		parts << tr("BT: %1").arg(settings.btsiAddress());
+	}
+	setConnectionInfoLabel(parts.isEmpty() ? tr("Not connected") : parts.join(QLatin1String(" | ")), NecroLog::Level::Info);
+}
+
 void CardReaderWidget::onBtConnectionChanged(bool connected)
 {
-	if(connected) {
-		CardReaderSettings settings;
-		ui->lblConnectionInfo->setText(
-			tr("Connected to BT SI Reader %1.").arg(settings.btsiAddress()));
-	} else {
-		ui->lblConnectionInfo->setText(tr("BT SI Reader not connected"));
-		ui->btComPort->setChecked(false);
-	}
+	// keep the button in sync (e.g. on unexpected disconnect)
+	QSignalBlocker blocker(ui->btBtReader);
+	ui->btBtReader->setChecked(connected);
+	updateConnectionInfoLabel();
 }
 
 void CardReaderWidget::onComOpenChanged(bool comm_is_open)
@@ -600,54 +633,59 @@ void CardReaderWidget::onComOpenChanged(bool comm_is_open)
 	if(comm_is_open) {
 		auto *cmd = new siut::SiTaskSetDirectRemoteMode(siut::SiTaskSetDirectRemoteMode::Mode::Direct);
 		connect(cmd, &siut::SiTaskSetDirectRemoteMode::finished, this, [this](bool ok) {
-			if(ok) {
-				ui->lblConnectionInfo->setText(tr("Connected to %1 in direct mode.").arg(this->commPort()->portName()));
-			}
-			else {
-				ui->lblConnectionInfo->setText(tr("Error set SI station to direct mode."));
-			}
+			if(!ok)
+				qfWarning() << "Error setting SI station to direct mode";
+			updateConnectionInfoLabel();
 		});
 		siDriver()->setSiTask(cmd);
 	}
 	else {
-		ui->lblConnectionInfo->setText(tr("SI station not connected"));
+		QSignalBlocker blocker(ui->btUsbReader);
+		ui->btUsbReader->setChecked(false);
+		updateConnectionInfoLabel();
 	}
 }
 
-void CardReaderWidget::onOpenCommTriggered(bool checked)
+void CardReaderWidget::onOpenUsbTriggered(bool checked)
 {
 	qfLogFuncFrame() << "checked:" << checked;
-	CardReaderSettings settings;
-	if(settings.readerTypeEnum() == CardReaderSettings::ReaderType::BTSIReader) {
-		if(checked) {
-			QString address = settings.btsiAddress();
-			if(address.isEmpty()) {
-				qf::gui::dialogs::MessageBox::showError(
-					this, tr("BT SI Reader: no device address configured.\n"
-					         "Please set it in Settings → Card reader."));
-				ui->btComPort->setChecked(false);
-				return;
-			}
-			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1…").arg(address));
-			btDriver()->connectToDevice(address);
-		} else {
-			btDriver()->disconnectFromDevice();
+	if(checked) {
+		CardReaderSettings settings;
+		QString device = settings.device();
+		int baud_rate = settings.baudRate();
+		int data_bits = settings.dataBits();
+		int stop_bits = settings.stopBits();
+		QString parity = settings.parity();
+		if(!commPort()->openComm(device, baud_rate, data_bits, parity, stop_bits > 1)) {
+			QString error_msg = commPort()->errorToUserHint();
+			qf::gui::dialogs::MessageBox::showError(
+				this, tr("Error open device %1 - %2").arg(device, error_msg));
+			QSignalBlocker blocker(ui->btUsbReader);
+			ui->btUsbReader->setChecked(false);
 		}
 	} else {
-		if(checked) {
-			QString device = settings.device();
-			int baud_rate = settings.baudRate();
-			int data_bits = settings.dataBits();
-			int stop_bits = settings.stopBits();
-			QString parity = settings.parity();
-			if(!commPort()->openComm(device, baud_rate, data_bits, parity, stop_bits > 1)) {
-				QString error_msg = commPort()->errorToUserHint();
-				qf::gui::dialogs::MessageBox::showError(
-					this, tr("Error open device %1 - %2").arg(device, error_msg));
-			}
-		} else {
-			commPort()->closeComm();
+		commPort()->closeComm();
+	}
+}
+
+void CardReaderWidget::onOpenBtTriggered(bool checked)
+{
+	qfLogFuncFrame() << "checked:" << checked;
+	if(checked) {
+		CardReaderSettings settings;
+		QString address = settings.btsiAddress();
+		if(address.isEmpty()) {
+			qf::gui::dialogs::MessageBox::showError(
+				this, tr("BT SI Reader: no device address configured.\n"
+				         "Please set it in Settings \u2192 Card reader."));
+			QSignalBlocker blocker(ui->btBtReader);
+			ui->btBtReader->setChecked(false);
+			return;
 		}
+		ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1\u2026").arg(address));
+		btDriver()->connectToDevice(address);
+	} else {
+		btDriver()->disconnectFromDevice();
 	}
 }
 
@@ -683,6 +721,7 @@ void CardReaderWidget::onSiTaskFinished(int task_type, QVariant result)
 
 void CardReaderWidget::processDriverInfo(NecroLog::Level level, const QString& msg)
 {
+	setConnectionInfoLabel(msg, level);
 	CardReaderSettings settings;
 	if(settings.isShowRawComData()) {
 		if(level == NecroLog::Level::Debug)

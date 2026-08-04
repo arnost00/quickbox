@@ -6,10 +6,3 @@ CardReaderSettings::ReaderMode CardReaderSettings::readerModeEnum() const
 		return ReaderMode::EditOnPunch;
 	return ReaderMode::Readout;
 }
-
-CardReaderSettings::ReaderType CardReaderSettings::readerTypeEnum() const
-{
-	if(readerType() == "BTSIReader")
-		return ReaderType::BTSIReader;
-	return ReaderType::Serial;
-}
