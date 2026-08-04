@@ -827,7 +827,9 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 		ecfg.director = QString();
 		ecfg.sportId = static_cast<int>(Event::EventConfig::Sport::OB);
 		ecfg.disciplineId = static_cast<int>(discipline);
-		ecfg.importId = event_id;
+		if (creator == XmlCreators::Oris) {
+			ecfg.importId = event_id; // importId is used only as ORIS ID
+		}
 		ecfg.time = event_race.datetime.time();
 		ecfg.iofRace = true;
 		ecfg.iofXmlRaceNumber = (races.size() > 1) ? event_race.number : 0;
