@@ -1,6 +1,7 @@
 <RCC>
 	<qresource prefix="/qf/gui/images/lucide">
 		<file>acrobat.svg</file>
+		<file>bluetooth.svg</file>
 		<file alias="home.svg">house.svg</file>
 		<file alias="new.svg">file-plus-corner.svg</file>
 		<file alias="open.svg">folder-open.svg</file>

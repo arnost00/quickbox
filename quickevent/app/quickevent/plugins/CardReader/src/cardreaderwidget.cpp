@@ -32,6 +32,7 @@
 #include <qf/gui/combobox.h>
 #include <qf/gui/dialogbuttonbox.h>
 #include <qf/gui/htmlviewwidget.h>
+#include <qf/gui/style.h>
 #include <qf/gui/menubar.h>
 #include <qf/gui/toolbar.h>
 #include <qf/gui/dialogs/dialog.h>
@@ -221,10 +222,11 @@ CardReaderWidget::CardReaderWidget(QWidget *parent)
 
 	createActions();
 
-	{
-		connect(ui->btUsbReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenUsbTriggered);
-		connect(ui->btBtReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenBtTriggered);
-	}
+	connect(ui->btUsbReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenUsbTriggered);
+	connect(ui->btBtReader, &QPushButton::toggled, this, &CardReaderWidget::onOpenBtTriggered);
+
+	ui->btBtReader->setIcon(qf::gui::Style::icon("bluetooth"));
+
 	ui->lblConnectionInfo->setText(tr("Not connected"));
 	updateButtonsEnabled();
 #ifdef QT_DEBUG
