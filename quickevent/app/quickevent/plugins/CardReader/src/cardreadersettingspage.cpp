@@ -19,10 +19,13 @@
 
 #include <qf/core/log.h>
 
+#include <algorithm>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QBluetoothDeviceInfo>
 #include <QLineEdit>
-#include <QSerialPortInfo>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QSerialPortInfo>
 #include <QTimer>
 
 namespace CardReader {
@@ -34,6 +37,10 @@ CardReaderSettingsPage::CardReaderSettingsPage(QWidget *parent)
 	ui->setupUi(this);
 
 	connect(ui->btTestConnection, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onTestConnectionClicked);
+	connect(ui->btScanBt, &QAbstractButton::clicked, this, &CardReaderSettingsPage::onScanBtClicked);
+	connect(ui->cbxBtsiAddress, qOverload<int>(&QComboBox::activated), this, [this](int index) {
+		ui->cbxBtsiAddress->setCurrentText(ui->cbxBtsiAddress->itemData(index).toString());
+	});
 
 	m_caption = tr("Card reader");
 
@@ -102,7 +109,7 @@ void CardReaderSettingsPage::load()
 	ui->chkDisableCRCCheck->setChecked(settings.isDisableCRCCheck());
 
 	// BT SI Reader settings
-	ui->edBtsiAddress->setText(settings.btsiAddress());
+	ui->cbxBtsiAddress->setCurrentText(settings.btsiAddress());
 
 	{
 		auto *cbx = ui->cbxCardCheckType;
@@ -148,13 +155,65 @@ void CardReaderSettingsPage::save()
 	settings.setParity(ui->lstParity->currentText());
 	settings.setShowRawComData(ui->chkShowRawComData->isChecked());
 	settings.setDisableCRCCheck(ui->chkDisableCRCCheck->isChecked());
-	settings.setBtsiAddress(ui->edBtsiAddress->text().trimmed().toUpper());
+	{
+		const int ix = ui->cbxBtsiAddress->currentIndex();
+		const QString addr = (ix >= 0)
+			? ui->cbxBtsiAddress->currentData().toString()
+			: ui->cbxBtsiAddress->currentText();
+		settings.setBtsiAddress(addr.trimmed().toUpper());
+	}
 
 	settings.setCardCheckType(ui->cbxCardCheckType->currentData().toString());
 	settings.setReaderMode(ui->cbxReaderMode->currentData().toString());
 }
 
 
+
+void CardReaderSettingsPage::onScanBtClicked()
+{
+	ui->btScanBt->setEnabled(false);
+	ui->btScanBt->setText(tr("Scanning..."));
+
+	if (m_btDiscoveryAgent) {
+		m_btDiscoveryAgent->stop();
+		m_btDiscoveryAgent->deleteLater();
+	}
+	m_btDiscoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+	m_btDiscoveryAgent->setLowEnergyDiscoveryTimeout(10000);
+
+	connect(m_btDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, [this]() {
+		ui->btScanBt->setEnabled(true);
+		ui->btScanBt->setText(tr("Scan"));
+
+		const auto devices = m_btDiscoveryAgent->discoveredDevices();
+		QList<QBluetoothDeviceInfo> bleDevices;
+		for (const auto &dev : devices) {
+			if (dev.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+				bleDevices.append(dev);
+		}
+		std::stable_sort(bleDevices.begin(), bleDevices.end(), [](const QBluetoothDeviceInfo &a, const QBluetoothDeviceInfo &b) {
+			return a.name().startsWith(QLatin1String("Reader BT")) > b.name().startsWith(QLatin1String("Reader BT"));
+		});
+		const QString current = ui->cbxBtsiAddress->currentText();
+		ui->cbxBtsiAddress->clear();
+		for (const auto &dev : bleDevices) {
+			const QString address = dev.address().isNull() ? dev.name() : dev.address().toString().toUpper();
+			const QString label = dev.name().isEmpty() ? address : QStringLiteral("%1  (%2)").arg(dev.name(), address);
+			ui->cbxBtsiAddress->addItem(label, address);
+		}
+		ui->cbxBtsiAddress->setCurrentText(current);
+	});
+
+	connect(m_btDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this,
+		[this](QBluetoothDeviceDiscoveryAgent::Error error) {
+			Q_UNUSED(error)
+			ui->btScanBt->setEnabled(true);
+			ui->btScanBt->setText(tr("Scan"));
+			QMessageBox::warning(this, tr("Scan"), tr("Bluetooth scan error: %1").arg(m_btDiscoveryAgent->errorString()));
+		});
+
+	m_btDiscoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+}
 
 void CardReaderSettingsPage::onTestConnectionClicked()
 {

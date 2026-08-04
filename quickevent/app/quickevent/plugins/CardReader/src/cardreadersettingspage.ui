@@ -212,9 +212,19 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="edBtsiAddress">
+          <widget class="QComboBox" name="cbxBtsiAddress">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
            <property name="placeholderText">
             <string>e.g. CC:DA:B5:74:95:82</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="btScanBt">
+           <property name="text">
+            <string>Scan</string>
            </property>
           </widget>
          </item>
@@ -315,7 +325,8 @@
   <tabstop>lstStopBits</tabstop>
   <tabstop>lstParity</tabstop>
   <tabstop>btTestConnection</tabstop>
-  <tabstop>edBtsiAddress</tabstop>
+  <tabstop>cbxBtsiAddress</tabstop>
+  <tabstop>btScanBt</tabstop>
   <tabstop>chkShowRawComData</tabstop>
   <tabstop>chkDisableCRCCheck</tabstop>
   <tabstop>cbxCardCheckType</tabstop>

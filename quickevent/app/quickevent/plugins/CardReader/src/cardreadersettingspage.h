@@ -10,6 +10,8 @@
 
 #include "../../Core/src/widgets/settingspage.h"
 
+class QBluetoothDeviceDiscoveryAgent;
+
 namespace CardReader {
 
 namespace Ui {class CardReaderSettingsPage;}
@@ -23,6 +25,7 @@ class  CardReaderSettingsPage : public Core::SettingsPage
 	using Super = Core::SettingsPage;
 private:
 	Ui::CardReaderSettingsPage *ui;
+	QBluetoothDeviceDiscoveryAgent *m_btDiscoveryAgent = nullptr;
 protected:
 	void load();
 	void save();
@@ -31,6 +34,7 @@ public:
 	virtual ~CardReaderSettingsPage();
 private:
 	void onTestConnectionClicked();
+	void onScanBtClicked();
 };
 }
 #endif // CARDREADERSETTINGSPAGE_H
