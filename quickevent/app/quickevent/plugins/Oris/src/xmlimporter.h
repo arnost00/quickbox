@@ -75,6 +75,7 @@ protected:
 
 	QString genFakeCzClubAbbr(QString country);
 	QMap <QString,int> fakeCzClubMap;
+	QSet <QString> fakeCzClubSet;	// for duplicity check
 };
 
 #endif // XMLIMPORTER_H

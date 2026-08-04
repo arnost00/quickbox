@@ -543,14 +543,21 @@ bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators crea
 
 QString XmlImporter::genFakeCzClubAbbr(QString country)
 {
-	if (country.isEmpty())
+	if (country.isEmpty()) {
 		return "";
-	QString c = QString(country[0]);
-	int pos = fakeCzClubMap[c];
-	fakeCzClubMap[c]++;
-	QString result = QString("%1%2").arg(c).arg(pos,2,36,QLatin1Char('0')).toUpper();
-	if (result == country)
-		return genFakeCzClubAbbr(country);
+	}
+	QString c = QString(country.at(0));
+	QString result;
+	do {
+		int pos = fakeCzClubMap[c];
+		result = QString("%1%2").arg(c).arg(pos,2,36,QLatin1Char('0')).toUpper();
+		fakeCzClubMap[c]++;
+		if (result == country) {
+			result = genFakeCzClubAbbr(country);
+		}
+	} while (fakeCzClubSet.contains(result));
+
+	fakeCzClubSet.insert(result);
 	return result;
 }
 
@@ -563,8 +570,10 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 	q.exec("DELETE FROM clubs", qf::core::Exception::Throw);
 	q.prepare("INSERT INTO clubs (name, abbr, importId) VALUES (:name, :abbr, :importId)", qf::core::Exception::Throw);
 	int items_processed = 0;
-	if (creator == XmlCreators::Eventor)
+	if (creator == XmlCreators::Eventor) {
 		fakeCzClubMap.clear();
+		fakeCzClubSet.clear();
+	}
 	while(reader.readNextStartElement()) {
 		if(reader.name().toString() == "Organisation" && reader.attributes().hasAttribute("type")) {
 			QString name;
@@ -638,6 +647,7 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 					if (federation_iof) {
 						q.bindValue(":abbr", country_code);
 						q.bindValue(":name", country);
+						fakeCzClubSet.insert(country_code);
 					}
 					else {
 						q.bindValue(":name", name);
@@ -670,6 +680,7 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 		}
 		qfInfo() << "Maximum clubs from one country was" << max_item << "in" << key;
 		fakeCzClubMap.clear();
+		fakeCzClubSet.clear();
 	}
 	return items_processed > 0;
 }
