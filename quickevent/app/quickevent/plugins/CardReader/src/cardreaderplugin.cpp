@@ -567,32 +567,25 @@ bool CardReaderPlugin::processCardToRunAssignment(int card_id, int run_id)
 			QVariant next_leg_start_time = q.value(1);
 			int next_leg_finish_time = q.value(2).toInt();
 			if (next_leg_start_time.isNull()) {
-				// if next leg is finished and has not start time set,
-				// proces it too This covers cases when next leg is read-out
-				// before this one
+				// if next leg is finished and has not start time set, proces it too
+				// This covers cases when next leg is read-out before this one
 				if (next_leg_finish_time > 0) {
-					int next_leg_card_id =
-							getPlugin<RunsPlugin>()->cardForRun(next_leg_run_id);
-					processCardToRunAssignment(next_leg_card_id,
-											   next_leg_run_id);
+					int next_leg_card_id = getPlugin<RunsPlugin>()->cardForRun(next_leg_run_id);
+					processCardToRunAssignment(next_leg_card_id, next_leg_run_id);
 				}
 				// set start time for next leg, and publish the change
 				else {
 					int new_next_leg_start_time = checked_card.finishTimeMs();
 					setStartTime(relay_id, leg + 1, new_next_leg_start_time);
-					int competitor_id =
-							getPlugin<RunsPlugin>()->competitorForRun(
-								next_leg_run_id);
-					getPlugin<EventPlugin>()->emitDbEvent(
-								Event::EventPlugin::DBEVENT_COMPETITOR_EDITED,
-								competitor_id);
-					QVariantList param{
+					int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(next_leg_run_id);
+					getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED, competitor_id);
+					QVariantList param {
 						next_leg_run_id,
-								QVariantMap{
+						QVariantMap{
 							{"runs.startTimeMs", new_next_leg_start_time},
-						}};
-					getPlugin<EventPlugin>()->emitDbEvent(
-								Event::EventPlugin::DBEVENT_RUN_CHANGED, param);
+						}
+					};
+					getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_RUN_CHANGED, param);
 				}
 			}
 		}
