@@ -3,39 +3,35 @@
 
 #include <siut/siutglobal.h>
 
-#include <qf/core/utils.h>
-
-#include <QSharedDataPointer>
+#include <QByteArray>
 #include <QVariantMap>
 
 namespace siut {
 
-class SIUT_DECL_EXPORT SIPunch : public QVariantMap
+struct SIUT_DECL_EXPORT SIPunch
 {
-	using Super = QVariantMap;
-public:
 	enum DayOfWeek {Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday};
-public:
-	SIPunch();
-	SIPunch(const QVariantMap &o) : Super(o) {}
+
+	int cardNumber = 0;
+	int code = 0;
+	int time = 0;
+	int msec = 0;
+	bool pmFlag = false;
+	int dayOfWeek = 0;
+	int weekCnt = 0;
+
+	SIPunch() = default;
 	SIPunch(int code, int time);
 	SIPunch(const QByteArray &card_data, int ix);
 
-	QF_VARIANTMAP_FIELD(int, c, setC, ardNumber)
-	QF_VARIANTMAP_FIELD(int, c, setC, ode)
-	QF_VARIANTMAP_FIELD(int, t, setT, ime)
-	QF_VARIANTMAP_FIELD(int, m, setM, sec)
-	QF_VARIANTMAP_FIELD(bool, p, setP, mFlag)
-	QF_VARIANTMAP_FIELD(int, d, setD, ayOfWeek)
-	QF_VARIANTMAP_FIELD(int, w, setW, eekCnt)
+	static SIPunch fromVariantMap(const QVariantMap &m);
+	QVariantMap toVariantMap() const;
 
-//	QString toString() const; - undefined
+	bool operator==(const SIPunch &other) const;
 
 	static unsigned getUnsigned(const QByteArray &ba, int ix, int byte_cnt = 2);
 };
 
 } // namespace siut
-
-//Q_DECLARE_METATYPE(siut::SIPunch)
 
 #endif // SIPUNCH_H

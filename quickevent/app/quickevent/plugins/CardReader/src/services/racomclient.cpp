@@ -86,27 +86,27 @@ void RacomClientSirxdConnection::onReadyRead()
 			};
 			QList<QByteArray> splits = rec.split(';');
 			siut::SICard card;
-			card.setCardNumber(splits.value(ColCardNumber).toInt());
+			card.cardNumber = splits.value(ColCardNumber).toInt();
 			int secs, msecs;
 			parse_time(splits.value(ColCheckTime), secs, msecs);
-			card.setCheckTime(secs);
+			card.checkTime = secs;
 			parse_time(splits.value(ColStartTime), secs, msecs);
-			card.setStartTime(secs);
+			card.startTime = secs;
 			parse_time(splits.value(ColFinishTime), secs, msecs);
-			card.setFinishTime(secs);
-			card.setFinishTimeMs(msecs);
+			card.finishTime   = secs;
+			card.finishTimeMs = msecs;
 			int punch_cnt = splits.value(ColPunchCount).toInt();
-			QVariantList punches;
+			siut::SICard::PunchList punches;
 			for (int i = 0; i < punch_cnt; ++i) {
 				siut::SIPunch punch;
-				punch.setCode(splits.value(ColPunchCount + 1 + (3*i) + 0).toInt());
+				punch.code = splits.value(ColPunchCount + 1 + (3*i) + 0).toInt();
 				parse_time(splits.value(ColPunchCount + 1 + (3*i) + 1), secs, msecs);
-				punch.setTime(secs);
-				punch.setMsec(msecs);
+				punch.time = secs;
+				punch.msec = msecs;
 				punches << punch;
 			}
-			card.setPunches(punches);
-			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::CardRead, card);
+			card.punches = punches;
+			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::CardRead, card.toVariantMap());
 		}
 		else if(rec.startsWith(SPLIT)) {
 			enum {
@@ -116,13 +116,13 @@ void RacomClientSirxdConnection::onReadyRead()
 			};
 			QList<QByteArray> splits = rec.split(';');
 			siut::SIPunch punch;
-			punch.setCardNumber(splits.value(ColCardNumber).toInt());
-			punch.setCode(splits.value(ColCode).toInt());
+			punch.cardNumber = splits.value(ColCardNumber).toInt();
+			punch.code = splits.value(ColCode).toInt();
 			int secs, msecs;
 			parse_time(splits.value(ColTime), secs, msecs);
-			punch.setTime(secs);
-			punch.setMsec(msecs);
-			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::Punch, punch);
+			punch.time = secs;
+			punch.msec = msecs;
+			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::Punch, punch.toVariantMap());
 		}
 		else {
 			qfWarning() << "Throwing away unrecognised sirxd message:" << QString::fromUtf8(rec);
@@ -175,17 +175,17 @@ void RacomReadSplitFile::readAndProcessFile()
 				continue;
 
 			siut::SIPunch punch;
-			punch.setCardNumber(QStringView(text[i]).left(8).toInt());
+			punch.cardNumber = QStringView(text[i]).left(8).toInt();
 			int code = QStringView(text[i]).mid(9,4).toInt();
 			if (code == m_finishCode)
 				code = quickevent::core::CodeDef::FINISH_PUNCH_CODE;
-			punch.setCode(code);
+			punch.code = code;
 
 			QTime t = QTime::fromString(text[i].right(10),"hh:mm:ss.z");
 			int secs = QTime(0,0).secsTo(t);
 			int msecs = t.msec();
-			punch.setTime(secs);
-			punch.setMsec(msecs);
+			punch.time = secs;
+			punch.msec = msecs;
 			if (!punches.contains(punch))	// remove duplicate punches
 				punches.append(punch);
 		}
@@ -193,7 +193,7 @@ void RacomReadSplitFile::readAndProcessFile()
 
 		// add new punches
 		for (auto& punch : punches) {
-			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::Punch, punch);
+			getPlugin<CardReaderPlugin>()->emitSiTaskFinished((int)siut::SiTask::Type::Punch, punch.toVariantMap());
 		}
 	}
 }
