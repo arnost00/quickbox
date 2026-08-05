@@ -130,6 +130,8 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 	ui->ed_cardChecCheckTimeSec->setValue(params.eventConfig.cardCheckTimeSec);
 	ui->ed_iofRace->setChecked(params.eventConfig.iofRace);
 	ui->ed_xmlRaceNumber->setValue(params.eventConfig.iofXmlRaceNumber);
+	ui->pointResults->setChecked(params.eventConfig.pointResults);
+	ui->pointResultsMaxPoints->setValue(params.eventConfig.pointResultsMaxPoints > 0 ? params.eventConfig.pointResultsMaxPoints : 1000);
 }
 
 EventDialogWidget::Params EventDialogWidget::saveParams()
@@ -160,6 +162,8 @@ EventDialogWidget::Params EventDialogWidget::saveParams()
 	params.eventConfig.cardCheckTimeSec = ui->ed_cardChecCheckTimeSec->value();
 	params.eventConfig.iofRace = ui->ed_iofRace->isChecked();
 	params.eventConfig.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
+	params.eventConfig.pointResults = ui->pointResults->isChecked();
+	params.eventConfig.pointResultsMaxPoints = ui->pointResultsMaxPoints->value();
 	return params;
 }
 

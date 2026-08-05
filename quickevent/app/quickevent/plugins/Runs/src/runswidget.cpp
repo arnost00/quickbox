@@ -218,6 +218,17 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 				connect(a, &qfw::Action::triggered, getPlugin<RunsPlugin>(), &Runs::RunsPlugin::report_nStagesAwards);
 				m->addActionInto(a);
 			}
+			m->addSeparatorInto();
+			{
+				auto *a = new qfw::Action(tr("Points after n stages condensed"));
+				connect(a, &qfw::Action::triggered, getPlugin<RunsPlugin>(), &Runs::RunsPlugin::report_resultsPointsNStagesCondensed);
+				m->addActionInto(a);
+			}
+			{
+				auto *a = new qfw::Action(tr("Points after n stages"));
+				connect(a, &qfw::Action::triggered, getPlugin<RunsPlugin>(), &Runs::RunsPlugin::report_resultsPointsNStages);
+				m->addActionInto(a);
+			}
 		}
 	}
 	a_print->addSeparatorInto();
@@ -1301,4 +1312,3 @@ void RunsWidget::updateLegsComboBox()
 		m_cbxLeg->blockSignals(false);
 	}
 }
-

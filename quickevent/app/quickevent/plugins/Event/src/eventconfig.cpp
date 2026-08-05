@@ -44,6 +44,8 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	data.cardCheckTimeSec = values.value("cardChechCheckTimeSec").toInt();
 	data.iofRace = values.value("iofRace").toBool();
 	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
+	data.pointResults = values.value("pointResults").toBool();
+	data.pointResultsMaxPoints = values.value("pointResultsMaxPoints", 1000).toInt();
 	data.currentStageId = values.value("currentStageId", 1).toInt();
 	return data;
 }
@@ -79,6 +81,8 @@ QVariantMap EventConfig::toVariantMap() const
 	values.insert("cardChechCheckTimeSec", cardCheckTimeSec);
 	values.insert("iofRace", iofRace);
 	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
+	values.insert("pointResults", pointResults);
+	values.insert("pointResultsMaxPoints", pointResultsMaxPoints);
 	values.insert("currentStageId", currentStageId);
 	return values;
 }
