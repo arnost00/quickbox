@@ -716,19 +716,156 @@ QVariant RunsPlugin::nstagesResultsTableData(int stages_count, int places, bool 
 	return nstagesResultsTable(stages_count, places, exclude_disq).toVariant();
 }
 */
+
+qf::core::utils::Table RunsPlugin::nstagesClassPointResultsTable(int stages_count, int class_id, int max_points, int places, bool exclude_disq)
+{
+	namespace qfs = qf::core::sql;
+	namespace qfu = qf::core::utils;
+	qfs::QueryBuilder qb;
+	qb.select2("competitors", "id, registration, licence")
+		.select2("clubs", "name, abbr")
+		.select("COALESCE(competitors.lastName, '') || ' ' || COALESCE(competitors.firstName, '') AS competitorName")
+		.from("competitors")
+		.join("LEFT JOIN clubs ON substr(competitors.registration, 1, 3) = clubs.abbr")
+		.where("competitors.classId=" QF_IARG(class_id));
+	for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
+		qb.select("0 AS points" QF_IARG(stage_id));
+		qb.select("'' AS pos" QF_IARG(stage_id));
+	}
+	qb.select("0 AS totalPoints");
+	qb.select("'' AS pos");
+	qf::gui::model::SqlTableModel mod;
+	mod.setQueryBuilder(qb, false);
+	mod.reload();
+	QMap<int, int> competitor_id_to_row;
+	for (int j = 0; j < mod.rowCount(); ++j) {
+		competitor_id_to_row[mod.value(j, "competitors.id").toInt()] = j;
+	}
+	for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
+		qfs::QueryBuilder qb2;
+		qb2.select2("runs", "competitorId, timeMs, notCompeting, disqualified")
+			.from("competitors")
+			.joinRestricted("competitors.id", "runs.competitorId",
+				"runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0", "JOIN")
+			.where("competitors.classId=" QF_IARG(class_id))
+			.orderBy("runs.notCompeting, runs.disqualified, runs.timeMs");
+		qfs::Query q;
+		q.exec(qb2.toString());
+		int best_time = 0;
+		while (q.next()) {
+			if (!q.value("notCompeting").toBool() && !q.value("disqualified").toBool()) {
+				int t = q.value("timeMs").toInt();
+				if (t > 0 && t < UNREAL_TIME_MSEC) {
+					best_time = t;
+					break;
+				}
+			}
+		}
+		q.exec(qb2.toString());
+		while (q.next()) {
+			int competitor_id = q.value("competitorId").toInt();
+			int row_ix = competitor_id_to_row.value(competitor_id, -1);
+			QF_ASSERT(row_ix >= 0, "Bad row index!", continue);
+			QString p;
+			if (q.value("notCompeting").toBool())
+				p = "N";
+			else if (q.value("disqualified").toBool())
+				p = "D";
+			mod.setValue(row_ix, QString("pos%1").arg(stage_id), p);
+			int time_ms = q.value("timeMs").toInt();
+			int points = 0;
+			if (p.isEmpty() && best_time > 0 && time_ms > 0 && time_ms < UNREAL_TIME_MSEC) {
+				points = static_cast<int>(static_cast<double>(max_points) * best_time / time_ms);
+			}
+			mod.setValue(row_ix, QString("points%1").arg(stage_id), points);
+		}
+	}
+	for (int j = 0; j < mod.rowCount(); ++j) {
+		int total = 0;
+		for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
+			total += mod.value(j, QString("points%1").arg(stage_id)).toInt();
+		}
+		mod.setValue(j, "totalPoints", total);
+	}
+	qfu::Table t = mod.table();
+	t.sort("totalPoints DESC");
+	int pos = 0;
+	int total1 = 0;
+	int prev_total = 0;
+	int prev_pos = 0;
+	int trim_at = -1;
+	for (int j = 0; j < t.rowCount(); ++j) {
+		++pos;
+		int total = t.row(j).value("totalPoints").toInt();
+		QString p;
+		if (total > 0) {
+			if (total1 == 0)
+				total1 = total;
+			int cur_pos = (total == prev_total) ? prev_pos : pos;
+			prev_pos = cur_pos;
+			p = QString::number(cur_pos) + '.';
+		} else {
+			if (exclude_disq) {
+				trim_at = j;
+				break;
+			}
+		}
+		prev_total = total;
+		t.rowRef(j).setValue("pos", p);
+	}
+	if (trim_at < 0) {
+		if (places > 0)
+			trim_at = places;
+	} else {
+		if (places > 0 && trim_at > places)
+			trim_at = places;
+	}
+	if (trim_at >= 0)
+		while (t.rowCount() > trim_at)
+			t.removeRow(trim_at);
+	return t;
+}
+
+qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places, bool exclude_disq)
+{
+	qfLogFuncFrame();
+	qf::gui::model::SqlTableModel mod;
+	{
+		qfs::QueryBuilder qb;
+		qb.select2("classes", "id, name")
+			.from("classes")
+			.orderBy("name");
+		if (!class_filter.isEmpty())
+			qb.where(class_filter);
+		mod.setQueryBuilder(qb, false);
+	}
+	mod.reload();
+	qfu::TreeTable tt = mod.toTreeTable();
+	for (int i = 0; i < tt.rowCount(); i++) {
+		qfu::TreeTableRow tt_row = tt.row(i);
+		int class_id = tt_row.value(QStringLiteral("id")).toInt();
+		qfu::Table t = nstagesClassPointResultsTable(stages_count, class_id, max_points, places, exclude_disq);
+		qfu::TreeTable tt2 = t.toTreeTable();
+		tt_row.appendTable(tt2);
+		tt.setRow(i, tt_row);
+	}
+	tt.setValue("stagesCount", stages_count);
+	return tt;
+}
+
 QVariant RunsPlugin::currentStageResultsTableData(const QString &class_filter, int max_competitors_in_class, bool exclude_disq)
 {
 	int stage_id = selectedStageId();
 	return stageResultsTableData(stage_id, class_filter, max_competitors_in_class, exclude_disq);
 }
 
-qf::core::utils::TreeTable RunsPlugin::currentStageResultsTable(const QString &class_filter, int max_competitors_in_class, bool exclude_disq)
+qf::core::utils::TreeTable RunsPlugin::currentStageResultsTable(const QString &class_filter, int max_competitors_in_class, bool exclude_disq, int max_points)
 {
 	int stage_id = selectedStageId();
-	return stageResultsTable(stage_id, class_filter, max_competitors_in_class, exclude_disq);
+	return stageResultsTable(stage_id, class_filter, max_competitors_in_class, exclude_disq, false, max_points);
 }
 
-qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QString &class_filter, int max_competitors_in_class, bool exclude_disq, bool add_laps)
+qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QString &class_filter, int max_competitors_in_class, bool exclude_disq, bool add_laps, int max_points)
 {
 	qfLogFuncFrame();
 	qf::gui::model::SqlTableModel model;
@@ -804,6 +941,9 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 		tt2.appendColumn("pos", QMetaType(QMetaType::QString));
 		tt2.appendColumn("npos", QMetaType(QMetaType::Int));
 		tt2.appendColumn("loss", QMetaType(QMetaType::Int));
+		if(max_points > 0) {
+			tt2.appendColumn(QStringLiteral("points"), QMetaType(QMetaType::Int));
+		}
 		int first_time_ms = 0;
 		int prev_time_ms = 0;
 		int prev_pos = 0;
@@ -826,6 +966,13 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 			else {
 				tt2_row.setValue(QStringLiteral( "pos"), QString());
 				tt2_row.setValue(QStringLiteral( "npos"), 0);
+			}
+			if(max_points > 0) {
+				int points = 0;
+				if(has_pos && first_time_ms > 0 && time_ms > 0 && time_ms < UNREAL_TIME_MSEC) {
+					points = static_cast<int>(static_cast<double>(max_points) * first_time_ms / time_ms);
+				}
+				tt2_row.setValue(QStringLiteral("points"), points);
 			}
 			prev_time_ms = time_ms;
 			tt2.setRow(j, tt2_row);
@@ -1110,11 +1257,14 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			int ftime = tt2_row.value(QStringLiteral("finishTimeMs")).toInt();
 			int time = tt2_row.value(QStringLiteral("timeMs")).toInt();
 			//qfInfo() << row1.value("classes.name").toString() << tt2_row.value(QStringLiteral("competitors.lastName").toString() << stime << ftime << time;
-			if(ftime && time)
+			if(ftime && time) {
 				stime = ftime - time; // cover cases when competitor didn't started according to start list from any reason
+			}
 			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(stage_start_date_time.addMSecs(stime))});
-			if (j == 0) // fill firstTime with time of first runner
+			if (j == 0) {
+				// fill firstTime with time of first runner
 				first_time = time;
+			}
 			int time_behind = time - first_time;
 			if (!run_status.isDidNotStart() && !run_status.isDidNotFinish())
 			{
@@ -2197,6 +2347,77 @@ void RunsPlugin::report_nStagesAwards()
 								, "printResultsAwardsNStages"
 								, props
 								);
+}
+
+void RunsPlugin::report_resultsPointsNStagesCondensed()
+{
+	auto *ep = getPlugin<EventPlugin>();
+	const auto &ec = ep->eventConfig();
+	if (!ec.pointResults) {
+		qf::gui::dialogs::MessageBox::showWarning(qff::MainWindow::frameWork(),
+			tr("Point results are not enabled. Enable them in Event settings, Results tab."));
+		return;
+	}
+	qff::MainWindow *fwk = qff::MainWindow::frameWork();
+	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
+	dlg.loadPersistentSettings();
+	dlg.setStagesCount(ep->currentStageId());
+	dlg.setResultOptionsVisible(true);
+	dlg.setStagesOptionVisible(true);
+	if (!dlg.exec())
+		return;
+	int stages_count = ep->currentStageId();
+	int max_points = ec.pointResultsMaxPoints > 0 ? ec.pointResultsMaxPoints : 1000;
+	auto opts = dlg.options();
+	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq());
+	tt.setValue("event", ec.toVariantMap());
+	QVariantMap props;
+	props["stagesCount"] = stages_count;
+	props["maxPoints"] = max_points;
+	props["options"] = opts;
+	qf::gui::reports::ReportViewWidget::showReport(fwk
+											, findReportFile("results_nstages_points_condensed.qml")
+											, tt.toVariant()
+											, tr("Points after %n stage(s)", "", stages_count)
+											, "printResultsPointsCondensed"
+											, props
+											);
+}
+
+void RunsPlugin::report_resultsPointsNStages()
+{
+	auto *ep = getPlugin<EventPlugin>();
+	const auto &ec = ep->eventConfig();
+	if (!ec.pointResults) {
+		qf::gui::dialogs::MessageBox::showWarning(qff::MainWindow::frameWork(),
+			tr("Point results are not enabled. Enable them in Event settings, Results tab."));
+		return;
+	}
+	qff::MainWindow *fwk = qff::MainWindow::frameWork();
+	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
+	dlg.loadPersistentSettings();
+	dlg.setStagesCount(ep->currentStageId());
+	dlg.setResultOptionsVisible(true);
+	dlg.setStagesOptionVisible(true);
+	if (!dlg.exec())
+		return;
+	int max_points = ec.pointResultsMaxPoints > 0 ? ec.pointResultsMaxPoints : 1000;
+	auto opts = dlg.options();
+	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq());
+	tt.setValue("event", ep->eventConfig().toVariantMap());
+	QVariantMap props;
+	props["stagesCount"] = dlg.stagesCount();
+	props["maxPoints"] = max_points;
+	props["options"] = opts;
+	qf::gui::reports::ReportViewWidget::showReport(fwk
+										, findReportFile("results_nstages_points.qml")
+										, tt.toVariant()
+										, tr("Results by points after %n stage(s)", "", dlg.stagesCount())
+										, "printResultsPointsNStages"
+										, props
+										);
 }
 
 namespace {

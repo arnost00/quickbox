@@ -3,7 +3,7 @@
 #include "../core/log.h"
 #include "../core/utils.h"
 #include "../core/string.h"
-#include "../utils/timescope.h"
+// #include "../utils/timescope.h"
 
 #include <QMetaType>
 #include <algorithm>
@@ -582,7 +582,8 @@ QVariantMap TreeTable::keyvals(int row_ix) const
 	return rows().value(row_ix).toMap().value(KEY_KEYVALS).toMap();
 }
 
-static inline QString line_indent(const QString &ind, int level)
+namespace {
+inline QString line_indent(const QString &ind, int level)
 {
 	QString s;
 	for(int i=0; i<level; i++) s += ind;
@@ -590,7 +591,7 @@ static inline QString line_indent(const QString &ind, int level)
 }
 #define IND(level) offset + line_indent(ind, level)
 
-static QString keyvals_to_html(const QVariantMap &keyvals, const QVariantMap &opts)
+QString keyvals_to_html(const QVariantMap &keyvals, const QVariantMap &opts)
 {
 	QString offset = opts.value("lineOffset").toString();
 	QString eoln = opts.value("lineSeparator", "\n").toString();
@@ -609,7 +610,7 @@ static QString keyvals_to_html(const QVariantMap &keyvals, const QVariantMap &op
 	}
 	return ret;
 }
-
+}
 QString TreeTable::toHtml(const QVariantMap &opts) const
 {
 	QVariantMap opts2 = opts;
@@ -709,4 +710,3 @@ void TreeTable::setRows(const QVariantList &rows)
 	t[KEY_ROWS] = rows;
 	m_values = t;
 }
-

@@ -474,7 +474,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="pointResults">
          <property name="title">
           <string>Point results</string>
          </property>
@@ -483,16 +483,16 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_18">
+           <widget class="QLabel" name="lblPointResultsMaxPoints">
             <property name="text">
              <string>Max points</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QSpinBox" name="ed_xmlRaceNumber_2">
+           <widget class="QSpinBox" name="pointResultsMaxPoints">
             <property name="toolTip">
-             <string>Used to select race number in XML format (for XML import/export)</string>
+             <string>Maximum points for the winner (1000-points formula: max_points * best_time / runner_time)</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
