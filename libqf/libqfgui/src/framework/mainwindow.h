@@ -4,6 +4,9 @@
 #include "../guiglobal.h"
 #include "ipersistentsettings.h"
 #include "../statusbar.h"
+#include "../toolbar.h"
+#include "partwidget.h"
+#include "plugin.h"
 //#include "pluginloader.h"
 
 #include <qf/core/utils.h>
@@ -20,7 +23,6 @@ namespace qf {
 namespace gui {
 
 class MenuBar;
-class ToolBar;
 
 namespace dialogs {
 class QmlDialog;
@@ -31,9 +33,7 @@ namespace framework {
 class Application;
 class PluginLoader;
 class DockWidget;
-class PartWidget;
 class CentralWidget;
-class Plugin;
 typedef QList<qf::gui::framework::Plugin*> PluginList;
 
 class QFGUI_DECL_EXPORT MainWindow : public QMainWindow, public IPersistentSettings
