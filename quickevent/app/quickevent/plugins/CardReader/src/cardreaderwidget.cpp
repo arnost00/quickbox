@@ -388,7 +388,7 @@ void CardReaderWidget::onCustomContextMenuRequest(const QPoint & pos)
 			fwk->showProgress(tr("Recalculating times for %1").arg(row.value(QStringLiteral("competitorName")).toString()), ++curr_ix, sel_ixs.count());
 			try {
 				qf::core::sql::Transaction transaction;
-				getPlugin<CardReaderPlugin>()->reloadTimesFromCard(card_id, run_id, false);
+				getPlugin<CardReaderPlugin>()->reloadTimesFromCard(card_id, run_id);
 				ui->tblCards->reloadRow(ix);
 				transaction.commit();
 			}
