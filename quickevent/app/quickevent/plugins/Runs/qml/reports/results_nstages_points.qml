@@ -11,7 +11,6 @@ Report {
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
 	property int stagesCount: (options.stagesCount > 0)? options.stagesCount: 1
-	property int maxPoints: (options.maxPoints > 0)? options.maxPoints: 1000
 
 	property string reportTitle: qsTr("Points after %n stage(s)", "", root.stagesCount)
 	property int pointsCellWidth: 13

@@ -90,7 +90,13 @@ Report {
 							width: 15
 							halign: Frame.AlignRight
 							textStyle: myStyle.textStyleBold
-							text: qsTr("Points")
+							text: qsTr("Result")
+						}
+						Cell {
+							width: 15
+							halign: Frame.AlignRight
+							textStyle: myStyle.textStyleBold
+							text: qsTr("Diff.")
 						}
 					}
 					Band {
@@ -122,8 +128,16 @@ Report {
 								width: 15
 								halign: Frame.AlignRight
 								textFn: function() {
-									var pts = runnersDetail.data(runnersDetail.currentIndex, "totalPoints");
-									return (pts > 0)? pts: "";
+									var pts = runnersDetail.dataFn("points")();
+									return (pts && pts > 0)? pts: "";
+								}
+							}
+							Cell {
+								width: 15
+								halign: Frame.AlignRight
+								textFn: function() {
+									var pts = runnersDetail.dataFn("pointsloss")();
+									return (pts === null || pts === undefined)? "": "- " + pts;
 								}
 							}
 						}
