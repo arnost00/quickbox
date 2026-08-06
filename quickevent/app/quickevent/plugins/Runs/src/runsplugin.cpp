@@ -1008,13 +1008,6 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 				tt2_row.setValue(QStringLiteral( "pos"), QString());
 				tt2_row.setValue(QStringLiteral( "npos"), 0);
 			}
-			if(max_points > 0) {
-				int points = 0;
-				if(has_pos && first_time_ms > 0 && time_ms > 0 && time_ms < UNREAL_TIME_MSEC) {
-					points = static_cast<int>(static_cast<double>(max_points) * first_time_ms / time_ms);
-				}
-				tt2_row.setValue(QStringLiteral("points"), points);
-			}
 			prev_time_ms = time_ms;
 			tt2.setRow(j, tt2_row);
 		}
