@@ -63,7 +63,7 @@ namespace Runs {
 namespace {
 QString datetime_to_string(const QDateTime &dt)
 {
-	return quickevent::core::Utils::dateTimeToIsoStringWithUtcOffset(dt);
+	return dt.toTimeZone(QTimeZone::systemTimeZone()).toString(Qt::ISODateWithMs);
 }
 const auto vacant_name_sentinel = QStringLiteral("---");
 }
@@ -965,11 +965,32 @@ QVariantMap RunsPlugin::printAwardsOptionsWithDialog(const QVariantMap &opts)
 
 QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 {
-	QDateTime stage_start_date_time = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
 	qf::core::utils::TreeTable tt1 = stageResultsTable(stage_id, QString(), 0, false, true);
 	const auto &event_config = getPlugin<EventPlugin>()->eventConfig();
 	bool is_iof_race = event_config.iofRace;
 	int iof_xml_race_number = event_config.iofXmlRaceNumber;
+
+	auto *event_plugin = getPlugin<EventPlugin>();
+	QDateTime stage_start_date_time = event_plugin->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
+
+	const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+	auto start_tolerance_ms = config.startToleranceMs;
+	auto finish_tolerance_ms = config.finishToleranceMs;
+	auto adjusted_time = [stage_start_date_time](int time, const QDateTime &gate_time, int tolerance_ms) {
+		auto run_time = stage_start_date_time.addMSecs(time);
+		if (gate_time.isValid()) {
+			if (std::abs(run_time.msecsTo(gate_time)) < tolerance_ms) {
+				return gate_time;
+			}
+		}
+		return run_time;
+	};
+	auto adjusted_start_time = [adjusted_time, tolerance_ms = start_tolerance_ms](int time, const QDateTime &gate_time) {
+		return adjusted_time(time, gate_time, tolerance_ms);
+	};
+	auto adjusted_finish_time = [adjusted_time, tolerance_ms = finish_tolerance_ms](int time, const QDateTime &gate_time) {
+		return adjusted_time(time, gate_time, tolerance_ms);
+	};
 
 	QVariantList result_list{
 		"ResultList",
@@ -1106,7 +1127,11 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			if(!bib_number.isNull())
 				result.insert(result.count(), QVariantList{"BibNumber", bib_number});
 			//int run_id = tt2_row.value(QStringLiteral("runs.id")).toInt();
-			int stime = tt2_row.value(QStringLiteral("startTimeMs")).toInt();
+			auto start_gate_time = tt2_row.value(QStringLiteral("startGateTime")).toDateTime();
+			auto finish_gate_time = tt2_row.value(QStringLiteral("finishGateTime")).toDateTime();
+			auto start_time = tt2_row.value(QStringLiteral("startTimeMs"));
+			// qDebug() << start_time << start_gate_time << finish_gate_time;
+			int stime = start_time.toInt();
 			int ftime = tt2_row.value(QStringLiteral("finishTimeMs")).toInt();
 			int time = tt2_row.value(QStringLiteral("timeMs")).toInt();
 			//qfInfo() << row1.value("classes.name").toString() << tt2_row.value(QStringLiteral("competitors.lastName").toString() << stime << ftime << time;
@@ -1115,13 +1140,15 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 				// or competitor without start time had punched start station
 				stime = ftime - time;
 			}
-			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(stage_start_date_time.addMSecs(stime))});
-			if (j == 0) // fill firstTime with time of first runner
+			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(adjusted_start_time(stime, start_gate_time))});
+			if (j == 0) {
+				// fill firstTime with time of first runner
 				first_time = time;
+			}
 			int time_behind = time - first_time;
 			if (!run_status.isDidNotStart() && !run_status.isDidNotFinish())
 			{
-				result.insert(result.count(), QVariantList{"FinishTime", datetime_to_string(stage_start_date_time.addMSecs(ftime))});
+				result.insert(result.count(), QVariantList{"FinishTime", datetime_to_string(adjusted_finish_time(ftime, finish_gate_time))});
 				result.insert(result.count(), QVariantList{"Time", time / 1000});
 				result.insert(result.count(), QVariantList{"TimeBehind", time_behind / 1000});
 			}
