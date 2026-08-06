@@ -205,17 +205,19 @@ quickevent::core::si::ReadCard CardReaderPlugin::readCard(int card_id)
 	return quickevent::core::si::ReadCard();
 }
 
-quickevent::core::si::CheckedCard CardReaderPlugin::checkCard(int card_id, int run_id)
+std::pair<quickevent::core::si::ReadCard, quickevent::core::si::CheckedCard> CardReaderPlugin::checkCard(int card_id, int run_id)
 {
 	qfLogFuncFrame() << "run id:" << run_id << "card id:" << card_id;
 	QF_TIME_SCOPE("checkCard()");
 	quickevent::core::si::ReadCard rc = readCard(card_id);
 	if(!rc.isEmpty()) {
-		if(run_id > 0)
+		if(run_id > 0) {
 			rc.setRunId(run_id);
-		return checkCard(rc);
+		}
+		auto cc = checkCard(rc);
+		return std::make_pair(std::move(rc), std::move(cc));
 	}
-	return quickevent::core::si::CheckedCard();
+	return {};
 }
 
 quickevent::core::si::CheckedCard CardReaderPlugin::checkCard(const quickevent::core::si::ReadCard &read_card)
@@ -361,7 +363,9 @@ int CardReaderPlugin::savePunchRecordToSql(const quickevent::core::si::PunchReco
 	// return ret;
 }
 
-void CardReaderPlugin::updateCheckedCardValuesSql(int card_id, const quickevent::core::si::CheckedCard &checked_card)
+void CardReaderPlugin::updateCheckedCardValuesSql(int card_id,
+												  const quickevent::core::si::ReadCard &read_card,
+												  const quickevent::core::si::CheckedCard &checked_card)
 {
 	QF_TIME_SCOPE("updateCheckedCardValuesSql()");
 	int run_id = checked_card.runId();
@@ -405,6 +409,10 @@ void CardReaderPlugin::updateCheckedCardValuesSql(int card_id, const quickevent:
 				{"notStart", false},
 				{"penaltyTimeMs", {}},
 			};
+			if (read_card.startTime() != 0xEEEE) {
+				// update start time if punched
+				rec["startTimeMs"] = checked_card.startTimeMs();
+			}
 			app->updateDbRecord("runs", run_id, rec, this);
 			getPlugin<RunsPlugin>()->computeStageTime(run_id);
 		}
@@ -464,7 +472,7 @@ bool CardReaderPlugin::saveCardAssignedRunnerIdSql(int card_id, int run_id)
 	// return ret;
 }
 
-bool CardReaderPlugin::reloadTimesFromCard(int card_id, int run_id, bool in_transaction)
+bool CardReaderPlugin::reloadTimesFromCard(int card_id, int run_id)
 {
 	qfLogFuncFrame() << "card id:" << run_id;
 	QF_TIME_SCOPE("reloadTimesFromCard()");
@@ -485,21 +493,8 @@ bool CardReaderPlugin::reloadTimesFromCard(int card_id, int run_id, bool in_tran
 		qfWarning() << "Cannot find runs id for card id:" << card_id;
 		return false;
 	}
-	if(in_transaction) {
-		try {
-			qf::core::sql::Transaction transaction;
-			processCardToRunAssignment(card_id, run_id);
-			transaction.commit();
-			return true;
-		}
-		catch (const qf::core::Exception &e) {
-			qfError() << "reloadTimesFromCard ERROR:" << e.message();
-		}
-	}
-	else {
-		return processCardToRunAssignment(card_id, run_id);
-	}
-	return false;
+	assignCardToRun(card_id, run_id);
+	return true;
 }
 
 void CardReaderPlugin::assignCardToRun(int card_id, int run_id)
@@ -559,22 +554,22 @@ bool CardReaderPlugin::processCardToRunAssignment(int card_id, int run_id)
 				}
 			}
 		}
-		auto checked_card = checkCard(card_id, run_id);
+		const auto [read_card, checked_card] = checkCard(card_id, run_id);
 		//qfDebug() << checked_card.toString();
-		updateCheckedCardValuesSql(card_id, checked_card);
+		updateCheckedCardValuesSql(card_id, read_card, checked_card);
 		getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_CARD_PROCESSED_AND_ASSIGNED, checked_card, true);
 
 		q.execThrow("SELECT id, startTimeMs, finishTimeMs FROM runs"
-				 " WHERE relayId=" + QString::number(relay_id)
-			   + " AND leg=" + QString::number(leg+1));
-		if(q.next()) {
+					" WHERE relayId=" + QString::number(relay_id) +
+					" AND leg=" + QString::number(leg + 1));
+		if (q.next()) {
 			int next_leg_run_id = q.value(0).toInt();
 			QVariant next_leg_start_time = q.value(1);
 			int next_leg_finish_time = q.value(2).toInt();
-			if(next_leg_start_time.isNull()) {
+			if (next_leg_start_time.isNull()) {
 				// if next leg is finished and has not start time set, proces it too
 				// This covers cases when next leg is read-out before this one
-				if(next_leg_finish_time > 0) {
+				if (next_leg_finish_time > 0) {
 					int next_leg_card_id = getPlugin<RunsPlugin>()->cardForRun(next_leg_run_id);
 					processCardToRunAssignment(next_leg_card_id, next_leg_run_id);
 				}
@@ -586,7 +581,7 @@ bool CardReaderPlugin::processCardToRunAssignment(int card_id, int run_id)
 					getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_EDITED, competitor_id);
 					QVariantList param {
 						next_leg_run_id,
-						QVariantMap {
+						QVariantMap{
 							{"runs.startTimeMs", new_next_leg_start_time},
 						}
 					};
@@ -596,8 +591,8 @@ bool CardReaderPlugin::processCardToRunAssignment(int card_id, int run_id)
 		}
 	}
 	else {
-		auto checked_card = checkCard(card_id, run_id);
-		updateCheckedCardValuesSql(card_id, checked_card);
+		const auto [read_card, checked_card] = checkCard(card_id, run_id);
+		updateCheckedCardValuesSql(card_id, read_card, checked_card);
 		getPlugin<EventPlugin>()->emitDbEvent(Event::EventPlugin::DBEVENT_CARD_PROCESSED_AND_ASSIGNED, checked_card, true);
 	}
 	return true;

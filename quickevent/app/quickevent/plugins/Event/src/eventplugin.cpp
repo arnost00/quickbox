@@ -265,14 +265,15 @@ int EventPlugin::stageIdForRun(int run_id) const
 
 int EventPlugin::stageStartMsec(int stage_id) const
 {
-	QTime start_time = stageStartDateTime(stage_id).time();
+	auto dt = stageStartDateTime(stage_id);
+	auto start_time = dt.time();
 	int ret = start_time.msecsSinceStartOfDay();
 	return ret;
 }
 
 QDateTime EventPlugin::stageStartDateTime(int stage_id) const
 {
-	return appDbConfig().stageConfig(stage_id).startDateTime;
+	return appDbConfig().stageConfig(stage_id).startDateTime.toLocalTime();
 }
 
 int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id) const

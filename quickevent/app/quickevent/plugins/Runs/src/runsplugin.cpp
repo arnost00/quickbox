@@ -1257,8 +1257,10 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			int ftime = tt2_row.value(QStringLiteral("finishTimeMs")).toInt();
 			int time = tt2_row.value(QStringLiteral("timeMs")).toInt();
 			//qfInfo() << row1.value("classes.name").toString() << tt2_row.value(QStringLiteral("competitors.lastName").toString() << stime << ftime << time;
-			if(ftime && time) {
-				stime = ftime - time; // cover cases when competitor didn't started according to start list from any reason
+			if(ftime && time && stime == 0) {
+				// cover cases when competitor didn't started according to start list from any reason
+				// or competitor without start time had punched start station
+				stime = ftime - time;
 			}
 			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(stage_start_date_time.addMSecs(stime))});
 			if (j == 0) {
