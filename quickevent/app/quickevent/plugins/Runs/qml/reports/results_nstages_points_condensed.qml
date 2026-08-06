@@ -10,7 +10,6 @@ Report {
 	property var options
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
-	property int stagesCount: (options.stagesCount > 0)? options.stagesCount: 1
 
 	property string reportTitle: qsTr("Points after %n stage(s)", "", root.stagesCount)
 

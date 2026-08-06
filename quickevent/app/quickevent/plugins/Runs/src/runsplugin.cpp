@@ -1020,14 +1020,14 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 		}
 		if (best_time_ms.has_value() && max_points > 0) {
 			for(int i=0; i<tt2.rowCount(); i++) {
-				auto tt_row = tt2.row(i);
-				if (tt_row.value(QStringLiteral("npos")).toInt() == 0) {
+				auto tt2_row = tt2.row(i);
+				if (tt2_row.value(QStringLiteral("npos")).toInt() == 0) {
 					continue;
 				}
-				auto time_ms = tt_row.value(QStringLiteral("timeMs")).toInt();
+				auto time_ms = tt2_row.value(QStringLiteral("timeMs")).toInt();
 				auto points = std::round(static_cast<double>(max_points) * best_time_ms.value() / time_ms);
-				tt_row.setValue(QStringLiteral("points"), static_cast<int>(points));
-				tt.setRow(i, tt_row);
+				tt2_row.setValue(QStringLiteral("points"), static_cast<int>(points));
+				tt2.setRow(i, tt2_row);
 			}
 		}
 		if(add_laps) {
