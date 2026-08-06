@@ -124,8 +124,9 @@ ReportItemReport* ReportProcessor::documentInstanceRoot()
 			while(it.hasNext()) {
 				it.next();
 				QByteArray ba = it.key().toLatin1();
-				if(!m_documentInstanceRoot->setProperty(ba.constData(), it.value()))
-					qfWarning() << "Cannot set report root property" << ba << ", root element should have this property defined explicitly.";
+				if(!m_documentInstanceRoot->setProperty(ba.constData(), it.value())) {
+					qfWarning() << "Cannot set report root property" << it.key() << ", root element should have this property defined explicitly.";
+				}
 			}
 			m_reportDocumentComponent->completeCreate();
 			m_documentInstanceRoot->setReportProcessor(this);
