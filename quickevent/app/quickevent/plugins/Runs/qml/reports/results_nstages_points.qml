@@ -16,6 +16,9 @@ Report {
 	property int pointsCellWidth: 13
 	property int posCellWidth: 9
 	property int totalCellWidth: 15
+	property int diffCellWidth: 13
+
+	property int unrealTimeMs: OGTime.UNREAL_TIME_MSEC
 
 	property QfObject internals: QfObject {
 		Component {
@@ -26,11 +29,27 @@ Report {
 		}
 		Component {
 			id: cPointsCell
-			Cell {
-				property string fieldName
-				textFn: function() {
-					var pts = runnersDetail.data(runnersDetail.currentIndex, fieldName);
-					return (pts > 0)? pts: "";
+			Frame {
+				id: frame
+				property int stageNo: 0
+				layout: Frame.LayoutVertical
+				Cell {
+					textStyle: myStyle.textStyleBold
+					property string fieldName: (frame.stageNo)? "points" + frame.stageNo: "points"
+					textFn: function() {
+						var pts = runnersDetail.data(runnersDetail.currentIndex, fieldName);
+						return (pts && pts > 0)? pts: "";
+					}
+				}
+				Cell {
+					property string fieldName: (frame.stageNo)? "timems" + frame.stageNo: "timems"
+					property string invalidTimeString: "-----"
+					textFn: function() {
+						var time_ms = runnersDetail.data(runnersDetail.currentIndex, fieldName);
+						if(time_ms < unrealTimeMs)
+							return OGTime.msecToString_mmss(time_ms);
+						return invalidTimeString;
+					}
 				}
 			}
 		}
@@ -41,6 +60,16 @@ Report {
 				textFn: function() {
 					var pos = runnersDetail.data(runnersDetail.currentIndex, fieldName);
 					return pos? "(" + pos + ")": "";
+				}
+			}
+		}
+		Component {
+			id: cDiffCell
+			Cell {
+				property string fieldName: "pointsloss"
+				textFn: function() {
+					var pointsloss = runnersDetail.data(runnersDetail.currentIndex, fieldName);
+					return (pointsloss === null || pointsloss === undefined)? "": "- " + pointsloss;
 				}
 			}
 		}
@@ -126,6 +155,8 @@ Report {
 							}
 							c = cHeaderCell.createObject(null, {"halign": Frame.AlignRight, "width": totalCellWidth, "text": qsTr("Points")});
 							classHeader.addItem(c);
+							c = cHeaderCell.createObject(null, {"halign": Frame.AlignRight, "width": diffCellWidth, "text": qsTr("Diff.")});
+							classHeader.addItem(c);
 						}
 					}
 					Band {
@@ -155,12 +186,14 @@ Report {
 							}
 							Component.onCompleted: {
 								for(var i=0; i<root.stagesCount; i++) {
-									var c = cPointsCell.createObject(null, {"width": pointsCellWidth, "halign": Frame.AlignRight, "fieldName": "points" + (i+1)});
+									var c = cPointsCell.createObject(null, {"width": pointsCellWidth, "halign": Frame.AlignRight, "stageNo": (i+1)});
 									runnersDetail.addItem(c);
 									c = cPosCell.createObject(null, {"width": posCellWidth, "halign": Frame.AlignRight, "fieldName": "pos" + (i+1)});
 									runnersDetail.addItem(c);
 								}
-								c = cPointsCell.createObject(null, {"width": totalCellWidth, "halign": Frame.AlignRight, "fieldName": "totalPoints", "textStyle": myStyle.textStyleBold});
+								c = cPointsCell.createObject(null, {"width": totalCellWidth, "halign": Frame.AlignRight});
+								runnersDetail.addItem(c);
+								c = cDiffCell.createObject(null, {"width": diffCellWidth, "halign": Frame.AlignRight});
 								runnersDetail.addItem(c);
 							}
 						}
