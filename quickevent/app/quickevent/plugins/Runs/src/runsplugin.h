@@ -68,7 +68,6 @@ public:
 
 	qf::core::utils::Table nstagesClassResultsTable(int stages_count, int class_id, int places = -1, bool exclude_disq = true, int max_points = 0);
 	qf::core::utils::TreeTable nstagesResultsTable(const QString &class_filter, int stages_count, int places = -1, bool exclude_disq = true);
-	// qf::core::utils::Table nstagesClassPointResultsTable(int stages_count, int class_id, int max_points, int places = -1, bool exclude_disq = true);
 	qf::core::utils::TreeTable nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places = -1, bool exclude_disq = true);
 	//Q_INVOKABLE QVariant nstagesResultsTableData(int stages_count, int places = -1, bool exclude_disq = true);
 	Q_INVOKABLE void showRunsTable(int stage_id, int class_id, bool show_offrace, const QString &sort_column = QString(), int select_competitor_id = 0);

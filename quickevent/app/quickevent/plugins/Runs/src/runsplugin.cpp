@@ -652,12 +652,16 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, in
 			} else {
 				sum_time_ms = UNREAL_TIME_MSEC;
 			}
-			if (max_points > 0 && pos > 0 && stage_time_ms < UNREAL_TIME_MSEC) {
-				auto stage_best_time = stage_to_best_time.value(stage_id, UNREAL_TIME_MSEC);
-				if (stage_best_time < UNREAL_TIME_MSEC) {
-					auto points = static_cast<int>(std::round(static_cast<double>(max_points) * stage_best_time / stage_time_ms));
-					mod.setValue(j, QString("points%1").arg(stage_id), points);
-					sum_points += points;
+			if (max_points > 0) {
+				if (pos > 0 && stage_time_ms < UNREAL_TIME_MSEC) {
+					auto stage_best_time = stage_to_best_time.value(stage_id, UNREAL_TIME_MSEC);
+					if (stage_best_time < UNREAL_TIME_MSEC) {
+						auto points = static_cast<int>(std::round(static_cast<double>(max_points) * stage_best_time / stage_time_ms));
+						mod.setValue(j, QString("points%1").arg(stage_id), points);
+						sum_points += points;
+					}
+				} else {
+					mod.setValue(j, QString("points%1").arg(stage_id), QVariant());
 				}
 			}
 		}
@@ -702,7 +706,6 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, in
 		t.rowRef(j).setValue("timeLossMs", time_loss_ms);
 		t.rowRef(j).setValue("pointsLoss", points_loss);
 	}
-	// qfInfo() << t.toString();
 	if(trim_at < 0) {
 		if(places > 0)
 			trim_at = places;
@@ -754,112 +757,6 @@ QVariant RunsPlugin::nstagesResultsTableData(int stages_count, int places, bool 
 }
 */
 
-// qf::core::utils::Table RunsPlugin::nstagesClassPointResultsTable(int stages_count, int class_id, int max_points, int places, bool exclude_disq)
-// {
-// 	namespace qfs = qf::core::sql;
-// 	namespace qfu = qf::core::utils;
-// 	qfs::QueryBuilder qb;
-// 	qb.select2("competitors", "id, registration, licence")
-// 		.select2("clubs", "name, abbr")
-// 		.select("COALESCE(competitors.lastName, '') || ' ' || COALESCE(competitors.firstName, '') AS competitorName")
-// 		.from("competitors")
-// 		.join("LEFT JOIN clubs ON substr(competitors.registration, 1, 3) = clubs.abbr")
-// 		.where("competitors.classId=" QF_IARG(class_id));
-// 	for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
-// 		qb.select("0 AS points" QF_IARG(stage_id));
-// 		qb.select("'' AS pos" QF_IARG(stage_id));
-// 	}
-// 	qb.select("0 AS totalPoints");
-// 	qb.select("'' AS pos");
-// 	qf::gui::model::SqlTableModel mod;
-// 	mod.setQueryBuilder(qb, false);
-// 	mod.reload();
-// 	QMap<int, int> competitor_id_to_row;
-// 	for (int j = 0; j < mod.rowCount(); ++j) {
-// 		competitor_id_to_row[mod.value(j, "competitors.id").toInt()] = j;
-// 	}
-// 	for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
-// 		qfs::QueryBuilder qb2;
-// 		qb2.select2("runs", "competitorId, timeMs, notCompeting, disqualified")
-// 			.from("competitors")
-// 			.joinRestricted("competitors.id", "runs.competitorId",
-// 				"runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0", "JOIN")
-// 			.where("competitors.classId=" QF_IARG(class_id))
-// 			.orderBy("runs.notCompeting, runs.disqualified, runs.timeMs");
-// 		qfs::Query q;
-// 		int best_time = UNREAL_TIME_MSEC;
-// 		q.exec(qb2.toString());
-// 		while (q.next()) {
-// 			if (!q.value("notCompeting").toBool() && !q.value("disqualified").toBool()) {
-// 				int t = q.value("timeMs").toInt();
-// 				if (t > 0 && t < UNREAL_TIME_MSEC) {
-// 					best_time = std::min(best_time, t);
-// 				}
-// 			}
-// 			int competitor_id = q.value("competitorId").toInt();
-// 			int row_ix = competitor_id_to_row.value(competitor_id, -1);
-// 			QF_ASSERT(row_ix >= 0, "Bad row index!", continue);
-// 			QString p;
-// 			if (q.value("notCompeting").toBool()) {
-// 				p = "N";
-// 			} else if (q.value("disqualified").toBool()) {
-// 				p = "D";
-// 			}
-// 			mod.setValue(row_ix, QString("pos%1").arg(stage_id), p);
-// 			int time_ms = q.value("timeMs").toInt();
-// 			int points = 0;
-// 			if (p.isEmpty() && best_time > 0 && time_ms > 0 && time_ms < UNREAL_TIME_MSEC) {
-// 				points = static_cast<int>(static_cast<double>(max_points) * best_time / time_ms);
-// 			}
-// 			mod.setValue(row_ix, QString("points%1").arg(stage_id), points);
-// 		}
-// 	}
-// 	for (int j = 0; j < mod.rowCount(); ++j) {
-// 		int total = 0;
-// 		for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
-// 			total += mod.value(j, QString("points%1").arg(stage_id)).toInt();
-// 		}
-// 		mod.setValue(j, "totalPoints", total);
-// 	}
-// 	qfu::Table t = mod.table();
-// 	t.sort("totalPoints DESC");
-// 	int pos = 0;
-// 	int total1 = 0;
-// 	int prev_total = 0;
-// 	int prev_pos = 0;
-// 	int trim_at = -1;
-// 	for (int j = 0; j < t.rowCount(); ++j) {
-// 		++pos;
-// 		int total = t.row(j).value("totalPoints").toInt();
-// 		QString p;
-// 		if (total > 0) {
-// 			if (total1 == 0)
-// 				total1 = total;
-// 			int cur_pos = (total == prev_total) ? prev_pos : pos;
-// 			prev_pos = cur_pos;
-// 			p = QString::number(cur_pos) + '.';
-// 		} else {
-// 			if (exclude_disq) {
-// 				trim_at = j;
-// 				break;
-// 			}
-// 		}
-// 		prev_total = total;
-// 		t.rowRef(j).setValue("pos", p);
-// 	}
-// 	if (trim_at < 0) {
-// 		if (places > 0)
-// 			trim_at = places;
-// 	} else {
-// 		if (places > 0 && trim_at > places)
-// 			trim_at = places;
-// 	}
-// 	if (trim_at >= 0)
-// 		while (t.rowCount() > trim_at)
-// 			t.removeRow(trim_at);
-// 	return t;
-// }
-
 qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places, bool exclude_disq)
 {
 	qfLogFuncFrame();
@@ -884,7 +781,6 @@ qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &c
 		tt.setRow(i, tt_row);
 	}
 	tt.setValue("stagesCount", stages_count);
-	// qfInfo() << tt.toString();
 	return tt;
 }
 
@@ -983,9 +879,9 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 		std::optional<int> best_time_ms;
 		for(int j=0; j<tt2.rowCount(); j++) {
 			qf::core::utils::TreeTableRow tt2_row = tt2.row(j);
-			auto disqualifed = tt2_row.value(QStringLiteral("disqualified")).toBool();
+			auto disqualified = tt2_row.value(QStringLiteral("disqualified")).toBool();
 			auto not_competing = tt2_row.value(QStringLiteral("notCompeting")).toBool();
-			bool has_pos = !disqualifed && !not_competing;
+			bool has_pos = !disqualified && !not_competing;
 			int time_ms = tt2_row.value(QStringLiteral("timeMs")).toInt();
 			if (time_ms > 0 && time_ms < UNREAL_TIME_MSEC) {
 				best_time_ms = std::min(time_ms, best_time_ms.value_or(UNREAL_TIME_MSEC));
