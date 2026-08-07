@@ -1149,8 +1149,8 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			if (!run_status.isDidNotStart() && !run_status.isDidNotFinish())
 			{
 				result.insert(result.count(), QVariantList{"FinishTime", datetime_to_string(adjusted_finish_time(ftime, finish_gate_time))});
-				result.insert(result.count(), QVariantList{"Time", time / 1000});
-				result.insert(result.count(), QVariantList{"TimeBehind", time_behind / 1000});
+				result.insert(result.count(), QVariantList{"Time", static_cast<double>(time) / 1000});
+				result.insert(result.count(), QVariantList{"TimeBehind", static_cast<double>(time_behind) / 1000});
 			}
 
 			if (run_status.isOk()) {
