@@ -1061,9 +1061,9 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 	auto *event_plugin = getPlugin<EventPlugin>();
 	QDateTime stage_start_date_time = event_plugin->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
 
-	const auto &config = event_plugin->appDbConfig().radioSenderConfig();
-	auto start_tolerance_ms = config.startToleranceMs;
-	auto finish_tolerance_ms = config.finishToleranceMs;
+	const auto &config = event_plugin->appDbConfig().eventConfig();
+	auto start_tolerance_ms = config.startGateToleranceMs;
+	auto finish_tolerance_ms = config.finishGateToleranceMs;
 	auto adjusted_time = [stage_start_date_time](int time, const QDateTime &gate_time, int tolerance_ms) {
 		auto run_time = stage_start_date_time.addMSecs(time);
 		if (gate_time.isValid()) {
@@ -1511,19 +1511,19 @@ void RunsPlugin::computeStageTime(int run_id)
 		const int stage_id = run->value(FLD_STAGE_ID).toInt();
 		auto *event_plugin = getPlugin<EventPlugin>();
 		const QDateTime stage_start_dt = event_plugin->stageStartDateTime(stage_id);
-		const auto &config = event_plugin->appDbConfig().radioSenderConfig();
+		const auto &config = event_plugin->appDbConfig().eventConfig();
 		const qint64 start_ms = start_ms_v.toLongLong();
 		const qint64 finish_ms = finish_ms_v.toLongLong();
 
 		const auto start_gate_dt = run->value(FLD_START_GATE_TIME).toDateTime();
 		const qint64 start_gate_ms = stage_start_dt.msecsTo(start_gate_dt);
 		const bool use_start_gate = start_gate_dt.isValid()
-			&& std::abs(start_gate_ms - start_ms) <= config.startToleranceMs;
+			&& std::abs(start_gate_ms - start_ms) <= config.startGateToleranceMs;
 
 		const auto finish_gate_dt = run->value(FLD_FINISH_GATE_TIME).toDateTime();
 		const qint64 finish_gate_ms = stage_start_dt.msecsTo(finish_gate_dt);
 		const bool use_finish_gate = finish_gate_dt.isValid()
-			&& std::abs(finish_gate_ms - finish_ms) <= config.finishToleranceMs;
+			&& std::abs(finish_gate_ms - finish_ms) <= config.finishGateToleranceMs;
 
 		const int penalty_ms = run->value(FLD_PENALTY_TIME_MS).toInt();
 		const qint64 time_ms = (use_finish_gate ? finish_gate_ms : finish_ms)
@@ -2321,11 +2321,6 @@ void RunsPlugin::report_resultsPointsNStagesCondensed()
 {
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
-	if (!ec.pointResults) {
-		qf::gui::dialogs::MessageBox::showWarning(qff::MainWindow::frameWork(),
-			tr("Point results are not enabled. Enable them in Event settings, Results tab."));
-		return;
-	}
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	quickevent::gui::ReportOptionsDialog dlg(fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
@@ -2356,11 +2351,6 @@ void RunsPlugin::report_resultsPointsNStages()
 {
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
-	if (!ec.pointResults) {
-		qf::gui::dialogs::MessageBox::showWarning(qff::MainWindow::frameWork(),
-			tr("Point results are not enabled. Enable them in Event settings, Results tab."));
-		return;
-	}
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	quickevent::gui::ReportOptionsDialog dlg(fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
