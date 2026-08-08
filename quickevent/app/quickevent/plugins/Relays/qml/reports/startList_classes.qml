@@ -138,7 +138,7 @@ Report {
 										textFn: lapsDetail.dataFn("competitorName");
 									}
 									Para {
-										width: 18
+										width: 15
 										textFn: lapsDetail.dataFn("registration");
 									}
 									Cell {
@@ -155,5 +155,3 @@ Report {
 		}
 	}
 }
-
-

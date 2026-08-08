@@ -109,7 +109,7 @@ Report {
 								textFn: runnersDetail.dataFn("startTimeText");
 							}
 							Para {
-								width: 9
+								width: 10
 								textFn: runnersDetail.dataFn("classes.name");
 							}
 							Para {

@@ -119,11 +119,11 @@ Report {
 								textFn: runnersDetail.dataFn("competitorName");
 							}
 							Para {
-								width: 18
+								width: 15
 								textFn: runnersDetail.dataFn("registration");
 							}
 							Cell {
-								width: 15
+								width: 20
 								halign: Frame.AlignRight
 								textFn: function() { return OGTime.msecToString_mmss(runnersDetail.rowData("timeMs"));}
 							}

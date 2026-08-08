@@ -3154,7 +3154,8 @@ void RunsPlugin::addStartTimeTextToClass(qf::core::utils::TreeTable &tt2, const 
 			tt2_row.setValue(QStringLiteral("startTimeMsText"), stime_datetime.toString("h:mm:ss.zzz"));
 		}
 		else {
-			tt2_row.setValue(QStringLiteral("startTimeText"), quickevent::core::og::TimeMs(start_time).toString());
+			using namespace quickevent::core::og;
+			tt2_row.setValue(QStringLiteral("startTimeText"), TimeMs(start_time).toString(TimeMeasurementPrecision::Second));
 		}
 		tt2.setRow(j, tt2_row);
 	}
