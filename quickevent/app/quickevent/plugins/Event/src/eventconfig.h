@@ -1,5 +1,7 @@
 #pragma once
 
+#include <quickevent/core/og/timems.h>
+
 #include <QDate>
 #include <QMap>
 #include <QString>
@@ -26,6 +28,8 @@ struct EventConfig
 						   KnocOutSprint = 16,
 						   Indoor = 19,
 						  };
+
+	using TimeMeasurementPrecision = quickevent::core::og::TimeMeasurementPrecision;
 
 	static std::optional<Discipline> disciplineFromInt(int i);
 
@@ -58,6 +62,8 @@ struct EventConfig
 
 	int startGateToleranceMs = 3000;
 	int finishGateToleranceMs = 2000;
+
+	TimeMeasurementPrecision timeMeasurementPrecision = TimeMeasurementPrecision::Second;
 
 	int currentStageId = 1;
 };

@@ -133,6 +133,8 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 
 	ui->pointResultsMaxPoints->setValue(std::max(params.eventConfig.pointResultsMaxPoints, 1000));
 
+	ui->cbxTimePrec->setCurrentIndex(static_cast<int>(params.eventConfig.timeMeasurementPrecision));
+
 	ui->edStartGateTolerance->setValue(std::max(params.eventConfig.startGateToleranceMs, 3000));
 	ui->edFinishGateTolerance->setValue(std::max(params.eventConfig.finishGateToleranceMs, 2000));
 }
@@ -167,6 +169,8 @@ EventDialogWidget::Params EventDialogWidget::saveParams()
 	params.eventConfig.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
 
 	params.eventConfig.pointResultsMaxPoints = ui->pointResultsMaxPoints->value();
+
+	params.eventConfig.timeMeasurementPrecision = static_cast<Event::EventConfig::TimeMeasurementPrecision>(ui->cbxTimePrec->currentIndex());
 
 	params.eventConfig.startGateToleranceMs = ui->edStartGateTolerance->value();
 	params.eventConfig.finishGateToleranceMs = ui->edFinishGateTolerance->value();

@@ -50,6 +50,8 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	data.startGateToleranceMs = values.value("startGateToleranceMs", 3000).toInt();
 	data.finishGateToleranceMs = values.value("finishGateToleranceMs", 2000).toInt();
 
+	data.timeMeasurementPrecision = static_cast<TimeMeasurementPrecision>(values.value("timeMeasurementPrecision", 0).toInt());
+
 	data.currentStageId = values.value("currentStageId", 1).toInt();
 	return data;
 }
@@ -90,6 +92,8 @@ QVariantMap EventConfig::toVariantMap() const
 
 	values.insert("startGateToleranceMs", startGateToleranceMs);
 	values.insert("finishGateToleranceMs", finishGateToleranceMs);
+
+	values.insert("timeMeasurementPrecision", static_cast<int>(timeMeasurementPrecision));
 
 	values.insert("currentStageId", currentStageId);
 	return values;

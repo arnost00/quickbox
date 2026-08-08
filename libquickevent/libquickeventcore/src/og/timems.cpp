@@ -9,7 +9,7 @@
 
 namespace quickevent::core::og {
 
-//bool TimeMs::m_oneTenthSecPrecision = false;
+TimeMeasurementPrecision TimeMs::m_defaultTimeMeasurementPrecision = TimeMeasurementPrecision::Second;
 
 TimeMs::TimeMs()
 	: m_msec(0), m_isValid(false)
@@ -23,6 +23,11 @@ TimeMs::TimeMs(int msec)
 
 }
 
+void TimeMs::setDefaultTimeMeasurementPrecision(TimeMeasurementPrecision prec)
+{
+	m_defaultTimeMeasurementPrecision = prec;
+}
+
 TimeMs TimeMs::fromVariant(const QVariant &time_v)
 {
 	if(time_v.userType() == QMetaType::Int)
@@ -30,46 +35,54 @@ TimeMs TimeMs::fromVariant(const QVariant &time_v)
 	return TimeMs();
 }
 
-QString TimeMs::toString(QChar sec_sep, QChar msec_sep) const
+QString TimeMs::toString(QChar sec_sep, QChar msec_sep, TimeMeasurementPrecision prec) const
 {
 	if(!isValid())
 		return QString();
 
 	int msec = m_msec;
-	bool is_neg = false;
-	if(msec < 0) {
-		msec = -msec;
-		is_neg = true;
-	}
-	int ms = msec % 1000;
-	int sec = (msec / 1000) % 60;
-	int min = msec / (1000 * 60);
-	QString ret = QString::number(min) + sec_sep;
-	if(sec < 10)
-		ret += '0';
-	ret += QString::number(sec);
-	if(!msec_sep.isNull()) {
-		ret += msec_sep;
-		if(ms < 100)
-			ret += '0';
-		if(ms < 10)
-			ret += '0';
-		ret += QString::number(ms);
-	}
+	bool is_neg = msec < 0;
 	if(is_neg)
-		ret = '-' + ret;
+		msec = -msec;
+
+	int ms  = msec % 1000;
+	int sec = (msec / 1000) % 60;
+	int min = msec / (60 * 1000);
+
+	QString ret = QStringLiteral("%1%2%3")
+		.arg(min)
+		.arg(sec_sep)
+		.arg(sec, 2, 10, QChar('0'));
+
+	if(prec != TimeMeasurementPrecision::Second || !msec_sep.isNull()) {
+		int digits = 0;
+		switch (prec) {
+		case TimeMeasurementPrecision::Second:  break;
+		case TimeMeasurementPrecision::MSec100: digits = 1; break;
+		case TimeMeasurementPrecision::MSec10:  digits = 2; break;
+		case TimeMeasurementPrecision::MSec1:   digits = 3; break;
+		}
+		if(digits > 0) {
+			ret += msec_sep;
+			ret += QStringLiteral("%1").arg(ms, 3, 10, QChar('0')).left(digits);
+		}
+	}
+
+	if(is_neg)
+		ret.prepend('-');
 	return ret;
 }
 
+
 QString TimeMs::toString() const
 {
-	if(msec() % 1000) {
-		return toString('.', '/');
-	}
-	return toString('.', {});
+	return toString(m_defaultTimeMeasurementPrecision);
 }
 
-
+QString TimeMs::toString(TimeMeasurementPrecision prec) const
+{
+	return toString('.', '/', prec);
+}
 
 TimeMs TimeMs::fromString(const QString &time_str)
 {
