@@ -99,3 +99,14 @@ var DISQ_TIME_MSEC = NOT_COMPETITING_TIME_MSEC - 1;
 var MISPUNCH_TIME_MSEC = DISQ_TIME_MSEC - 1;
 var OVERTIME_TIME_MSEC = MISPUNCH_TIME_MSEC - 1;
 var MAX_REAL_TIME_MSEC = OVERTIME_TIME_MSEC - 1;
+
+function timeMsColumnWidth(time_prec)
+{
+	switch (time_prec) {
+	// case TimeMeasurementPrecision.Second: return 12;
+	case TimeMeasurementPrecision.MSec100: return 16;
+	case TimeMeasurementPrecision.MSec10:  return 18;
+	case TimeMeasurementPrecision.MSec1:   return 20;
+	}
+	return 13
+}

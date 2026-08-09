@@ -7,11 +7,12 @@ Report {
 	objectName: "root"
 
 	property var options
+	property var eventConfig
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
 	//property bool isPrintStartNumbers: options.isStartListPrintStartNumbers? true: false
 	//property int stageCount: 1
-	//property int currentStage: 1
+	property int timeMsColumnWidth: OGTime.timeMsColumnWidth(eventConfig.timeMeasurementPrecision)
 	//property string reportTitle: (root.stageCount > 1)? qsTr("E%1 Results by classes").arg(root.currentStage): qsTr("Results by classes")
 	property string reportTitle: qsTr("Results by classes")
 
@@ -123,7 +124,7 @@ Report {
 								textFn: runnersDetail.dataFn("registration");
 							}
 							Cell {
-								width: 20
+								width: root.timeMsColumnWidth
 								halign: Frame.AlignRight
 								textFn: function() { return OGTime.msecToString_mmss(runnersDetail.rowData("timeMs"));}
 							}

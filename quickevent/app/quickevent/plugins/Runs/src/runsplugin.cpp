@@ -2183,6 +2183,7 @@ void RunsPlugin::report_resultsClasses()
 		auto opts = dlg.optionsMap();
 		QVariantMap props;
 		props["options"] = opts;
+		props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 		qf::gui::reports::ReportViewWidget::showReport(fwk
 									, findReportFile("results_stage.qml")
 									, tt.toVariant()
