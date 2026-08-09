@@ -2208,10 +2208,11 @@ void RunsPlugin::report_resultsForSpeaker()
 		auto opts = dlg.optionsMap();
 		QVariantMap props;
 		props["options"] = opts;
+		props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 		//props["stageCount"] = getPlugin<EventPlugin>()->eventConfig()->stageCount();
 		//props["stageNumber"] = selectedStageId();
 		qf::gui::reports::ReportViewWidget::showReport(fwk
-									, findReportFile("results_stageSpeaker.qml")
+										, findReportFile("results_stageSpeaker.qml")
 									, tt.toVariant()
 									, tr("Results by classes")
 									, "printResultsSpeaker"
@@ -2260,8 +2261,9 @@ void RunsPlugin::report_resultsNStages()
 	QVariantMap props;
 	props["stagesCount"] = dlg.stagesCount();
 	props["options"] = opts;
+	props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 	qf::gui::reports::ReportViewWidget::showReport(fwk
-							, findReportFile("results_nstages.qml")
+						, findReportFile("results_nstages.qml")
 								, tt.toVariant()
 								, tr("Results after %n stage(s)", "", dlg.stagesCount())
 								, "printResultsNStages"
@@ -2287,8 +2289,9 @@ void RunsPlugin::report_resultsNStagesSpeaker()
 	QVariantMap props;
 	props["stagesCount"] = dlg.stagesCount();
 	props["options"] = opts;
+	props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 	qf::gui::reports::ReportViewWidget::showReport(fwk
-							, findReportFile("results_nstagesSpeaker.qml")
+						, findReportFile("results_nstagesSpeaker.qml")
 								, tt.toVariant()
 								, tr("Results after %n stage(s)", "", dlg.stagesCount())
 								, "printResultsNStagesWide"
@@ -2368,6 +2371,7 @@ void RunsPlugin::report_resultsPointsNStages()
 	QVariantMap props;
 	props["stagesCount"] = dlg.stagesCount();
 	props["options"] = opts;
+	props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 	qf::gui::reports::ReportViewWidget::showReport(fwk
 										, findReportFile("results_nstages_points.qml")
 										, tt.toVariant()

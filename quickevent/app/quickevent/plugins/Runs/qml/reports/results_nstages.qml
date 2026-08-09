@@ -8,14 +8,15 @@ Report {
 	id: root
 
 	property var options
+	property var eventConfig
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
 	property int stagesCount: (options.stagesCount > 0)? options.stagesCount: 1
 
 	property string reportTitle: qsTr("Results after %n stage(s)", "", root.stagesCount)
-	property int timeCellWidth: 13
+	property int timeCellWidth: OGTime.timeMsColumnWidth(eventConfig.timeMeasurementPrecision)
 	property int posCellWidth: 9
-	property int lossCellWidth: 15
+	property int lossCellWidth: root.timeCellWidth + 2
 	property int unrealTimeMs: OGTime.UNREAL_TIME_MSEC
 
 	property QfObject internals: QfObject {
@@ -195,5 +196,3 @@ Report {
 		}
 	}
 }
-
-

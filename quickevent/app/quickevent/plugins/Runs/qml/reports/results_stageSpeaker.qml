@@ -7,8 +7,10 @@ Report {
 	objectName: "root"
 
 	property var options
+	property var eventConfig
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
+	property int timeMsColumnWidth: OGTime.timeMsColumnWidth(eventConfig.timeMeasurementPrecision)
 	property string reportTitle: qsTr("Results by classes")
 
 	//debugLevel: 1
@@ -121,9 +123,9 @@ Report {
 								textFn: runnersDetail.dataFn("registration");
 							}
 							Cell {
-								width: 20
+								width: root.timeMsColumnWidth
 								halign: Frame.AlignRight
-								textFn: function() { return OGTime.msecToString_mmss(runnersDetail.rowData("timeMs"));}
+								textFn: function() { return OGTime.msecToString_mmss(runnersDetail.rowData("timeMs"));
 							}
 							Para {
 								width: 10
