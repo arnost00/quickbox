@@ -9,6 +9,8 @@ Report {
 
 	property var options
 	property var eventConfig
+	property var stageConfig
+	property int stageId
 
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
@@ -118,9 +120,10 @@ Report {
 				width: "%"
 				height: "%"
 				QuickEventReportHeader {
-					dataBand: band
+					eventConfig: root.eventConfig
+					stageConfig: root.stageConfig
+					stageId: root.stageId
 					reportTitle: root.reportTitle
-					showStageNumber: false
 				}
 				Detail {
 					id: detail

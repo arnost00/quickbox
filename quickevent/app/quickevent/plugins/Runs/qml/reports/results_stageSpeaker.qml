@@ -8,6 +8,8 @@ Report {
 
 	property var options
 	property var eventConfig
+	property var stageConfig
+	property int stageId
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
 	property int timeMsColumnWidth: OGTime.timeMsColumnWidth(eventConfig.timeMeasurementPrecision)
@@ -54,7 +56,9 @@ Report {
 				width: "%"
 				height: "%"
 				QuickEventReportHeader {
-					dataBand: band
+					eventConfig: root.eventConfig
+					stageConfig: root.stageConfig
+					stageId: root.stageId
 					reportTitle: root.reportTitle
 				}
 				Detail {
