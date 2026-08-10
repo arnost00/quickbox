@@ -243,6 +243,8 @@ add_executable(quickevent
 
 	plugins/Runs/qml/reports/competitorsWithCardRent.qml
 	plugins/Runs/qml/reports/results_nstages.qml
+	plugins/Runs/qml/reports/results_nstages_points.qml
+	plugins/Runs/qml/reports/results_nstages_points_condensed.qml
 	plugins/Runs/qml/reports/results_nstagesSpeaker.qml
 	plugins/Runs/qml/reports/results_stage.qml
 	plugins/Runs/qml/reports/results_stageSpeaker.qml
