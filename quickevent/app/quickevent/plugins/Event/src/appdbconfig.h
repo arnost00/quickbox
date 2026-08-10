@@ -49,7 +49,7 @@ private:
 	void save(const QString &prefix, int stage_id, const QVariantMap &data);
 
 private:
-    std::map<int, StageConfig> m_stagesConfig;
+	std::map<int, StageConfig> m_stagesConfig;
 	std::map<int, services::OFeedConfig> m_ofeedConfig;
 	std::map<int, Receipts::ReceiptsConfig> m_receiptsConfig;
 	std::map<int, services::OResultsConfig> m_oresultsConfig;
