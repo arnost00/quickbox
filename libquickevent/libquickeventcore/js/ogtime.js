@@ -14,7 +14,7 @@ var defaultTimeMeasurementPrecision = (typeof ogDefaultTimeMeasurementPrecision 
 	? ogDefaultTimeMeasurementPrecision
 	: TimeMeasurementPrecision.Second;
 
-function msecToString_mmss(msec)
+function msecToString_mmss(msec, prec)
 {
 	if(msec < 0)
 		return '-' + msecToString_mmss(-msec);
@@ -26,7 +26,12 @@ function msecToString_mmss(msec)
 		ret += '0';
 	ret += sec;
 	var digits = 0;
-	switch (defaultTimeMeasurementPrecision) {
+
+	if (typeof prec === 'undefined') {
+		prec = defaultTimeMeasurementPrecision
+	}
+
+	switch (prec) {
 	case TimeMeasurementPrecision.MSec100: digits = 1; break;
 	case TimeMeasurementPrecision.MSec10:  digits = 2; break;
 	case TimeMeasurementPrecision.MSec1:   digits = 3; break;

@@ -147,7 +147,7 @@ Report {
 							objectName: "minuteCellStartTimeMs"
 							width: 12
 							halign: Frame.AlignRight
-							text: OGTime.msecToString_mmss(detail.data(detail.currentIndex, "startTimeMs"));
+							text: OGTime.msecToString_mmss(detail.data(detail.currentIndex, "startTimeMs"), OGTime.TimeMeasurementPrecision.Second);
 						}
 					}
 					// strihani pro Zbyndu

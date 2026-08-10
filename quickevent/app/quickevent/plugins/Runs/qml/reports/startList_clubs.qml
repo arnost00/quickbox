@@ -109,7 +109,7 @@ Report {
 							layout: Frame.LayoutHorizontal
 							function dataFn(field_name) {return function() {return rowData(field_name);}}
 							Cell {
-								width: 16
+								width: 13
 								halign: Frame.AlignRight
 								textFn: runnersDetail.dataFn("startTimeText");
 							}
