@@ -1150,9 +1150,9 @@ QString Table::toString() const
 	QString s;
 	QTextStream ts(&s);
 	//ts.setPadChar('%');
-	ts << "       ";
+	ts << "   #   ";
 	for(int i=0; i<fields().count(); i++) {
-		if(i > 0) ts << sep;
+		ts << sep;
 		ts << field(i).name();
 	}
 	ts << '\n';
@@ -1174,12 +1174,12 @@ QString Table::toString() const
 
 qf::core::Collator Table::sortCollator() const
 {
-    return d->sortCollator;
+	return d->sortCollator;
 }
 
 void Table::setSortCollator(const Collator &coll)
 {
-    d->sortCollator = coll;
+	d->sortCollator = coll;
 }
 
 void Table::sort(const QString &_colnames)
@@ -1187,20 +1187,23 @@ void Table::sort(const QString &_colnames)
 	SortDefList sd;
 	String colnames = _colnames;
 	QStringList sl = colnames.splitAndTrim(',');
-	foreach(String s, sl) {
-		int ix = s.pos(' ');
-		bool asc = true;
+	for(const auto &s : sl) {
+		bool desc = false;
 		bool cs = true;
 		bool ascii7bit = true;
-		QString colname = s;
-		if(ix >= 0) {
-			colname = s.slice(0, ix).trimmed();
-			s = s.slice(ix+1).trimmed().toUpper();
-			asc = s.indexOf("DESC") >= 0;
-			cs = !(s.indexOf("ICS") >= 0);
+		auto colname = s;
+		if (auto ix = s.indexOf(' '); ix > 0) {
+			colname = s.mid(0, ix).trimmed();
+			auto attrs = s.mid(ix+1).trimmed().toUpper();
+			desc = attrs.indexOf("DESC") >= 0;
+			cs = !(attrs.indexOf("ICS") >= 0);
 		}
-		ix = fields().fieldIndex(s);
-		sd.append(SortDef(ix, asc, cs, ascii7bit));
+		auto ix = fields().fieldIndex(colname);
+		if (ix < 0) {
+			qfWarning() << "Invalid sort definition:" << s;
+			return;
+ 		}
+		sd.append(SortDef(ix, !desc, cs, ascii7bit));
 	}
 	sort(sd);
 }

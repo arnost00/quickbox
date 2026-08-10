@@ -53,6 +53,8 @@ struct EventConfig
 	int cardCheckTimeSec = 0;
 	bool iofRace = false;
 	int iofXmlRaceNumber = 0;
+	bool pointResults = false;
+	int pointResultsMaxPoints = 1000;
 	int currentStageId = 1;
 };
 

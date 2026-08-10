@@ -4,6 +4,7 @@
 #include "../guiglobal.h"
 #include "../framework/ipersistentsettings.h"
 #include "../menubar.h"
+#include "../toolbar.h"
 
 #include <qf/core/utils.h>
 
@@ -15,21 +16,15 @@
 class QLabel;
 class QToolButton;
 
-namespace qf {
-namespace gui {
+namespace qf::gui {
 
 class DialogButtonBox;
-class ToolBar;
 
-namespace framework {
-class DialogWidget;
-}
+namespace framework { class DialogWidget; }
 
 namespace dialogs {
 
-namespace internal {
-class CaptionFrame;
-}
+namespace internal { class CaptionFrame; }
 
 class QFGUI_DECL_EXPORT Dialog : public QDialog, public framework::IPersistentSettings
 {
@@ -40,7 +35,7 @@ class QFGUI_DECL_EXPORT Dialog : public QDialog, public framework::IPersistentSe
 private:
 	typedef QDialog Super;
 public:
-	enum DoneResult {ResultReject = Rejected, ResultAccept = Accepted, ResultDelete};
+	enum DoneResult {ResultReject = Rejected, ResultAccept = Accepted, ResultDelete = 2};
 public:
 	explicit Dialog(QWidget *parent = nullptr);
 	explicit Dialog(QDialogButtonBox::StandardButtons buttons, QWidget *parent = nullptr);
@@ -61,11 +56,6 @@ public:
 	Q_INVOKABLE void setDefaultButton(int standard_button);
 
 	Q_SLOT void loadPersistentSettings();
-
-	/// called when dialog wants to get close
-	/// if returned value is passed to QDialog::done() function
-	//Q_SLOT virtual int doneRequest(int result);
-	//Q_SLOT QVariant doneRequest_qml(const QVariant &result);
 
 	int exec() Q_DECL_OVERRIDE;
 	void done(int result) Q_DECL_OVERRIDE;
@@ -93,6 +83,6 @@ protected:
 	DialogButtonBox *m_dialogButtonBox = nullptr;
 };
 
-}}}
+}}
 
 #endif // QF_GUI_DIALOGS_DIALOG_H
