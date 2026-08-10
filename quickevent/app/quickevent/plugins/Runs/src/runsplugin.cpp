@@ -1585,9 +1585,8 @@ QVariantMap RunsPlugin::startListRecord(int run_id)
 	return {};
 }
 
-qf::core::utils::TreeTable RunsPlugin::startListClassesTable(const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format)
+qf::core::utils::TreeTable RunsPlugin::startListClassesTable(int stage_id, const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format)
 {
-	int stage_id = selectedStageId();
 	auto start00_epoch_sec = getPlugin<EventPlugin>()->stageStartDateTime(stage_id).toSecsSinceEpoch();
 
 	qfs::QueryBuilder qb;
@@ -1727,10 +1726,9 @@ qf::core::utils::TreeTable RunsPlugin::startListClassesTable(const QString &wher
 
 }
 
-qf::core::utils::TreeTable RunsPlugin::startListClubsTable(const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format,
+qf::core::utils::TreeTable RunsPlugin::startListClubsTable(int stage_id, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format,
 														   const quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy order_first_by)
 {
-	int stage_id = selectedStageId();
 	auto start00_epoch_sec = getPlugin<EventPlugin>()->stageStartDateTime(stage_id).toSecsSinceEpoch();
 
 	QString qs1 = "SELECT COALESCE(substr(registration, 1, 3), '') AS clubAbbr FROM competitors GROUP BY clubAbbr ORDER BY clubAbbr";
@@ -1804,10 +1802,9 @@ qf::core::utils::TreeTable RunsPlugin::startListClubsTable(const quickevent::gui
 
 // Reuses the startListClassesTable to get list of runners (optionally with vacants) and flattens
 // all classes into a list sorted by start time (within single minute by class & name).
-qf::core::utils::TreeTable RunsPlugin::startListStartersTable(const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option)
+qf::core::utils::TreeTable RunsPlugin::startListStartersTable(int stage_id, const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option)
 {
-	int stage_id = selectedStageId();
-	auto tt_classes = startListClassesTable(where_expr, vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
+	auto tt_classes = startListClassesTable(stage_id, where_expr, vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
 
 	qf::core::utils::TreeTable tt;
 	tt.setValue("stageId", stage_id);
@@ -2030,7 +2027,7 @@ void RunsPlugin::report_startListClasses()
 	dlg.setStartTimeFormatVisible(true);
 	if(dlg.exec()) {
 		int stage_id = selectedStageId();
-		auto tt = startListClassesTable(dlg.sqlWhereExpression(getPlugin<EventPlugin>()->currentStageId()), dlg.startListPrintVacantsOption(), dlg.startTimeFormat());
+		auto tt = startListClassesTable(stage_id, dlg.sqlWhereExpression(stage_id), dlg.startListPrintVacantsOption(), dlg.startTimeFormat());
 		auto opts = dlg.optionsMap();
 		QVariantMap props;
 		props["options"] = opts;
@@ -2063,7 +2060,7 @@ void RunsPlugin::report_startListClubs()
 	dlg.setStartlistOrderFirstByVisible(true);
 	if(dlg.exec()) {
 		int stage_id = selectedStageId();
-		auto tt = startListClubsTable( dlg.startTimeFormat(), dlg.startlistOrderFirstBy());
+		auto tt = startListClubsTable(stage_id, dlg.startTimeFormat(), dlg.startlistOrderFirstBy());
 		auto opts = dlg.optionsMap();
 		QVariantMap props;
 		props["options"] = opts;
@@ -2093,7 +2090,7 @@ void RunsPlugin::report_startListStarters()
 	dlg.setStartersOptionsVisible(true);
 	if(dlg.exec()) {
 		int stage_id = selectedStageId();
-		auto tt = startListStartersTable(dlg.sqlWhereExpression(getPlugin<EventPlugin>()->currentStageId()), dlg.startListPrintVacantsOption());
+		auto tt = startListStartersTable(stage_id, dlg.sqlWhereExpression(stage_id), dlg.startListPrintVacantsOption());
 		auto opts = dlg.optionsMap();
 		QVariantMap props;
 		props["options"] = opts;
@@ -2245,13 +2242,12 @@ void RunsPlugin::report_resultsAwards()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	QVariantMap opts;
-	opts["stageId"] = getPlugin<EventPlugin>()->currentStageId();
 	opts = printAwardsOptionsWithDialog(opts);
 	QString rep_path = opts.value("reportPath").toString();
 	if(rep_path.isEmpty())
 		return;
 
-	int awards_stage_id = opts.value("stageId").toInt();
+	int awards_stage_id = getPlugin<EventPlugin>()->currentStageId();
 	QVariantMap props;
 	props["eventConfig"] = getPlugin<EventPlugin>()->eventConfig().toVariantMap();
 	props["stageId"] = awards_stage_id;
@@ -2407,7 +2403,7 @@ void append_list(QVariantList &lst, const QVariantList &new_lst)
 }
 void RunsPlugin::export_startListClassesHtml()
 {
-	qf::core::utils::TreeTable tt1 = startListClassesTable("", quickevent::gui::ReportOptionsDialog::VacantsOption::OnlyRunners, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
+	qf::core::utils::TreeTable tt1 = startListClassesTable(selectedStageId(), "", quickevent::gui::ReportOptionsDialog::VacantsOption::OnlyRunners, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
 	QVariantList body{QStringLiteral("body")};
 	QString h1_str = "{{documentTitle}}";
 	QVariantMap event = tt1.value("event").toMap();
@@ -2507,7 +2503,7 @@ void RunsPlugin::export_startListClassesHtml()
 
 void RunsPlugin::export_startListClubsHtml()
 {
-	qf::core::utils::TreeTable tt1 = startListClubsTable(quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime,quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy::ClassName);
+	qf::core::utils::TreeTable tt1 = startListClubsTable(selectedStageId(), quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime, quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy::ClassName);
 	QVariantList body{QStringLiteral("body")};
 	QString h1_str = "{{documentTitle}}";
 	QVariantMap event = tt1.value("event").toMap();
@@ -3006,7 +3002,7 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 	QDateTime start00 = getPlugin<EventPlugin>()->stageStartDateTime(stage_id);
 	const auto &event_config = getPlugin<EventPlugin>()->eventConfig();
 	//console.debug("print_vacants", print_vacants);
-	auto tt1 = startListClassesTable("", vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::RelativeToClassStart);
+	auto tt1 = startListClassesTable(selectedStageId(), "", vacants_option, quickevent::gui::ReportOptionsDialog::StartTimeFormat::RelativeToClassStart);
 	bool is_iof_race = event_config.iofRace;
 	int iof_xml_race_number = event_config.iofXmlRaceNumber;
 
@@ -3222,7 +3218,7 @@ bool RunsPlugin::exportStartListCurrentStageCsvSime(const QString &file_name, bo
 	csv.setGenerateByteOrderMark(true);
 #endif
 
-	auto tt1 = startListClassesTable(sql_where, quickevent::gui::ReportOptionsDialog::VacantsOption::RegularVacants, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
+	auto tt1 = startListClassesTable(selectedStageId(), sql_where, quickevent::gui::ReportOptionsDialog::VacantsOption::RegularVacants, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
 	int id = 0;
 	for(int i=0; i<tt1.rowCount(); i++) {
 		qf::core::utils::TreeTableRow tt1_row = tt1.row(i);
@@ -3271,7 +3267,7 @@ bool RunsPlugin::exportStartListCurrentStageTvGraphics(const QString &file_name)
 	csv.setGenerateByteOrderMark(true);
 #endif
 
-	auto tt1 = startListClassesTable("", quickevent::gui::ReportOptionsDialog::VacantsOption::RegularVacants, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
+	auto tt1 = startListClassesTable(selectedStageId(), "", quickevent::gui::ReportOptionsDialog::VacantsOption::RegularVacants, quickevent::gui::ReportOptionsDialog::StartTimeFormat::DayTime);
 	int id = 0;
 	csv << "IOF ID;First Name;Last Name;Country;Start;Category;Bib;CountryFull;SI";
 	csv << Qt::endl;
