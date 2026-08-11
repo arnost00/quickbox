@@ -75,7 +75,7 @@ Report {
 				property string fieldName: "pointsloss"
 				textFn: function() {
 					var pointsloss = runnersDetail.data(runnersDetail.currentIndex, fieldName);
-					return (pointsloss === null || pointsloss === undefined)? "": "- " + pointsloss;
+					return (pointsloss === null || pointsloss === undefined || pointsloss === 0)? "": "- " + pointsloss;
 				}
 			}
 		}
