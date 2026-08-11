@@ -16,8 +16,6 @@
 #include "../../Event/src/eventplugin.h"
 #include "../../Event/src/services/qx/qxlateregistrationswidget.h"
 
-#include <algorithm>
-#include <cmath>
 #include <quickevent/core/codedef.h>
 #include <quickevent/core/utils.h>
 #include <quickevent/core/si/punchrecord.h>
@@ -51,6 +49,7 @@
 
 #include <algorithm>
 #include <numbers>
+#include <cmath>
 
 namespace qff = qf::gui::framework;
 namespace qfu = qf::core::utils;
