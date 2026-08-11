@@ -15,7 +15,7 @@ Frame {
 			var ret = root.reportTitle;
 			if(root.showStageNumber) {
 				var stage_cnt = root.eventConfig ? root.eventConfig.stageCount : 0
-				if(stage_cnt > 1)
+				if(stage_cnt > 1 && stageId > 0)
 					ret = "E" + root.stageId + " " + ret;
 			}
 			return ret;
