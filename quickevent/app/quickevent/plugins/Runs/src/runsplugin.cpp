@@ -373,7 +373,7 @@ QWidget* RunsPlugin::createReportOptionsDialog(QWidget *parent)
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 		parent = fwk;
 	}
-	auto *ret = new quickevent::gui::ReportOptionsDialog(parent);
+	auto *ret = new quickevent::gui::ReportOptionsDialog(getPlugin<EventPlugin>()->stageCount(), parent);
 	ret->loadPersistentSettings();
 	return ret;
 }
@@ -2056,7 +2056,7 @@ qf::core::utils::TreeTable RunsPlugin::startListClubsNStagesTable(const int stag
 void RunsPlugin::report_startListClasses()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClassesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2086,7 +2086,7 @@ void RunsPlugin::report_startListClasses()
 void RunsPlugin::report_startListClubs()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClubsReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2118,7 +2118,7 @@ void RunsPlugin::report_startListClubs()
 void RunsPlugin::report_startListStarters()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListStartersReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2148,7 +2148,7 @@ void RunsPlugin::report_startListStarters()
 void RunsPlugin::report_startListClassesNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClassesNStagesReportOptions");
 	dlg.loadPersistentSettings();
 
@@ -2185,7 +2185,7 @@ void RunsPlugin::report_startListClassesNStages()
 void RunsPlugin::report_startListClubsNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClubsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 
@@ -2221,7 +2221,7 @@ void RunsPlugin::report_startListClubsNStages()
 void RunsPlugin::report_resultsClasses()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setResultOptionsVisible(true);
@@ -2250,7 +2250,7 @@ void RunsPlugin::report_resultsClasses()
 void RunsPlugin::report_resultsForSpeaker()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesSpeakerReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setResultOptionsVisible(true);
@@ -2303,7 +2303,7 @@ void RunsPlugin::report_resultsAwards()
 void RunsPlugin::report_resultsNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(getPlugin<EventPlugin>()->currentStageId());
@@ -2329,7 +2329,7 @@ void RunsPlugin::report_resultsNStages()
 void RunsPlugin::report_resultsNStagesSpeaker()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesNStagesSpeakerReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(getPlugin<EventPlugin>()->currentStageId());
@@ -2379,7 +2379,7 @@ void RunsPlugin::report_resultsPointsNStagesCondensed()
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(ep->currentStageId());
@@ -2410,7 +2410,7 @@ void RunsPlugin::report_resultsPointsNStages()
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(ep->currentStageId());

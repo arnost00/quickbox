@@ -445,7 +445,7 @@ QVariant RelaysWidget::startListByClubsTableData(bool with_vacants)
 
 void RelaysWidget::print_start_list_classes()
 {
-	quickevent::gui::ReportOptionsDialog dlg(this);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), this);
 	dlg.setPersistentSettingsId("relaysStartReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStartListForRelays();
@@ -471,7 +471,7 @@ void RelaysWidget::print_start_list_classes()
 
 void RelaysWidget::print_start_list_clubs()
 {
-	quickevent::gui::ReportOptionsDialog dlg(this);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), this);
 	dlg.setPersistentSettingsId("relaysStartReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStartListForRelays();
@@ -502,7 +502,7 @@ void RelaysWidget::print_results_nlegs()
 	default_opts.setLegsCount(1);
 	default_opts.setResultExcludeDisq(true);
 
-	quickevent::gui::ReportOptionsDialog dlg(this);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), this);
 	dlg.setLegsOptionVisible(true);
 	dlg.setResultOptionsVisible(true);
 	dlg.setPersistentSettingsId("relaysResultsNLegsReportOptions");
@@ -529,7 +529,7 @@ void RelaysWidget::print_results_nlegs()
 void RelaysWidget::print_results_overal()
 {
 	qfLogFuncFrame();
-	quickevent::gui::ReportOptionsDialog dlg(this);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), this);
 	dlg.setLegsOptionVisible(false);
 	dlg.setResultOptionsVisible(true);
 	dlg.setPersistentSettingsId("relaysResultsOverallReportOptions");
@@ -556,7 +556,7 @@ void RelaysWidget::print_results_overal()
 void RelaysWidget::print_results_overal_condensed()
 {
 	qfLogFuncFrame();
-	quickevent::gui::ReportOptionsDialog dlg(this);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), this);
 	dlg.setLegsOptionVisible(false);
 	dlg.setResultOptionsVisible(true);
 	dlg.setPersistentSettingsId("relaysResultsOverallCondensedReportOptions");
