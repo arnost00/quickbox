@@ -1,6 +1,5 @@
 #include "runsplugin.h"
 
-#include "nstagesreportoptionsdialog.h"
 #include "runstablemodel.h"
 #include "runssettingspage.h"
 #include "runswidget.h"
@@ -377,15 +376,6 @@ QWidget* RunsPlugin::createReportOptionsDialog(QWidget *parent)
 	auto *ret = new quickevent::gui::ReportOptionsDialog(parent);
 	ret->loadPersistentSettings();
 	return ret;
-}
-
-QWidget *RunsPlugin::createNStagesReportOptionsDialog(QWidget *parent)
-{
-	if(!parent) {
-		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
-		parent = fwk;
-	}
-	return new Runs::NStagesReportOptionsDialog(parent);
 }
 
 bool RunsPlugin::reloadTimesFromCard(int run_id)

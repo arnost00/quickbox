@@ -73,7 +73,6 @@ public:
 	Q_INVOKABLE void showRunsTable(int stage_id, int class_id, bool show_offrace, const QString &sort_column = QString(), int select_competitor_id = 0);
 
 	Q_INVOKABLE QWidget* createReportOptionsDialog(QWidget *parent = nullptr);
-	Q_INVOKABLE QWidget* createNStagesReportOptionsDialog(QWidget *parent = nullptr);
 
 	Q_INVOKABLE bool reloadTimesFromCard(int run_id);
 
