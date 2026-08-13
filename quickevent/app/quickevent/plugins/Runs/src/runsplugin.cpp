@@ -66,6 +66,8 @@ QString datetime_to_string(const QDateTime &dt)
 {
 	return dt.toTimeZone(QTimeZone::systemTimeZone()).toString(Qt::ISODateWithMs);
 }
+using quickevent::core::og::quantizeDatetimeMsec;
+using quickevent::core::og::quantizeTimeMsec;
 const auto vacant_name_sentinel = QStringLiteral("---");
 }
 RunsPlugin::RunsPlugin(QObject *parent)
@@ -1056,6 +1058,13 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 	QDateTime stage_start_date_time = event_plugin->stageStartDateTime(stage_id);//.toTimeSpec(Qt::OffsetFromUTC);
 
 	const auto &config = event_plugin->appDbConfig().eventConfig();
+	const auto time_precision = config.timeMeasurementPrecision;
+	auto quantize_time = [time_precision](int time_ms) {
+		return quantizeTimeMsec(time_ms, time_precision);
+	};
+	auto quantize_datetime = [time_precision](QDateTime date_time) {
+		return quantizeDatetimeMsec(date_time, time_precision);
+	};
 	auto start_tolerance_ms = config.startGateToleranceMs;
 	auto finish_tolerance_ms = config.finishGateToleranceMs;
 	auto adjusted_time = [stage_start_date_time](int time, const QDateTime &gate_time, int tolerance_ms) {
@@ -1090,8 +1099,8 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 		event_lst.insert(event_lst.count(), QVariantList{"Id", QVariantMap{{"type", "ORIS"}}, event.value("importId")});
 		event_lst.insert(event_lst.count(), QVariantList{"Name", event.value("name")});
 		event_lst.insert(event_lst.count(), QVariantList{"StartTime",
-				   QVariantList{"Date", stage_start_date_time.date().toString(Qt::ISODate)},
-				   QVariantList{"Time", stage_start_date_time.time().toString(Qt::ISODate)}
+				   QVariantList{"Date", quantize_datetime(stage_start_date_time).date().toString(Qt::ISODate)},
+				   QVariantList{"Time", quantize_datetime(stage_start_date_time).time().toString(Qt::ISODate)}
 		});
 		event_lst.insert(event_lst.count(),
 			QVariantList{"Official",
@@ -1222,7 +1231,7 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 				// or competitor without start time had punched start station
 				stime = ftime - time;
 			}
-			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(adjusted_start_time(stime, start_gate_time))});
+			result.insert(result.count(), QVariantList{"StartTime", datetime_to_string(quantize_datetime(adjusted_start_time(stime, start_gate_time)))});
 			if (j == 0) {
 				// fill firstTime with time of first runner
 				first_time = time;
@@ -1230,9 +1239,9 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 			int time_behind = time - first_time;
 			if (!run_status.isDidNotStart() && !run_status.isDidNotFinish())
 			{
-				result.insert(result.count(), QVariantList{"FinishTime", datetime_to_string(adjusted_finish_time(ftime, finish_gate_time))});
-				result.insert(result.count(), QVariantList{"Time", static_cast<double>(time) / 1000});
-				result.insert(result.count(), QVariantList{"TimeBehind", static_cast<double>(time_behind) / 1000});
+				result.insert(result.count(), QVariantList{"FinishTime", datetime_to_string(quantize_datetime(adjusted_finish_time(ftime, finish_gate_time)))});
+				result.insert(result.count(), QVariantList{"Time", static_cast<double>(quantize_time(time)) / 1000});
+				result.insert(result.count(), QVariantList{"TimeBehind", static_cast<double>(quantize_time(time_behind)) / 1000});
 			}
 
 			if (run_status.isOk()) {
@@ -1254,7 +1263,7 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 					if(stp_time == 0)
 						split_time.insert(1, QVariantMap{ {QStringLiteral("status"), QStringLiteral("Missing")} });
 					else
-						split_time.insert(split_time.count(), QVariantList{QStringLiteral("Time"), stp_time / 1000});
+						split_time.insert(split_time.count(), QVariantList{QStringLiteral("Time"), static_cast<double>(quantize_time(stp_time)) / 1000});
 					result.insert(result.count(), split_time);
 					ix += 4;
 				}

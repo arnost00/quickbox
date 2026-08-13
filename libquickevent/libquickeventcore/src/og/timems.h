@@ -6,11 +6,16 @@
 #include <QChar>
 #include <QMetaType>
 
+class QDateTime;
 class QString;
 
 namespace quickevent::core::og {
 
 enum class TimeMeasurementPrecision { Second = 0, MSec100, MSec10, MSec1 };
+
+QUICKEVENTCORE_DECL_EXPORT int timePrecisionMsec(TimeMeasurementPrecision precision);
+QUICKEVENTCORE_DECL_EXPORT int quantizeTimeMsec(int time_ms, TimeMeasurementPrecision precision);
+QUICKEVENTCORE_DECL_EXPORT QDateTime quantizeDatetimeMsec(QDateTime date_time, TimeMeasurementPrecision precision);
 
 class QUICKEVENTCORE_DECL_EXPORT TimeMs
 {

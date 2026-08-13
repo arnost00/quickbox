@@ -2,6 +2,7 @@
 
 #include <qf/core/log.h>
 
+#include <QDateTime>
 #include <QString>
 #include <QRegularExpression>
 
@@ -10,6 +11,29 @@
 namespace quickevent::core::og {
 
 TimeMeasurementPrecision TimeMs::m_defaultTimeMeasurementPrecision = TimeMeasurementPrecision::Second;
+
+int timePrecisionMsec(TimeMeasurementPrecision precision)
+{
+	switch (precision) {
+	case TimeMeasurementPrecision::MSec100: return 100;
+	case TimeMeasurementPrecision::MSec10: return 10;
+	case TimeMeasurementPrecision::MSec1: return 1;
+	case TimeMeasurementPrecision::Second: return 1000;
+	}
+	return 1000;
+}
+
+int quantizeTimeMsec(int time_ms, TimeMeasurementPrecision precision)
+{
+	const int precision_ms = timePrecisionMsec(precision);
+	return time_ms - time_ms % precision_ms;
+}
+
+QDateTime quantizeDatetimeMsec(QDateTime date_time, TimeMeasurementPrecision precision)
+{
+	const int precision_ms = timePrecisionMsec(precision);
+	return date_time.addMSecs(-(date_time.time().msec() % precision_ms));
+}
 
 TimeMs::TimeMs()
 	: m_msec(0), m_isValid(false)
