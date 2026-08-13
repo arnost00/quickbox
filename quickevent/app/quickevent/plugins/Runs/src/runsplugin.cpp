@@ -582,7 +582,14 @@ QString RunsPlugin::qxExportRunsCsv(int stage_id)
 	return csv;
 }
 */
-qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, int class_id, int places, bool exclude_disq, int max_points, int best_results_count)
+qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(
+		int stages_count,
+		int class_id,
+		int places,
+		bool exclude_disq,
+		int max_points,
+		int best_results_count
+)
 {
 	qfs::QueryBuilder qb;
 	qb.select2("competitors", "id, registration, licence")
@@ -783,7 +790,14 @@ QVariant RunsPlugin::nstagesResultsTableData(int stages_count, int places, bool 
 }
 */
 
-qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places, bool exclude_disq, int best_results_count)
+qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(
+		const QString &class_filter,
+		int stages_count,
+		int max_points,
+		int places,
+		bool exclude_disq,
+		int best_results_count
+)
 {
 	qfLogFuncFrame();
 	qf::gui::model::SqlTableModel mod;
