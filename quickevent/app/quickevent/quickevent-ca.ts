@@ -492,11 +492,6 @@
         <translation type="unfinished">Otestovat</translation>
     </message>
     <message>
-        <location filename="plugins/CardReader/src/cardreaderwidget.ui" line="96"/>
-        <source>Test</source>
-        <translation>Otestovat</translation>
-    </message>
-    <message>
         <location filename="plugins/CardReader/src/cardreaderwidget.cpp" line="331"/>
         <source>Show receipt</source>
         <translation type="unfinished"></translation>
