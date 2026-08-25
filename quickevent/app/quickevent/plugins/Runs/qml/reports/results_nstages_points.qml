@@ -38,8 +38,10 @@ Report {
 				property int stageNo: 0
 				layout: Frame.LayoutVertical
 				Cell {
-					textStyle: myStyle.textStyleBold
 					property string fieldName: (frame.stageNo)? "points" + frame.stageNo: "points"
+					textStyle: (frame.stageNo > 0 && runnersDetail.data(runnersDetail.currentIndex, "dropped" + frame.stageNo))
+						? root.textStyleStrikeOut
+						: myStyle.textStyleBold
 					textFn: function() {
 						var pts = runnersDetail.data(runnersDetail.currentIndex, fieldName);
 						return (pts && pts > 0)? pts: "";
@@ -73,13 +75,15 @@ Report {
 				property string fieldName: "pointsloss"
 				textFn: function() {
 					var pointsloss = runnersDetail.data(runnersDetail.currentIndex, fieldName);
-					return (pointsloss === null || pointsloss === undefined)? "": "- " + pointsloss;
+					return (pointsloss === null || pointsloss === undefined || pointsloss === 0)? "": "- " + pointsloss;
 				}
 			}
 		}
 	}
 
 	//debugLevel: 1
+	property var textStyleStrikeOut: myStyle.textStyleStrikeOut
+
 	styleSheet: StyleSheet {
 		objectName: "portraitStyleSheet"
 		basedOn: ReportStyleCommon { id: myStyle }

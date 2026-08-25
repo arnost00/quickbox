@@ -527,10 +527,38 @@
           <string>Point results</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblPointResultsMaxPoints">
-            <property name="text">
-             <string>Max points</string>
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="pointResultsBestResultsCount">
+            <property name="toolTip">
+             <string>Maximum points for the winner (1000-points formula: max_points * best_time / runner_time)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+            </property>
+            <property name="specialValueText">
+             <string>All</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -556,18 +584,26 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblPointResultsMaxPoints_3">
+            <property name="text">
+             <string>Count only</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblPointResultsMaxPoints">
+            <property name="text">
+             <string>Max points</string>
             </property>
-           </spacer>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="lblPointResultsMaxPoints_4">
+            <property name="text">
+             <string>best stage times to overall results</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

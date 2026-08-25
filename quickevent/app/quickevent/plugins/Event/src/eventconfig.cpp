@@ -46,6 +46,7 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
 
 	data.pointResultsMaxPoints = values.value("pointResultsMaxPoints", 1000).toInt();
+	data.pointResultsBestResultsCount = values.value("pointResultsBestResultsCount", 0).toInt();
 
 	data.startGateToleranceMs = values.value("startGateToleranceMs", 3000).toInt();
 	data.finishGateToleranceMs = values.value("finishGateToleranceMs", 2000).toInt();
@@ -89,6 +90,7 @@ QVariantMap EventConfig::toVariantMap() const
 	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
 
 	values.insert("pointResultsMaxPoints", pointResultsMaxPoints);
+	values.insert("pointResultsBestResultsCount", pointResultsBestResultsCount);
 
 	values.insert("startGateToleranceMs", startGateToleranceMs);
 	values.insert("finishGateToleranceMs", finishGateToleranceMs);

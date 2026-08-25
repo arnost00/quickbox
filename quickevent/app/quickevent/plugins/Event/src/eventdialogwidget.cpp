@@ -20,9 +20,11 @@ EventDialogWidget::EventDialogWidget(QWidget *parent) :
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui->stageStartTimesTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 	ui->stageStartTimesTable->verticalHeader()->hide();
-	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+	connect(ui->ed_stageCount, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int stage_count) {
+		ui->pointResultsBestResultsCount->setMaximum(stage_count - 1);
 		updateStageStartTimeEditors(saveParams());
 	});
+	ui->pointResultsBestResultsCount->setMaximum(ui->ed_stageCount->value() - 1);
 
 	connect(ui->ed_iofRace, &QAbstractButton::toggled, ui->frameIofRace, &QWidget::setVisible);
 	ui->frameIofRace->hide();
@@ -109,6 +111,7 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 		const QSignalBlocker blocker(ui->ed_stageCount);
 		ui->ed_stageCount->setValue(params.eventConfig.stageCount);
 	}
+	ui->pointResultsBestResultsCount->setMaximum(ui->ed_stageCount->value() - 1);
 	updateStageStartTimeEditors(params);
 
 	ui->ed_description->setText(params.eventConfig.description);
@@ -132,6 +135,7 @@ void EventDialogWidget::loadParams(const EventDialogWidget::Params &params)
 	ui->ed_xmlRaceNumber->setValue(params.eventConfig.iofXmlRaceNumber);
 
 	ui->pointResultsMaxPoints->setValue(std::max(params.eventConfig.pointResultsMaxPoints, 1000));
+	ui->pointResultsBestResultsCount->setValue(std::max(params.eventConfig.pointResultsBestResultsCount, 0));
 
 	ui->cbxTimePrec->setCurrentIndex(static_cast<int>(params.eventConfig.timeMeasurementPrecision));
 
@@ -169,6 +173,7 @@ EventDialogWidget::Params EventDialogWidget::saveParams()
 	params.eventConfig.iofXmlRaceNumber = ui->ed_xmlRaceNumber->value();
 
 	params.eventConfig.pointResultsMaxPoints = ui->pointResultsMaxPoints->value();
+	params.eventConfig.pointResultsBestResultsCount = ui->pointResultsBestResultsCount->value();
 
 	params.eventConfig.timeMeasurementPrecision = static_cast<Event::EventConfig::TimeMeasurementPrecision>(ui->cbxTimePrec->currentIndex());
 

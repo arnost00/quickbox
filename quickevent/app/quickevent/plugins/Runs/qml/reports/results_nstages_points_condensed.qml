@@ -142,7 +142,7 @@ Report {
 								halign: Frame.AlignRight
 								textFn: function() {
 									var pts = runnersDetail.dataFn("pointsloss")();
-									return (pts === null || pts === undefined)? "": "- " + pts;
+									return (pts === null || pts === undefined || pts === 0)? "": "- " + pts;
 								}
 							}
 						}

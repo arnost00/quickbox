@@ -59,6 +59,7 @@ struct EventConfig
 	int iofXmlRaceNumber = 0;
 
 	int pointResultsMaxPoints = 1000;
+	int pointResultsBestResultsCount = 0;
 
 	int startGateToleranceMs = 3000;
 	int finishGateToleranceMs = 2000;

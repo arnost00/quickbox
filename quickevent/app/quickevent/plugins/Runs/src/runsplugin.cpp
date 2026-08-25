@@ -1,6 +1,5 @@
 #include "runsplugin.h"
 
-#include "nstagesreportoptionsdialog.h"
 #include "runstablemodel.h"
 #include "runssettingspage.h"
 #include "runswidget.h"
@@ -16,7 +15,6 @@
 #include "../../Event/src/eventplugin.h"
 #include "../../Event/src/services/qx/qxlateregistrationswidget.h"
 
-#include <cmath>
 #include <quickevent/core/codedef.h>
 #include <quickevent/core/utils.h>
 #include <quickevent/core/si/punchrecord.h>
@@ -50,6 +48,7 @@
 
 #include <algorithm>
 #include <numbers>
+#include <cmath>
 
 namespace qff = qf::gui::framework;
 namespace qfu = qf::core::utils;
@@ -374,18 +373,9 @@ QWidget* RunsPlugin::createReportOptionsDialog(QWidget *parent)
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 		parent = fwk;
 	}
-	auto *ret = new quickevent::gui::ReportOptionsDialog(parent);
+	auto *ret = new quickevent::gui::ReportOptionsDialog(getPlugin<EventPlugin>()->stageCount(), parent);
 	ret->loadPersistentSettings();
 	return ret;
-}
-
-QWidget *RunsPlugin::createNStagesReportOptionsDialog(QWidget *parent)
-{
-	if(!parent) {
-		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
-		parent = fwk;
-	}
-	return new Runs::NStagesReportOptionsDialog(parent);
 }
 
 bool RunsPlugin::reloadTimesFromCard(int run_id)
@@ -582,7 +572,14 @@ QString RunsPlugin::qxExportRunsCsv(int stage_id)
 	return csv;
 }
 */
-qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, int class_id, int places, bool exclude_disq, int max_points)
+qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(
+		int stages_count,
+		int class_id,
+		int places,
+		bool exclude_disq,
+		int max_points,
+		int best_results_count
+)
 {
 	qfs::QueryBuilder qb;
 	qb.select2("competitors", "id, registration, licence")
@@ -596,6 +593,7 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, in
 		qb.select(QF_IARG(UNREAL_TIME_MSEC) " AS timeMs" QF_IARG(stage_id));
 		qb.select("'' AS pos" QF_IARG(stage_id));
 		qb.select("0 AS points" QF_IARG(stage_id));
+		qb.select("false AS dropped" QF_IARG(stage_id));
 	}
 	qb.select(QF_IARG(UNREAL_TIME_MSEC) " AS timeMs");
 	qb.select(QF_IARG(UNREAL_TIME_MSEC) " AS timeLossMs");
@@ -645,6 +643,7 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, in
 	for (int j = 0; j < mod.rowCount(); ++j) {
 		int sum_time_ms = 0;
 		int sum_points = 0;
+		QVector<std::pair<int, int>> stage_points_list; // (points, 1-based stage_id)
 		for (int stage_id = 1; stage_id <= stages_count; ++stage_id) {
 			int stage_time_ms = mod.value(j, QString("timeMs%1").arg(stage_id)).toInt();
 			QString pos_str = mod.value(j, QString("pos%1").arg(stage_id)).toString();
@@ -655,21 +654,43 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(int stages_count, in
 				sum_time_ms = UNREAL_TIME_MSEC;
 			}
 			if (max_points > 0) {
+				int stage_pts = 0;
 				if (pos > 0 && stage_time_ms < UNREAL_TIME_MSEC) {
 					auto stage_best_time = stage_to_best_time.value(stage_id, UNREAL_TIME_MSEC);
 					if (stage_best_time < UNREAL_TIME_MSEC) {
-						auto points = static_cast<int>(std::round(static_cast<double>(max_points) * stage_best_time / stage_time_ms));
-						mod.setValue(j, QString("points%1").arg(stage_id), points);
-						sum_points += points;
+						stage_pts = static_cast<int>(std::round(static_cast<double>(max_points) * stage_best_time / stage_time_ms));
+						mod.setValue(j, QString("points%1").arg(stage_id), stage_pts);
 					}
 				} else {
 					mod.setValue(j, QString("points%1").arg(stage_id), QVariant());
+				}
+				stage_points_list.append({stage_pts, stage_id});
+			}
+		}
+		if (max_points > 0) {
+			if (best_results_count > 0 && best_results_count < stages_count) {
+				// Sort stages by points descending to find the best_results_count to keep.
+				std::ranges::sort(stage_points_list, [](const auto &a, const auto &b) {
+					return a.first > b.first;
+				});
+				for (int k = 0; k < stage_points_list.size(); ++k) {
+					int stage_id = stage_points_list[k].second;
+					if (k < best_results_count) {
+						sum_points += stage_points_list[k].first;
+					} else {
+						mod.setValue(j, QString("dropped%1").arg(stage_id), true);
+					}
+				}
+			} else {
+				for (const auto &[pts, stage_id] : stage_points_list) {
+					sum_points += pts;
 				}
 			}
 		}
 		mod.setValue(j, "timeMs", sum_time_ms);
 		mod.setValue(j, "points", sum_points);
 	}
+
 	qfu::Table t = mod.table();
 	if (max_points > 0) {
 		t.sort("points DESC");
@@ -759,7 +780,14 @@ QVariant RunsPlugin::nstagesResultsTableData(int stages_count, int places, bool 
 }
 */
 
-qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places, bool exclude_disq)
+qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(
+		const QString &class_filter,
+		int stages_count,
+		int max_points,
+		int places,
+		bool exclude_disq,
+		int best_results_count
+)
 {
 	qfLogFuncFrame();
 	qf::gui::model::SqlTableModel mod;
@@ -777,12 +805,13 @@ qf::core::utils::TreeTable RunsPlugin::nstagesPointResultsTable(const QString &c
 	for (int i = 0; i < tt.rowCount(); i++) {
 		qfu::TreeTableRow tt_row = tt.row(i);
 		int class_id = tt_row.value(QStringLiteral("id")).toInt();
-		qfu::Table t = nstagesClassResultsTable(stages_count, class_id, places, exclude_disq, max_points);
+		qfu::Table t = nstagesClassResultsTable(stages_count, class_id, places, exclude_disq, max_points, best_results_count);
 		qfu::TreeTable tt2 = t.toTreeTable();
 		tt_row.appendTable(tt2);
 		tt.setRow(i, tt_row);
 	}
 	tt.setValue("stagesCount", stages_count);
+	tt.setValue("bestResultsCount", best_results_count);
 	return tt;
 }
 
@@ -2027,7 +2056,7 @@ qf::core::utils::TreeTable RunsPlugin::startListClubsNStagesTable(const int stag
 void RunsPlugin::report_startListClasses()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClassesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2057,7 +2086,7 @@ void RunsPlugin::report_startListClasses()
 void RunsPlugin::report_startListClubs()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClubsReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2089,7 +2118,7 @@ void RunsPlugin::report_startListClubs()
 void RunsPlugin::report_startListStarters()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListStartersReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setCurrentStageId(getPlugin<EventPlugin>()->currentStageId());
@@ -2119,7 +2148,7 @@ void RunsPlugin::report_startListStarters()
 void RunsPlugin::report_startListClassesNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClassesNStagesReportOptions");
 	dlg.loadPersistentSettings();
 
@@ -2156,7 +2185,7 @@ void RunsPlugin::report_startListClassesNStages()
 void RunsPlugin::report_startListClubsNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("startListClubsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 
@@ -2192,7 +2221,7 @@ void RunsPlugin::report_startListClubsNStages()
 void RunsPlugin::report_resultsClasses()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setResultOptionsVisible(true);
@@ -2221,7 +2250,7 @@ void RunsPlugin::report_resultsClasses()
 void RunsPlugin::report_resultsForSpeaker()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesSpeakerReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setResultOptionsVisible(true);
@@ -2274,7 +2303,7 @@ void RunsPlugin::report_resultsAwards()
 void RunsPlugin::report_resultsNStages()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(getPlugin<EventPlugin>()->currentStageId());
@@ -2300,7 +2329,7 @@ void RunsPlugin::report_resultsNStages()
 void RunsPlugin::report_resultsNStagesSpeaker()
 {
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsClassesNStagesSpeakerReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(getPlugin<EventPlugin>()->currentStageId());
@@ -2350,7 +2379,7 @@ void RunsPlugin::report_resultsPointsNStagesCondensed()
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(ep->currentStageId());
@@ -2360,8 +2389,9 @@ void RunsPlugin::report_resultsPointsNStagesCondensed()
 		return;
 	int stages_count = ep->currentStageId();
 	int max_points = ec.pointResultsMaxPoints > 0 ? ec.pointResultsMaxPoints : 1000;
+	int best_results_count = ec.pointResultsBestResultsCount;
 	auto opts = dlg.options();
-	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq());
+	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq(), best_results_count);
 	QVariantMap props;
 	props["stagesCount"] = stages_count;
 	props["options"] = opts;
@@ -2380,7 +2410,7 @@ void RunsPlugin::report_resultsPointsNStages()
 	auto *ep = getPlugin<EventPlugin>();
 	const auto &ec = ep->eventConfig();
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
-	quickevent::gui::ReportOptionsDialog dlg(fwk);
+	quickevent::gui::ReportOptionsDialog dlg(getPlugin<EventPlugin>()->stageCount(), fwk);
 	dlg.setPersistentSettingsId("resultsPointsNStagesReportOptions");
 	dlg.loadPersistentSettings();
 	dlg.setStagesCount(ep->currentStageId());
@@ -2389,8 +2419,9 @@ void RunsPlugin::report_resultsPointsNStages()
 	if (!dlg.exec())
 		return;
 	int max_points = ec.pointResultsMaxPoints > 0 ? ec.pointResultsMaxPoints : 1000;
+	int best_results_count = ec.pointResultsBestResultsCount;
 	auto opts = dlg.options();
-	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq());
+	auto tt = nstagesPointResultsTable(dlg.sqlWhereExpression(), dlg.stagesCount(), max_points, opts.resultNumPlaces(), opts.isResultExcludeDisq(), best_results_count);
 	QVariantMap props;
 	props["stagesCount"] = dlg.stagesCount();
 	props["options"] = opts;
