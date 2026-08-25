@@ -8,14 +8,18 @@ Report {
 	id: root
 
 	property var options
+	property var eventConfig
+	property var stageConfig
+	property int stageId
+
 	property bool isBreakAfterEachClass: options.isBreakAfterEachClass? true: false
 	property bool isColumnBreak: options.isColumnBreak? true: false
 	property int stagesCount: (options.stagesCount > 0)? options.stagesCount: 1
 
 	property string reportTitle: qsTr("Points after %n stage(s)", "", root.stagesCount)
-	property int pointsCellWidth: 13
+	property int pointsCellWidth: OGTime.timeMsColumnWidth(eventConfig.timeMeasurementPrecision)
 	property int posCellWidth: 9
-	property int totalCellWidth: 15
+	property int totalCellWidth: root.pointsCellWidth + 2
 	property int diffCellWidth: 13
 
 	property int unrealTimeMs: OGTime.UNREAL_TIME_MSEC
@@ -116,9 +120,10 @@ Report {
 				width: "%"
 				height: "%"
 				QuickEventReportHeader {
-					dataBand: band
+					eventConfig: root.eventConfig
+					stageConfig: root.stageConfig
+					stageId: root.stageId
 					reportTitle: root.reportTitle
-					showStageNumber: false
 				}
 				Detail {
 					id: detail

@@ -100,9 +100,9 @@ public:
 	qf::core::sql::QueryBuilder startListQuery();
 	QVariantMap startListRecord(int run_id);
 
-	qf::core::utils::TreeTable startListClassesTable(const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
-	qf::core::utils::TreeTable startListClubsTable(const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format, const quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy order_first_by);
-	qf::core::utils::TreeTable startListStartersTable(const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
+	qf::core::utils::TreeTable startListClassesTable(int stage_id, const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
+	qf::core::utils::TreeTable startListClubsTable(int stage_id, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format, const quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy order_first_by);
+	qf::core::utils::TreeTable startListStartersTable(int stage_id, const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	qf::core::utils::TreeTable startListClassesNStagesTable(const int stages_count, const QString &where_expr, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
 	qf::core::utils::TreeTable startListClubsNStagesTable(const int stages_count, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
 
@@ -143,7 +143,7 @@ private:
 	Q_SLOT void onInstalled();
 
 	qf::core::utils::TreeTable addLapsToStageResultsTable(int course_id, const qf::core::utils::TreeTable &class_results);
-	void exportResultsHtmlStageWithLaps(const QString &laps_file_name, const qf::core::utils::TreeTable &tt);
+	void exportResultsHtmlStageWithLaps(const QString &laps_file_name, const qf::core::utils::TreeTable &tt, int stage_id);
 
 	int courseForRun_Classic(int run_id);
 	int courseForRun_Relays(int run_id);
