@@ -47,16 +47,6 @@ runs:
         modules: ${{ inputs.modules }}
     
     # Qt for Windows using naqt
-    - name: Install Qt for Windows
-      if: runner.os == 'Windows'
-      uses: jmargelia/setup-qt@v1
-      with:
-        version: ${{ inputs.qt_version }}
-        target: desktop
-        arch: win64_mingw
-        modules: ${{ inputs.modules }}
-        cache: true
-
     - name: Install naqt (Windows)
       if: runner.os == 'Windows'
       run: pip install naqt
