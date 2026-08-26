@@ -12,8 +12,8 @@ on:
 
 jobs:
   ubuntu-qe3:
-    name: Qt 6.10 / Ubuntu 22.04
-    runs-on: ubuntu-22.04
+    name: Qt 6.11 / Ubuntu 24.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Clone the repository
         uses: actions/checkout@v5

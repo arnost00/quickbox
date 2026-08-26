@@ -8,7 +8,7 @@ on:
 
 jobs:
   macos:
-    name: Qt 6.10 / macOS 15
+    name: Qt 6.11 / macOS 15
     runs-on: macos-15
     steps:
       - name: Clone the repository
