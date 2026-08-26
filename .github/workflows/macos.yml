@@ -2,7 +2,7 @@ name: macOS
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "qe3-wf-test5" ]
   pull_request:
     branches: [ "main" ]
 
@@ -23,7 +23,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           cache: true
-          version: 6.11.1
+          version: 6.11.2
           install-deps: false
           modules: qtserialport qtmultimedia qtconnectivity
 
