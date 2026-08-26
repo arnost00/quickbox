@@ -49,7 +49,7 @@ runs:
     # Qt for Windows using naqt
     - name: Install naqt (Windows)
       if: runner.os == 'Windows'
-      run: pip install naqt
+      run: pip install git+https://github.com/jdpurcell/naqt.git
       shell: bash
 
     - name: Install Qt with naqt (Windows)
