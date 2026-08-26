@@ -49,8 +49,12 @@ runs:
     # Qt for Windows using naqt
     - name: Install naqt (Windows)
       if: runner.os == 'Windows'
-      run: pip install git+https://github.com/jdpurcell/naqt.git
+      run: |
+        curl -L https://github.com/jdpurcell/naqt/releases/download/latest/naqt.zip -o naqt.zip
+        7z x naqt.zip -o"${{ github.workspace }}"
+        echo "${{ github.workspace }}" >> $GITHUB_PATH
       shell: bash
+
 
     - name: Install Qt with naqt (Windows)
       if: runner.os == 'Windows'
