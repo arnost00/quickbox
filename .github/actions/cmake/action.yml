@@ -46,23 +46,17 @@ runs:
         install-deps: false
         modules: ${{ inputs.modules }}
     
-    # Qt for Windows using naqt
-    - name: Install naqt (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        curl -L https://github.com/jdpurcell/naqt/releases/download/latest/naqt.zip -o naqt.zip
-        7z x naqt.zip -o"${{ github.workspace }}"
-        echo "${{ github.workspace }}" >> $GITHUB_PATH
-      shell: bash
-
-
-    - name: Install Qt with naqt (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        naqt install-qt windows desktop ${{ inputs.qt_version }} win64_mingw -m ${{ inputs.modules }}
-      shell: bash
-      env:
-        QT_QPA_PLATFORM: offscreen
+    # Qt for Windows
+    - name: Install Qt
+      if: runner.os != 'Windows'
+      uses: jdpurcell/install-qt-action@v5
+      with:
+        cache: true
+        version: ${{ inputs.qt_version }}
+        arch: ${{ inputs.qt_arch }}
+        install-deps: false
+        modules: ${{ inputs.modules }}
+        use-naqt: true
 
     - name: Get Git SHA
       run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
