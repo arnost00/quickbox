@@ -25,11 +25,11 @@ public:
 
 	// Collect per-relay data maps from the relay results TreeTable
 	QList<QVariantMap> collectPages(const qf::core::utils::TreeTable &tt,
-		Event::EventConfig *event_config) const;
+									const Event::EventConfig &event_config) const;
 
 	// Collect per-runner data maps from the stage results TreeTable
 	QList<QVariantMap> collectRunsPages(const qf::core::utils::TreeTable &tt,
-		Event::EventConfig *event_config) const;
+		const Event::EventConfig &event_config) const;
 
 	// Render pages to a QImage per page, via a generated Typst document rendered at the given PPI
 	QList<QImage> renderToImages(const QList<QVariantMap> &pages, int dpi = 96) const;

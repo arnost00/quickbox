@@ -32,7 +32,7 @@ AwardTypstRenderer::AwardTypstRenderer(const AwardDesigner::Design &design)
 }
 
 QList<QVariantMap> AwardTypstRenderer::collectPages(const qf::core::utils::TreeTable &tt,
-	Event::EventConfig *event_config) const
+	const Event::EventConfig &event_config) const
 {
 	QList<QVariantMap> pages;
 
@@ -60,10 +60,8 @@ QList<QVariantMap> AwardTypstRenderer::collectPages(const qf::core::utils::TreeT
 
 	QString main_referee;
 	QString director;
-	if (event_config) {
-		main_referee = event_config->mainReferee();
-		director = event_config->director();
-	}
+	main_referee = event_config.mainReferee;
+	director = event_config.director;
 
 	for (int ci = 0; ci < tt.rowCount(); ++ci) {
 		auto class_row = tt.row(ci);
@@ -109,7 +107,7 @@ QList<QVariantMap> AwardTypstRenderer::collectPages(const qf::core::utils::TreeT
 }
 
 QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::TreeTable &tt,
-	Event::EventConfig *event_config) const
+	const Event::EventConfig &event_config) const
 {
 	QList<QVariantMap> pages;
 
@@ -137,10 +135,8 @@ QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::T
 
 	QString main_referee;
 	QString director;
-	if (event_config) {
-		main_referee = event_config->mainReferee();
-		director = event_config->director();
-	}
+	main_referee = event_config.mainReferee;
+	director = event_config.director;
 
 	for (int ci = 0; ci < tt.rowCount(); ++ci) {
 		auto class_row = tt.row(ci);
