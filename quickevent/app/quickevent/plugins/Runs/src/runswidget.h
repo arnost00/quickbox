@@ -12,16 +12,8 @@ class QTextStream;
 class QLabel;
 class QToolButton;
 
-namespace qf {
-namespace core {
-namespace model {
-class SqlTableModel;
-}
-}
-namespace gui {
-class ForeignKeyComboBox;
-}
-}
+namespace qf::core::model { class SqlTableModel; }
+namespace qf::gui { class ForeignKeyComboBox; }
 
 namespace Event {
 class EventPlugin;
@@ -31,16 +23,14 @@ namespace Ui {
 class RunsWidget;
 }
 
-class ThisPartWidget;
-
 class RunsWidget : public QFrame
 {
 	Q_OBJECT
 private:
-	typedef QFrame Super;
+	using Super = QFrame;
 public:
 	explicit RunsWidget(QWidget *parent = nullptr);
-	~RunsWidget() Q_DECL_OVERRIDE;
+	~RunsWidget() override;
 
 	void settleDownInPartWidget(::PartWidget *part_widget);
 

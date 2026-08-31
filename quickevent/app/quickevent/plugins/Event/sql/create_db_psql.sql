@@ -140,6 +140,8 @@ CREATE TABLE {{eventId}}.runs (
 	finishTimeMs integer,
 	penaltyTimeMs integer,
 	timeMs integer,
+	startGateTime timestamp with time zone,
+	finishGateTime timestamp with time zone,
 	isRunning boolean NOT NULL DEFAULT true,
 	disqualified boolean GENERATED ALWAYS AS (disqualifiedByOrganizer OR  misPunch OR  notStart OR  notFinish OR  badCheck OR  overTime OR notCompeting) STORED,
 	disqualifiedByOrganizer boolean NOT NULL DEFAULT false,
@@ -163,6 +165,8 @@ COMMENT ON COLUMN {{eventId}}.runs.startTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.finishTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.penaltyTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.timeMs IS 'in miliseconds';
+COMMENT ON COLUMN {{eventId}}.runs.startGateTime IS 'DateTime when competitor crossed start photocell';
+COMMENT ON COLUMN {{eventId}}.runs.finishGateTime IS 'DateTime when competitor crossed finish photocell';
 COMMENT ON COLUMN {{eventId}}.runs.isRunning IS 'Competitor is running in this stage';
 COMMENT ON COLUMN {{eventId}}.runs.disqualifiedByOrganizer IS 'Competitor is disqualified by organizer for breaking rules, etc.';
 COMMENT ON COLUMN {{eventId}}.runs.notCompeting IS 'Competitor does run in this stage but not competing';
@@ -311,4 +315,4 @@ COMMENT ON COLUMN {{eventId}}.qxchanges.orig_data IS 'Store data overriden by ch
 ;
 -- insert into table: {{eventId}}.config;
 INSERT INTO {{eventId}}.config (ckey, cname, cvalue, ctype) VALUES 
-('db.version', 'Data version', '30500', 'int');
+('db.version', 'Data version', '30600', 'int');

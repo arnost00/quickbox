@@ -134,7 +134,7 @@ void StageResultsCsvExporter::exportClass(int class_id, QTextStream &csv)
 		while(q2.next()) {
 			auto run_status = quickevent::core::RunStatus::fromQuery(q2);
 			int time_ms = q2.value(QStringLiteral("timeMs")).toInt();
-			QString stime = og::TimeMs(time_ms).toString('.');
+			QString stime = og::TimeMs(time_ms).toString();
 			bool is_finish = q2.value(QStringLiteral("finishTimeMs")).toInt() > 0;
 			if(run_status.isOk() && is_finish) {
 				pos++;

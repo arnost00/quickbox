@@ -47,7 +47,13 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QPushButton" name="btComPort">
+         <widget class="QPushButton" name="btUsbReader">
+          <property name="toolTip">
+           <string>Connect USB SI reader</string>
+          </property>
+          <property name="text">
+           <string>USB</string>
+          </property>
           <property name="icon">
            <iconset resource="../CardReader.qrc">
             <normaloff>:/quickevent/CardReader/images/comm.svg</normaloff>:/quickevent/CardReader/images/comm.svg</iconset>
@@ -57,6 +63,19 @@
             <width>24</width>
             <height>24</height>
            </size>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btBtReader">
+          <property name="toolTip">
+           <string>Connect BT SI reader</string>
+          </property>
+          <property name="text">
+           <string>BT</string>
           </property>
           <property name="checkable">
            <bool>true</bool>

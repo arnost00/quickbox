@@ -1,4 +1,5 @@
 #include "chooseoriseventdialog.h"
+#include "plugins/Event/src/eventconfig.h"
 #include "orisimporter.h"
 
 #include <plugins/Event/src/eventplugin.h>
@@ -82,7 +83,7 @@ QNetworkAccessManager *OrisImporter::networkAccessManager()
 	return m_networkAccessManager;
 }
 
-void OrisImporter::getJsonAndProcess(const QUrl &url, QObject *context, std::function<void (const QJsonDocument &)> process_call_back)
+void OrisImporter::getJsonAndProcess(const QUrl &url, QObject *context, std::function<void (const QJsonDocument &)> process_call_back, std::function<void ()> finished_callback)
 {
 	auto *manager = networkAccessManager();
 	auto *reply = manager->get(QNetworkRequest(url));
@@ -90,7 +91,7 @@ void OrisImporter::getJsonAndProcess(const QUrl &url, QObject *context, std::fun
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 		fwk->showProgress(QString("%1/%2 %3").arg(completed).arg(total).arg(reply->url().toString()), completed, total);
 	});
-	connect(reply, &QNetworkReply::finished, context, [reply, process_call_back]() {
+	connect(reply, &QNetworkReply::finished, context, [reply, process_call_back, finished_callback]() {
 		qfMessage() << "Get:" << reply->url().toString() << "OK:" << (reply->error() == QNetworkReply::NoError);
 		qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 		if(reply->error() == QNetworkReply::NoError) {
@@ -103,14 +104,17 @@ void OrisImporter::getJsonAndProcess(const QUrl &url, QObject *context, std::fun
 															   .arg(err.errorString())
 															   .arg(err.offset)
 															   .arg(data.mid(err.offset, 50).constData()));
-				return;
 			}
-			process_call_back(jsd);
+			else {
+				process_call_back(jsd);
+			}
 		}
 		else {
 			qf::gui::dialogs::MessageBox::showError(fwk, "http get error on: " + reply->url().toString() + ", " + reply->errorString());
 		}
 		reply->deleteLater();
+		if(finished_callback)
+			finished_callback();
 	});
 }
 
@@ -140,7 +144,7 @@ void OrisImporter::syncCurrentEventEntries(std::function<void ()> success_callba
 {
 	qf::gui::framework::MainWindow *fwk = qf::gui::framework::MainWindow::frameWork();
 	//if(!qf::gui::dialogs::MessageBox::askYesNo(fwk, tr("All runners entries imported from Oris will be synchronized, manual changes will be lost!")))
-	int oris_id = getPlugin<EventPlugin>()->eventConfig()->importId();
+	int oris_id = getPlugin<EventPlugin>()->eventConfig().importId;
 	if(oris_id == 0) {
 		qf::gui::dialogs::MessageBox::showError(fwk, tr("Cannot find Oris import ID."));
 		return;
@@ -354,22 +358,22 @@ void OrisImporter::importEvent(int event_id, std::function<void ()> success_call
 			}
 			auto discipline = discipline_id_opt.value_or(Event::EventConfig::Discipline::LongDistance);
 			qfInfo() << "pocet etap:" << stage_count << "sport id:" << sport_id << "discipline id:" << di;
-			QVariantMap ecfg;
-			ecfg["stageCount"] = stage_count;
-			ecfg["name"] = data.value(QStringLiteral("Name")).toString();
-			ecfg["description"] = QString();
-			ecfg["date"] = QDate::fromString(data.value(QStringLiteral("Date")).toString(), Qt::ISODate);
-			ecfg["place"] = data.value(QStringLiteral("Place")).toString();
-			ecfg["mainReferee"] = jsonObjectToFullName(data, QStringLiteral("MainReferee"));
-			ecfg["director"] = jsonObjectToFullName(data, QStringLiteral("Director"));
-			ecfg["sportId"] = sport_id;
-			ecfg["disciplineId"] = static_cast<int>(discipline);
-			ecfg["importId"] = event_id;
-			ecfg["time"] = QTime::fromString(data.value(QStringLiteral("StartTime")).toString(), QStringLiteral("hh:mm"));
+			Event::EventConfig ecfg;
+			ecfg.stageCount = stage_count;
+			ecfg.name = data.value(QStringLiteral("Name")).toString();
+			ecfg.description = QString();
+			ecfg.date = QDate::fromString(data.value(QStringLiteral("Date")).toString(), Qt::ISODate);
+			ecfg.place = data.value(QStringLiteral("Place")).toString();
+			ecfg.mainReferee = jsonObjectToFullName(data, QStringLiteral("MainReferee"));
+			ecfg.director = jsonObjectToFullName(data, QStringLiteral("Director"));
+			ecfg.sportId = sport_id;
+			ecfg.disciplineId = static_cast<int>(discipline);
+			ecfg.importId = event_id;
+			ecfg.time = QTime::fromString(data.value(QStringLiteral("StartTime")).toString(), QStringLiteral("hh:mm"));
 			if(!getPlugin<EventPlugin>()->createEvent(QString(), ecfg))
 				return;
 
-			bool is_relay = getPlugin<EventPlugin>()->eventConfig()->isRelays();
+			bool is_relay = getPlugin<EventPlugin>()->eventConfig().isRelays();
 			//QString event_name = getPlugin<EventPlugin>()->eventName();
 			qfLogScope("importEvent");
 			qf::core::sql::Transaction transaction;
@@ -467,7 +471,7 @@ const char KEY_ORIG_RUNS[] = "origRuns";
 
 void OrisImporter::syncEventEntries(int event_id, std::function<void ()> success_callback)
 {
-	if(getPlugin<EventPlugin>()->eventConfig()->isRelays()) {
+	if(getPlugin<EventPlugin>()->eventConfig().isRelays()) {
 		syncRelaysEntries(event_id, success_callback);
 		return;
 	}
@@ -769,7 +773,7 @@ void OrisImporter::syncEventEntries(int event_id, std::function<void ()> success
 
 void OrisImporter::importRegistrations(std::function<void ()> success_callback)
 {
-	int sport_id = getPlugin<EventPlugin>()->eventConfig()->sportId();
+	int sport_id = getPlugin<EventPlugin>()->eventConfig().sportId;
 	int year = QDate::currentDate().addMonths(-2).year();
 
 	bool ok;
@@ -872,33 +876,42 @@ void OrisImporter::importClubs(std::function<void ()> success_callback)
 	});
 }
 
-void OrisImporter::getAndImportClub(const QString &club, const QString &key)
+void OrisImporter::getAndImportClub(const QString &club, const QString &key, std::function<void (bool)> finished_callback)
 {
-	QUrl url(QString("https://" + OrisImporter::orisDomainName() + "/API/?format=json&method=getClub&id=%1&eventkey=%2").arg(club).arg(key));
-	getJsonAndProcess(url, this, [club](const QJsonDocument &jsd) {
+	QUrl url(QString("https://" + OrisImporter::orisDomainName() + "/API/?format=json&method=getClub&abbr=%1&eventkey=%2").arg(club).arg(key));
+	auto imported = std::make_shared<bool>(false);
+	getJsonAndProcess(url, this, [club, imported](const QJsonDocument &jsd) {
 		saveJsonBackup(QString("Club_%1").arg(club), jsd);
 		QJsonObject data = jsd.object().value(QStringLiteral("Data")).toObject();
 		auto *fwk = qf::gui::framework::MainWindow::frameWork();
 		try {
 			qf::core::sql::Query q;
-			q.prepare("INSERT INTO clubs (name, abbr, importId) VALUES (:name, :abbr, :importId)", qf::core::Exception::Throw);
 			QString abbr = data.value(QStringLiteral("Abbr")).toString();
 			QString name = data.value(QStringLiteral("Name")).toString();
+			if(abbr.isEmpty()) {
+				qfWarning() << "Club" << club << "not found in ORIS";
+				return;
+			}
+			q.prepare("INSERT INTO clubs (name, abbr, importId) VALUES (:name, :abbr, :importId)", qf::core::Exception::Throw);
 			q.bindValue(":abbr", abbr);
 			q.bindValue(":name", name);
 			q.bindValue(":importId", data.value(QStringLiteral("ID")).toString().toInt());
 			q.exec(qf::core::Exception::Throw);
+			*imported = true;
 		}
 		catch (qf::core::Exception &e) {
 			qf::gui::dialogs::MessageBox::showException(fwk, e);
 		}
+	}, [imported, finished_callback]() {
+		if(finished_callback)
+			finished_callback(*imported);
 	});
 }
 
 void OrisImporter::importMissingOneTimeClubs()
 {
 	auto *fwk = qf::gui::framework::MainWindow::frameWork();
-	auto event_key = getPlugin<EventPlugin>()->eventConfig()->orisEventKey();
+	auto event_key = getPlugin<EventPlugin>()->eventConfig().orisEventKey;
 	if (event_key.isEmpty()) {
 		QMessageBox::warning(fwk,tr("Warning"),tr("For import one-time clubs, you need to fill ORIS Event Key in File->Event->Edit event"));
 		return;
@@ -925,7 +938,7 @@ void OrisImporter::importMissingOneTimeClubs()
 			}
 		}
 
-		if (getPlugin<EventPlugin>()->eventConfig()->isRelays()) {
+		if (getPlugin<EventPlugin>()->eventConfig().isRelays()) {
 			// also from relays table
 			q.exec("SELECT id, club FROM relays ORDER BY id", qf::core::Exception::Throw);
 			while(q.next()) {
@@ -943,21 +956,28 @@ void OrisImporter::importMissingOneTimeClubs()
 			return;
 		}
 
-		int items_processed = 0;
 		int items_count = missing_clubs.size();
 		fwk->showProgress(tr("Importing one-time clubs"), 0, items_count);
 		qfLogScope("importClubs");
+		auto items_processed = std::make_shared<int>(0);
+		auto items_imported = std::make_shared<int>(0);
 		for (auto &abbr : missing_clubs) {
-			getAndImportClub(abbr, event_key);
-			items_processed++;
+			getAndImportClub(abbr, event_key, [fwk, items_count, items_processed, items_imported](bool imported) {
+				if(imported)
+					(*items_imported)++;
+				(*items_processed)++;
+				if(*items_processed < items_count)
+					return;
+				fwk->hideProgress();
+				qfInfo() << "Import of one-time clubs finished, imported:" << *items_imported << "of" << items_count;
+				qf::gui::dialogs::MessageBox::showInfo(fwk, tr("Import of one-time clubs finished.\n\nImported: %1 of %2 clubs.")
+															   .arg(*items_imported).arg(items_count));
+			});
 		}
 
-		fwk->hideProgress();
-		qfInfo() << "Import of"<< items_processed << "new one-time clubs started...";
+		qfInfo() << "Import of" << items_count << "new one-time clubs started...";
 	}
 	catch (qf::core::Exception &e) {
 		qf::gui::dialogs::MessageBox::showException(fwk, e);
 	}
 }
-
-

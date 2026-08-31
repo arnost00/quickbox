@@ -13,9 +13,6 @@ namespace siut { class SIMessageData; }
 namespace CardReader {
 
 class CardChecker;
-class ReadCard;
-class PunchRecord;
-class CheckedCard;
 
 class CardReaderPlugin : public qf::gui::framework::Plugin
 {
@@ -35,12 +32,12 @@ public:
 	int findRunId(int si_id, int si_finish_time, QString *err_msg = nullptr);
 	bool isCardLent(int si_id, int si_finish_time, int run_id);
 	quickevent::core::si::ReadCard readCard(int card_id);
-	quickevent::core::si::CheckedCard checkCard(int card_id, int run_id = 0);
+	std::pair<quickevent::core::si::ReadCard, quickevent::core::si::CheckedCard> checkCard(int card_id, int run_id = 0);
 	quickevent::core::si::CheckedCard checkCard(const quickevent::core::si::ReadCard &read_card);
 	int saveCardToSql(const quickevent::core::si::ReadCard &read_card);
 	int savePunchRecordToSql(const quickevent::core::si::PunchRecord &punch_record);
 
-	Q_INVOKABLE bool reloadTimesFromCard(int card_id, int run_id = 0, bool in_transaction = true);
+	bool reloadTimesFromCard(int card_id, int run_id);
 	void assignCardToRun(int card_id, int run_id);
 	bool processCardToRunAssignment(int card_id, int run_id);
 
@@ -54,7 +51,9 @@ private:
 
 	void updateCardToRunAssignmentInPunches(int stage_id, int card_id, int run_id);
 	bool saveCardAssignedRunnerIdSql(int card_id, int run_id);
-        void updateCheckedCardValuesSql(int card_id, const quickevent::core::si::CheckedCard &checked_card) ;
+	void updateCheckedCardValuesSql(int card_id,
+									const quickevent::core::si::ReadCard &read_card,
+									const quickevent::core::si::CheckedCard &checked_card);
 	void setStartTime(int relay_id, int leg, int start_time);
 private:
 	QList<CardChecker*> m_cardCheckers;

@@ -23,7 +23,7 @@ runs:
     # Linux deps
     - name: Install/cache clazy, ninja, openldap, doctest libfuse, and Qt's dependencies
       if: runner.os != 'Windows'
-      uses: awalsh128/cache-apt-pkgs-action@v1.6.0
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.3
       with:
         packages: ninja-build libgl1-mesa-dev libpulse-dev libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-util1 libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor-dev clazy libfuse-dev libgstreamer-gl1.0-0 libgstreamer-plugins-base1.0-0
         version: 1.0
@@ -35,8 +35,9 @@ runs:
         echo cmake_extra_args="'-DMINGW=ON' '-G MinGW Makefiles'" >> "$GITHUB_ENV"
       shell: bash
 
-    # Qt
+    # Qt for non-Windows using jurplel
     - name: Install Qt
+      if: runner.os != 'Windows'
       uses: jurplel/install-qt-action@v4
       with:
         cache: true
@@ -45,11 +46,17 @@ runs:
         install-deps: false
         modules: ${{ inputs.modules }}
     
-    #- name: Setup Ninja
-    #  uses: ashutoshvarma/setup-ninja@master
-    #  with:
-    #    # ninja version to download. Default: 1.10.0
-    #    version: 1.10.0
+    # Qt for Windows using jdpurcell with naqt enabled (aqtinstall still not support Qt6.11)
+    - name: Install Qt
+      if: runner.os == 'Windows'
+      uses: jdpurcell/install-qt-action@v5
+      with:
+        cache: true
+        version: ${{ inputs.qt_version }}
+        arch: ${{ inputs.qt_arch }}
+        install-deps: false
+        modules: ${{ inputs.modules }}
+        use-naqt: true
 
     - name: Get Git SHA
       run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV

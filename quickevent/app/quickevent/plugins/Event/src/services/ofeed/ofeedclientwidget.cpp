@@ -412,7 +412,7 @@ void OFeedClientWidget::onBtTestConnectionClicked()
 			return;
 		}
 		widget_guard->m_isTestConnectionRunning = false;
-		widget_guard->ui->btTestConnection->setText(widget_guard->tr("Test connection"));
+		widget_guard->ui->btTestConnection->setText(OFeedClientWidget::tr("Test connection"));
 		widget_guard->ui->lbConnectionTestResult->setStyleSheet(success ? "color:#0a7a2f;" : "color:#b00020;");
 		widget_guard->ui->lbConnectionTestResult->setText(message);
 		widget_guard->updateTestConnectionState();

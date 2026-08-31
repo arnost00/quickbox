@@ -1,7 +1,7 @@
 #include "cardflagsdialog.h"
 #include "ui_cardflagsdialog.h"
 
-#include "runstablemodel.h"
+#include <quickevent/gui/og/sqltablemodel.h>
 
 namespace Runs {
 

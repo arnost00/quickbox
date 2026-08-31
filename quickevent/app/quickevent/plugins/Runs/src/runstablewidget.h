@@ -27,6 +27,8 @@ public:
 
 	RunsTableModel* runsModel() {return m_runsModel;}
 	qf::gui::TableView* tableView();
+	void setColumnsHidden(const QStringList &hidden_field_names);
+	void setColumnsOrder(const QStringList &ordered_field_names);
 
 	Q_SIGNAL void editCompetitorRequest(int competitor_id, int mode);
 private:
@@ -42,4 +44,3 @@ private:
 	RunsTableItemDelegate *m_runsTableItemDelegate;
 	CourseItemDelegate *m_courseItemDelegate = nullptr;
 };
-

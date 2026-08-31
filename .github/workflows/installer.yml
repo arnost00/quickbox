@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows:
-    name: Qt 6.10 / Windows
+    name: Qt 6.11 / Windows
     runs-on: windows-2025
     steps:
       - name: Clone the repository
@@ -62,10 +62,10 @@ jobs:
       - name: Setup CMake
         uses: ./.github/actions/cmake
         with:
-          qt_version: 6.10.3
+          qt_version: 6.11.2
           qt_arch: win64_mingw
           use_qt6: ON
-          modules: qtserialport qtmultimedia
+          modules: qtserialport qtmultimedia qtconnectivity
           additional_cmake_args: -DCMAKE_INSTALL_PREFIX='${{ github.workspace }}/install'
 
       - name: Build
@@ -82,7 +82,9 @@ jobs:
       - name: Copy MinGW runtime libraries
         # windeployqt is unable to copy those, because it looks for them next to where g++.exe is. On the GitHub runner,
         # they are in a different directory.
-        run: cp /mingw64/bin/{libstdc++-6.dll,libgcc_s_seh-1.dll,libwinpthread-1.dll} '${{ github.workspace }}/install/bin'
+        run: |
+          cd "${{github.workspace}}\mingw64\bin"
+          cp {libstdc++-6.dll,libgcc_s_seh-1.dll,libwinpthread-1.dll} '${{ github.workspace }}/install/bin'
         shell: bash
 
       - name: Copy PostgreSQL runtime libraries
@@ -113,3 +115,14 @@ jobs:
         with:
           name: quickevent-${{ env.VERSION }}-setup.exe
           path: ${{ github.workspace }}/install/_inno/quickevent/quickevent-*-setup.exe
+
+      - name: Create 7zip
+        shell: pwsh
+        run: 7z a -t7z -mx=9 ${{ github.workspace }}/install/quickevent-${{ env.VERSION }}.7z ${{ github.workspace }}/install/bin/*
+
+      - name: Upload 7zip
+        uses: actions/upload-artifact@v7
+        with:
+          name: quickevent-${{ env.VERSION }}.7z
+          path: ${{ github.workspace }}/install/quickevent-${{ env.VERSION }}.7z
+          archive: false

@@ -185,8 +185,8 @@ bool XmlImporter::importEntries(QXmlStreamReader &reader, const XmlCreators crea
 		}
 	}
 
-	Event::EventConfig *event_config = getPlugin<EventPlugin>()->eventConfig();
-	int selected_race = event_config->iofXmlRaceNumber(); // if entries has more races in (defined in Event), selected race
+	const auto &event_config = getPlugin<EventPlugin>()->eventConfig();
+	int selected_race = event_config.iofXmlRaceNumber; // if entries has more races in (defined in Event), selected race
 	// load from XML & insert to db
 	int items_processed = 0;
 	int relays_processed = 0;
@@ -476,7 +476,7 @@ bool XmlImporter::importStartlist(QXmlStreamReader &reader, const XmlCreators cr
 bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators creator)
 {
 	// load data from XML
-	bool is_relays = getPlugin<EventPlugin>()->eventConfig()->isRelays();
+	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	qf::core::sql::Transaction transaction;
 	int items_processed = 0;
 	while(reader.readNextStartElement()) {
@@ -543,14 +543,21 @@ bool XmlImporter::importClasses(QXmlStreamReader &reader, const XmlCreators crea
 
 QString XmlImporter::genFakeCzClubAbbr(QString country)
 {
-	if (country.isEmpty())
+	if (country.isEmpty()) {
 		return "";
-	QString c = QString(country[0]);
-	int pos = fakeCzClubMap[c];
-	fakeCzClubMap[c]++;
-	QString result = QString("%1%2").arg(c).arg(pos,2,36,QLatin1Char('0')).toUpper();
-	if (result == country)
-		return genFakeCzClubAbbr(country);
+	}
+	QString c = QString(country.at(0));
+	QString result;
+	do {
+		int pos = fakeCzClubMap[c];
+		result = QString("%1%2").arg(c).arg(pos,2,36,QLatin1Char('0')).toUpper();
+		fakeCzClubMap[c]++;
+		if (result == country) {
+			result = genFakeCzClubAbbr(country);
+		}
+	} while (fakeCzClubSet.contains(result));
+
+	fakeCzClubSet.insert(result);
 	return result;
 }
 
@@ -563,8 +570,10 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 	q.exec("DELETE FROM clubs", qf::core::Exception::Throw);
 	q.prepare("INSERT INTO clubs (name, abbr, importId) VALUES (:name, :abbr, :importId)", qf::core::Exception::Throw);
 	int items_processed = 0;
-	if (creator == XmlCreators::Eventor)
+	if (creator == XmlCreators::Eventor) {
 		fakeCzClubMap.clear();
+		fakeCzClubSet.clear();
+	}
 	while(reader.readNextStartElement()) {
 		if(reader.name().toString() == "Organisation" && reader.attributes().hasAttribute("type")) {
 			QString name;
@@ -638,6 +647,7 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 					if (federation_iof) {
 						q.bindValue(":abbr", country_code);
 						q.bindValue(":name", country);
+						fakeCzClubSet.insert(country_code);
 					}
 					else {
 						q.bindValue(":name", name);
@@ -670,6 +680,7 @@ bool XmlImporter::importClubs(QXmlStreamReader &reader, const XmlCreators creato
 		}
 		qfInfo() << "Maximum clubs from one country was" << max_item << "in" << key;
 		fakeCzClubMap.clear();
+		fakeCzClubSet.clear();
 	}
 	return items_processed > 0;
 }
@@ -806,20 +817,22 @@ bool XmlImporter::importEvent(QXmlStreamReader &reader, const XmlCreators creato
 	else
 		return false;
 	try {
-		QVariantMap ecfg;
-		ecfg["stageCount"] = 1;
-		ecfg["name"] = (event_race.name.isEmpty()) ? race_name : event_race.name;
-		ecfg["description"] = (event_race.name.isEmpty())? QString() : race_name;
-		ecfg["date"] = event_race.datetime.date();
-		ecfg["place"] = QString();
-		ecfg["mainReferee"] = QString();
-		ecfg["director"] = QString();
-		ecfg["sportId"] = static_cast<int>(Event::EventConfig::Sport::OB);
-		ecfg["disciplineId"] = static_cast<int>(discipline);
-		ecfg["importId"] = event_id;
-		ecfg["time"] = event_race.datetime.time();
-		ecfg["iofRace"] = 1;
-		ecfg["iofXmlRaceNumber"] = (races.size() > 1) ? event_race.number : 0;
+		Event::EventConfig ecfg;
+		ecfg.stageCount = 1;
+		ecfg.name = (event_race.name.isEmpty()) ? race_name : event_race.name;
+		ecfg.description = (event_race.name.isEmpty())? QString() : race_name;
+		ecfg.date = event_race.datetime.date();
+		ecfg.place = QString();
+		ecfg.mainReferee = QString();
+		ecfg.director = QString();
+		ecfg.sportId = static_cast<int>(Event::EventConfig::Sport::OB);
+		ecfg.disciplineId = static_cast<int>(discipline);
+		if (creator == XmlCreators::Oris) {
+			ecfg.importId = event_id; // importId is used only as ORIS ID
+		}
+		ecfg.time = event_race.datetime.time();
+		ecfg.iofRace = true;
+		ecfg.iofXmlRaceNumber = (races.size() > 1) ? event_race.number : 0;
 		return getPlugin<EventPlugin>()->createEvent(QString(), ecfg);
 	}
 	catch (qf::core::Exception &e) {

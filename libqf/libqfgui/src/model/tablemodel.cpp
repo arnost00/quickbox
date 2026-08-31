@@ -12,6 +12,7 @@
 #include <QColor>
 #include <QPixmap>
 #include <QIcon>
+
 #include <algorithm>
 
 namespace qfc = qf::core;
@@ -38,7 +39,7 @@ bool TableModel::ColumnDefinition::matchesSqlId(const QString column_name) const
 namespace {
 const auto DEFAULT_TIME_FORMAT = QStringLiteral("hh:mm:ss");
 const auto DEFAULT_DATE_FORMAT = QStringLiteral("yyyy-MM-dd");
-const auto DEFAULT_DATETIME_FORMAT = QStringLiteral("yyyy-MM-ddThh:mm:ss");
+// const auto DEFAULT_DATETIME_FORMAT = QStringLiteral("yyyy-MM-ddThh:mm:ss");
 }
 
 TableModel::TableModel(QObject *parent)
@@ -159,29 +160,18 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
 		QString format = cd.format();
 		if(format.isEmpty()) {
 			if(type == QMetaType::QDate) {
-				format = DEFAULT_DATE_FORMAT;
+				QDate d = ret.toDate();
+				return d.toString(DEFAULT_DATE_FORMAT);
 			}
-			else if(type == QMetaType::QTime) {
-				format = DEFAULT_TIME_FORMAT;
-				//qfInfo() << "format" << format;
-			}
-			else if(type == QMetaType::QDateTime) {
-				format = DEFAULT_DATETIME_FORMAT;
-				//qfInfo() << "format" << format;
-			}
-		}
-		if(!format.isEmpty()) {
 			if(type == QMetaType::QTime) {
 				QTime t = ret.toTime();
-				ret = t.toString(format);
+				return t.toString(DEFAULT_TIME_FORMAT);
 			}
-			else if(type == QMetaType::QDate) {
-				QDate d = ret.toDate();
-				ret = d.toString(format);
-			}
-			else if(type == QMetaType::QDateTime) {
-				QDateTime dt = ret.toDateTime();
-				ret = dt.toLocalTime().toString(format);
+			if(type == QMetaType::QDateTime) {
+				QDateTime dt = ret.toDateTime().toLocalTime();
+				if(auto millis = dt.time().msec(); millis > 0)
+					return dt.toString(Qt::ISODateWithMs);
+				return dt.toString(Qt::ISODate);
 			}
 		}
 	}
@@ -686,7 +676,7 @@ void TableModel::handleQxRecChng(const core::sql::QxRecChng &recchng, QObject *s
 				}
 			}
 		} else {
-			qfWarning() << "cannot find table column:" << (table_name + ".id");
+			qfMessage() << "handleQxRecChng: table model doesn't contain column:" << (table_name + ".id");
 		}
 		return -1;
 	};

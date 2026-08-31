@@ -60,20 +60,18 @@ add_executable(quickevent
 	plugins/Core/src/widgets/settingsdialog.cpp
 	plugins/Core/src/widgets/settingsdialog.ui
 
+	plugins/Event/src/stageconfig.cpp plugins/Event/src/stageconfig.h
 	plugins/Event/src/connectdbdialogwidget.cpp
 	plugins/Event/src/connectdbdialogwidget.ui
 	plugins/Event/src/connectionsettings.cpp
 	plugins/Event/src/dbschema.cpp
-	plugins/Event/src/eventconfig.cpp
+	plugins/Event/src/appdbconfig.cpp plugins/Event/src/appdbconfig.h
+	plugins/Event/src/eventconfig.cpp plugins/Event/src/eventconfig.h
 	plugins/Event/src/eventdialogwidget.cpp
 	plugins/Event/src/eventdialogwidget.ui
 	plugins/Event/src/eventplugin.cpp
 	plugins/Event/src/openeventdialog.cpp
 	plugins/Event/src/openeventdialog.ui
-	plugins/Event/src/stage.cpp
-	plugins/Event/src/stagedocument.cpp
-	plugins/Event/src/stagewidget.cpp
-	plugins/Event/src/stagewidget.ui
 	plugins/Event/src/findregistrationedit.cpp
 	plugins/Event/src/lentcardssettingspage.cpp
 	plugins/Event/src/lentcardssettingspage.ui
@@ -85,7 +83,10 @@ add_executable(quickevent
 	plugins/Event/src/services/oresultsclient.cpp
 	plugins/Event/src/services/oresultsclientwidget.cpp
 	plugins/Event/src/services/oresultsclientwidget.ui
+	plugins/Event/src/services/oresultsconfig.cpp plugins/Event/src/services/oresultsconfig.h
+
 	plugins/Event/src/services/ofeed/ofeedclient.cpp
+	plugins/Event/src/services/ofeed/ofeedconfig.cpp plugins/Event/src/services/ofeed/ofeedconfig.h
 	plugins/Event/src/services/ofeed/ofeedclientwidget.cpp
 	plugins/Event/src/services/ofeed/ofeedclientwidget.ui
 	plugins/Event/src/services/ofeed/ofeedwelcomedialog.h
@@ -112,6 +113,9 @@ add_executable(quickevent
 	plugins/Event/src/services/punchingtest/punchingtestservice.h plugins/Event/src/services/punchingtest/punchingtestservice.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.h plugins/Event/src/services/punchingtest/punchingtestservicewidget.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.ui
+	plugins/Event/src/services/radiosender/radiosenderconfig.cpp plugins/Event/src/services/radiosender/radiosenderconfig.h
+	plugins/Event/src/services/radiosender/radiosenderservice.cpp plugins/Event/src/services/radiosender/radiosenderservice.h
+	plugins/Event/src/services/radiosender/radiosenderservicewidget.cpp plugins/Event/src/services/radiosender/radiosenderservicewidget.h plugins/Event/src/services/radiosender/radiosenderservicewidget.ui
 
 	plugins/Oris/src/chooseoriseventdialog.cpp
 	plugins/Oris/src/chooseoriseventdialog.ui
@@ -120,6 +124,7 @@ add_executable(quickevent
 	plugins/Oris/src/txtimporter.cpp
 	plugins/Oris/src/xmlimporter.cpp
 
+	plugins/Receipts/src/receiptsconfig.cpp plugins/Receipts/src/receiptsconfig.h
 	plugins/Receipts/src/receiptsplugin.cpp
 	plugins/Receipts/src/receiptsprinter.cpp
 	plugins/Receipts/src/receiptsprinteroptions.cpp
@@ -154,8 +159,8 @@ add_executable(quickevent
 	plugins/Runs/src/findrunneredit.cpp
 	plugins/Runs/src/findrunnerwidget.cpp
 	plugins/Runs/src/findrunnerwidget.ui
-	plugins/Runs/src/nstagesreportoptionsdialog.cpp
-	plugins/Runs/src/nstagesreportoptionsdialog.ui
+
+
 	plugins/Runs/src/printawardsoptionsdialogwidget.cpp
 	plugins/Runs/src/printawardsoptionsdialogwidget.ui
 	plugins/Runs/src/runflagsdialog.cpp
@@ -165,6 +170,8 @@ add_executable(quickevent
 	plugins/Runs/src/runstabledialogwidget.ui
 	plugins/Runs/src/runstableitemdelegate.cpp
 	plugins/Runs/src/runstablemodel.cpp
+	plugins/Runs/src/runssettingspage.cpp
+	plugins/Runs/src/runssettingspage.ui
 	plugins/Runs/src/runstablewidget.cpp
 	plugins/Runs/src/runstablewidget.ui
 	plugins/Runs/src/runswidget.cpp
@@ -254,6 +261,8 @@ add_executable(quickevent
 
 	plugins/Runs/qml/reports/competitorsWithCardRent.qml
 	plugins/Runs/qml/reports/results_nstages.qml
+	plugins/Runs/qml/reports/results_nstages_points.qml
+	plugins/Runs/qml/reports/results_nstages_points_condensed.qml
 	plugins/Runs/qml/reports/results_nstagesSpeaker.qml
 	plugins/Runs/qml/reports/results_stage.qml
 	plugins/Runs/qml/reports/results_stageSpeaker.qml

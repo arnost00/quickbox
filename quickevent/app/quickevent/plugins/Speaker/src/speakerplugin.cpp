@@ -24,7 +24,7 @@ SpeakerPlugin::SpeakerPlugin(QObject *parent)
 void SpeakerPlugin::onInstalled()
 {
 	qfLogFuncFrame();
-	m_partWidget = qff::initPluginWidget<SpeakerWidget, PartWidget>(tr("&Speaker"), featureId());
+	qff::initPluginWidget<SpeakerWidget, PartWidget>(tr("&Speaker"), featureId());
 }
 
 }

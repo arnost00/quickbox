@@ -22,7 +22,7 @@ private:
 public:
 	PartSwitchToolButton(QWidget *parent = nullptr);
 public:
-	int partIndex() {return m_partIndex;}
+	int partIndex() const {return m_partIndex;}
 	void setPartIndex(int ix) {m_partIndex = ix;}
 
 	Q_SIGNAL void partClicked(int part_index);

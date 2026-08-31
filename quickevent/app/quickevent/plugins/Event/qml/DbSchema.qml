@@ -212,6 +212,13 @@ Schema {
 					comment: 'in miliseconds'
 				},
 
+				Field { name: 'startGateTime'; type: DateTime {}
+					comment: 'DateTime when competitor crossed start photocell'
+				},
+				Field { name: 'finishGateTime'; type: DateTime {}
+					comment: 'DateTime when competitor crossed finish photocell'
+				},
+
 				Field { name: 'isRunning'; type: Boolean { }
 					defaultValue: true;
 					notNull: true
