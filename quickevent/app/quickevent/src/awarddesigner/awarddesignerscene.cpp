@@ -78,8 +78,8 @@ void AwardSceneItem::applyResize(const QPointF &scene_pos)
 
 	qreal new_x = m_origItem.x;
 	qreal new_y = m_origItem.y;
-	qreal new_w = m_origItem.w;
-	qreal new_h = m_origItem.h;
+	qreal new_w;
+	qreal new_h;
 
 	switch (m_activeHandle) {
 	case ResizeHandle::BottomRight:
