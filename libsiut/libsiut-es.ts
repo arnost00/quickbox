@@ -131,17 +131,17 @@ Lista de puertos disponibles:
         <translation>Datos corruptos recibidos, eliminado %1 caracteres del principio del buffer</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="140"/>
+        <location filename="src/device/sidevicedriver.cpp" line="142"/>
         <source>NAK received</source>
         <translation>El dispositivo rechazó la solicitud</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="146"/>
+        <location filename="src/device/sidevicedriver.cpp" line="147"/>
         <source>Legacy protocol is not supported, switch station to extended one.</source>
         <translation>Protocolo legacy no soportado, cambie la base al protocolo extendido.</translation>
     </message>
     <message>
-        <location filename="src/device/sidevicedriver.cpp" line="153"/>
+        <location filename="src/device/sidevicedriver.cpp" line="154"/>
         <source>Valid message shall end with ETX or NAK, throwing data away</source>
         <translation>Un mensaje válido debe terminar con ETX o NAK; de lo contrario, se descartan los datos</translation>
     </message>
