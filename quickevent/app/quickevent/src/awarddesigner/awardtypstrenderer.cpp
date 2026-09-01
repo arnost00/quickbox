@@ -106,7 +106,7 @@ QList<QVariantMap> AwardTypstRenderer::collectPages(const qf::core::utils::TreeT
 	return pages;
 }
 
-QList<QVariantMap> AwardTypstRenderer::collectRunsPages(const qf::core::utils::TreeTable &tt,
+QList<QVariantMap> AwardTypstRenderer::collectRunsPagesData(const qf::core::utils::TreeTable &tt,
 	const Event::EventConfig &event_config) const
 {
 	QList<QVariantMap> pages;

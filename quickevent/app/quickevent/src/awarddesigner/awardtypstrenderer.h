@@ -28,7 +28,7 @@ public:
 									const Event::EventConfig &event_config) const;
 
 	// Collect per-runner data maps from the stage results TreeTable
-	QList<QVariantMap> collectRunsPages(const qf::core::utils::TreeTable &tt,
+	QList<QVariantMap> collectRunsPagesData(const qf::core::utils::TreeTable &tt,
 		const Event::EventConfig &event_config) const;
 
 	// Render pages to a QImage per page, via a generated Typst document rendered at the given PPI

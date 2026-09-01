@@ -1066,9 +1066,8 @@ QVariant RunsPlugin::stageResultsTableData(int stage_id, const QString &class_fi
 	return tt.toVariant();
 }
 
-QVariantMap RunsPlugin::printAwardsOptionsWithDialog(const QVariantMap &opts)
+QVariantMap RunsPlugin::editPrintAwardsOptionsInDialog(const QVariantMap &opts)
 {
-	qfInfo() << Q_FUNC_INFO;
 	QVariantMap ret;
 	PrintAwardsOptionsDialogWidget *w;
 	{
@@ -2291,7 +2290,7 @@ void RunsPlugin::report_resultsAwards()
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	QVariantMap opts;
 	opts["stageId"] = getPlugin<EventPlugin>()->currentStageId();
-	opts = printAwardsOptionsWithDialog(opts);
+	opts = editPrintAwardsOptionsInDialog(opts);
 	QString rep_path = opts.value("reportPath").toString();
 	if(rep_path.isEmpty())
 		return;
@@ -2309,7 +2308,7 @@ void RunsPlugin::report_resultsAwards()
 		QString typ = design.toTypst();
 		QStringList images = design.imageFiles();
 		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
 		AwardReportViewWidget::showReport(typ, images, pages, fwk);
 		return;
 	}
@@ -2321,7 +2320,7 @@ void RunsPlugin::report_resultsAwards()
 			return;
 		}
 		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
 		AwardReportViewWidget::showReport(typ, images, pages, fwk);
 		return;
 	}
@@ -2385,7 +2384,7 @@ void RunsPlugin::report_nStagesAwards()
 	qff::MainWindow *fwk = qff::MainWindow::frameWork();
 	QVariantMap opts;
 	opts["stageId"] = getPlugin<EventPlugin>()->currentStageId();
-	opts = printAwardsOptionsWithDialog(opts);
+	opts = editPrintAwardsOptionsInDialog(opts);
 	QString rep_path = opts.value("reportPath").toString();
 	if(rep_path.isEmpty())
 		return;
@@ -2403,7 +2402,7 @@ void RunsPlugin::report_nStagesAwards()
 		QString typ = design.toTypst();
 		QStringList images = design.imageFiles();
 		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
 		AwardReportViewWidget::showReport(typ, images, pages, fwk);
 		return;
 	}
@@ -2415,7 +2414,7 @@ void RunsPlugin::report_nStagesAwards()
 			return;
 		}
 		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPages(tt, getPlugin<EventPlugin>()->eventConfig());
+		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
 		AwardReportViewWidget::showReport(typ, images, pages, fwk);
 		return;
 	}
