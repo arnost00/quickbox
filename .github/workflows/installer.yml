@@ -2,7 +2,7 @@ name: Installer
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "release_za_2026" ]
   pull_request:
     branches: [ "main" ]
 
