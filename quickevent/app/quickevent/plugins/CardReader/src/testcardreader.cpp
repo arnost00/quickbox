@@ -132,8 +132,9 @@ QByteArray TestCardReader::cardBlock(int ix)
 	return {};
 }
 
-void TestCardReader::onSiTaskFinished(int task_type, QVariant result)
+void TestCardReader::onSiTaskFinished(int task_type, QVariant result, QString reader_message)
 {
+	Q_UNUSED(reader_message)
 	auto tt = static_cast<siut::SiTask::Type>(task_type);
 	if(tt == siut::SiTask::Type::CardRead) {
 		siut::SICard card = siut::SICard::fromVariantMap(result.toMap());

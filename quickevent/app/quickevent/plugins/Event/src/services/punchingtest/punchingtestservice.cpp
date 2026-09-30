@@ -361,13 +361,13 @@ void PunchingTestService::onTimerTick()
 	card.startTime  = si_start_sec;
 	card.finishTime = si_finish_sec;
 	card.punches    = punches;
-	card.generatedTestDataNote = generated_test_data_note;
 
 	setStatusMessage(tr("Card SI %1, %2 controls").arg(si_id).arg(punches.size()));
 
 	getPlugin<CardReader::CardReaderPlugin>()->emitSiTaskFinished(
 		static_cast<int>(siut::SiTask::Type::CardRead),
-		card.toVariantMap());
+		card.toVariantMap(),
+		generated_test_data_note);
 }
 
 qf::gui::framework::DialogWidget *PunchingTestService::createDetailWidget()

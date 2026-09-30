@@ -45,7 +45,7 @@ public:
 	//Q_SIGNAL void siMessageReceived(const SIMessageData &msg);
 	//Q_SIGNAL void siDatagramReceived(const QByteArray &data);
 	Q_SIGNAL void dataToSend(const QByteArray &data);
-	Q_SIGNAL void siTaskFinished(int task_type, QVariant result);
+	Q_SIGNAL void siTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 protected:
 	//virtual void onSiMessageReceived(const SIMessageData &msg);
 	void processSIMessageData(const SIMessageData &msg_data);

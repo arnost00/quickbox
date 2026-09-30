@@ -70,7 +70,7 @@ public:
 	const QBluetoothDeviceInfo& deviceInfo() const { return m_deviceInfo; }
 
 	Q_SIGNAL void driverInfo(NecroLog::Level level, const QString &msg);
-	Q_SIGNAL void siTaskFinished(int task_type, QVariant result);
+	Q_SIGNAL void siTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 	Q_SIGNAL void connectionStateChanged(bool connected);
 
 private:
