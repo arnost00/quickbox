@@ -3155,13 +3155,6 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 			continue; // not save empty class
 		bool is_free_start = tt1_row.value(QStringLiteral("startIntervalMin")).toInt() == 0;
 		int max_competitors = tt1_row.value(QStringLiteral("mapCount")).toInt();
-		if (max_competitors == 0) {
-			// map count not entered, fall back to number of runners
-			for(int j=0; j<tt2.rowCount(); j++) {
-				if (tt2.row(j).value(QStringLiteral("competitorName")).toString() != vacant_name_sentinel)
-					max_competitors++;
-			}
-		}
 		append_list(class_start, QVariantList{"Class",
 								(max_competitors > 0) ? QVariantMap{{"maxNumberOfCompetitors", max_competitors}} : QVariantMap{},
 								QVariantList{"Id", tt1_row.value(QStringLiteral("classes.id"))},
