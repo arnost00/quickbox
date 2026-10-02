@@ -80,7 +80,7 @@ private:
 	void updateConnectionInfoLabel();
 	void setConnectionInfoLabel(const QString &info, NecroLog::Level level);
 
-	void onSiTaskFinished(int task_type, QVariant result);
+	void onSiTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 
 	void readStationBackupMemory();
 
@@ -95,7 +95,7 @@ private:
 	siut::BtSiDeviceDriver *btDriver();
 	void onBtConnectionChanged(bool connected);
 
-	void processSICard(const siut::SICard &card);
+	void processSICard(const siut::SICard &card, const QString &reader_message = QString());
 	void processSIPunch(const siut::SIPunch &rec);
 
 	bool processReadCardInTransaction(const quickevent::core::si::ReadCard &read_card);

@@ -701,7 +701,7 @@ void CardReaderWidget::appendLog(NecroLog::Level level, const QString& msg)
 	}
 }
 
-void CardReaderWidget::onSiTaskFinished(int task_type, QVariant result)
+void CardReaderWidget::onSiTaskFinished(int task_type, QVariant result, QString reader_message)
 {
 	qfLogFuncFrame();
 	auto tt = static_cast<siut::SiTask::Type>(task_type);
@@ -710,7 +710,7 @@ void CardReaderWidget::onSiTaskFinished(int task_type, QVariant result)
 		if(card.cardNumber == 0)
 			qfError() << "Empty card received";
 		else
-			processSICard(card);
+			processSICard(card, reader_message);
 	}
 	else if(tt == siut::SiTask::Type::Punch) {
 		siut::SIPunch punch = siut::SIPunch::fromVariantMap(result.toMap());
@@ -741,7 +741,7 @@ void CardReaderWidget::logDriverRawData(const QByteArray& data)
 	}
 }
 
-void CardReaderWidget::processSICard(const siut::SICard &card)
+void CardReaderWidget::processSICard(const siut::SICard &card, const QString &reader_message)
 {
 	if(card.cardNumber == 0) {
 		qfWarning() << "SIID == 0 was read!";
@@ -769,12 +769,16 @@ void CardReaderWidget::processSICard(const siut::SICard &card)
 	}
 	quickevent::core::si::ReadCard read_card(card.toVariantMap());
 	read_card.setRunId(run_id);
-	read_card.setRunIdAssignError(err_msg);
-	if (card.batteryStatus.has_value()) {
-		auto data = read_card.data();
-		data["batteryStatus"] = card.batteryStatus->toVariantMap();
-		read_card.setData(data);
+	auto data = read_card.data();
+	if (!reader_message.isEmpty()) {
+		err_msg = err_msg.isEmpty()? reader_message
+									: reader_message + QStringLiteral("; ") + err_msg;
+		data["generatedTestDataNote"] = reader_message;
 	}
+	if (card.batteryStatus.has_value())
+		data["batteryStatus"] = card.batteryStatus->toVariantMap();
+	read_card.setData(data);
+	read_card.setRunIdAssignError(err_msg);
 	processReadCardInTransaction(read_card);
 }
 
