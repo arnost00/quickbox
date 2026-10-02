@@ -616,7 +616,7 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(
 		qfs::QueryBuilder qb;
 		qb.select2("runs", "competitorId, timeMs, notCompeting, disqualified")
 				.from("competitors")
-				.joinRestricted("competitors.id", "runs.competitorId", "runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0", "JOIN")
+				.joinRestricted("competitors.id", "runs.competitorId", "runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0 AND (runs.timeMs>0 OR runs.disqualified)", "JOIN")
 				.where("competitors.classId=" QF_IARG(class_id))
 				.orderBy("runs.notCompeting, runs.disqualified, runs.timeMs");
 		qfs::Query q;
@@ -881,7 +881,7 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 							, "runs.competitorId"
 							, QStringLiteral("runs.stageId={{stage_id}}"
 											 " AND runs.isRunning"
-											 " AND (runs.finishTimeMs>0 OR runs.checkTimeMs IS NOT NULL OR runs.disqualified)")
+											 " AND (runs.timeMs>0 OR runs.disqualified)")
 							+ (exclude_disq? " AND NOT runs.disqualified": "")
 							, "JOIN")
 			.where("competitors.classId={{class_id}}")
@@ -1387,7 +1387,7 @@ bool RunsPlugin::exportResultsCsosStage(int stage_id, const QString &file_name)
 		.join("competitors.classId", "classes.id")
 		.joinRestricted("competitors.id"
 						, "runs.competitorId"
-						, QStringLiteral("runs.stageId=%1 AND runs.isRunning AND runs.finishTimeMs>0").arg(stage_id)
+						, QStringLiteral("runs.stageId=%1 AND runs.isRunning AND runs.finishTimeMs>0 AND (runs.timeMs>0 OR runs.disqualified)").arg(stage_id)
 						, qfs::QueryBuilder::INNER_JOIN)
 		//.where("competitors.classId={{class_id}}")
 		.orderBy("classes.name, runs.notCompeting, runs.disqualified, runs.timeMs");
