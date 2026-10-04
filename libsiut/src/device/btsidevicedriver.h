@@ -19,6 +19,7 @@
 #include <QLowEnergyController>
 #include <QLowEnergyService>
 #include <QObject>
+#include <QSet>
 #include <QVariantMap>
 #include <qbluetoothdeviceinfo.h>
 
@@ -78,18 +79,22 @@ private:
 	void onControllerDisconnected();
 	void onControllerError(QLowEnergyController::Error error);
 	void onServiceDiscoveryFinished();
-	void onServiceStateChanged(QLowEnergyService::ServiceState state);
+	void onServiceStateChanged(QLowEnergyService *svc, QLowEnergyService::ServiceState state);
 	void onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value);
 
 private:
 	void startScan();
 	void createController(const QBluetoothDeviceInfo &info);
 	void subscribeCharacteristicsFrom(QLowEnergyService *svc);
+	void clearServices();
 	void checkAllServicesReady();
+	bool isCardStateSubscribed() const { return m_cardStateSubscribed; }
+	bool isCardDataSubscribed() const { return m_cardDataService != nullptr; }
 
 	// Message handlers
 	void handleCardStateMessage(const QByteArray &message);
 	void handleCardDataMessage(const QByteArray &message);
+	void requestCardReadout();
 
 	// SI card building
 	SICard buildSICard(const QByteArray &payload);
@@ -100,12 +105,14 @@ private:
 
 	void emitInfo(NecroLog::Level level, const QString &msg);
 
+private:
 	QBluetoothDeviceInfo m_deviceInfo;
 
 	// Qt Bluetooth objects
 	// QBluetoothDeviceDiscoveryAgent *m_discoveryAgent = nullptr;
 	QLowEnergyController *m_controller = nullptr;
 	QList<QLowEnergyService *>	m_services;
+	QLowEnergyService *m_cardDataService = nullptr;
 
 	// Known characteristic UUIDs
 	QBluetoothUuid m_cardStateUuid;
@@ -114,8 +121,7 @@ private:
 	// State
 	bool m_connected = false;
 	bool m_cardStateSubscribed = false;
-	bool m_cardDataSubscribed = false;
-	int m_pendingServices = 0;
+	QSet<QLowEnergyService *> m_pendingServices;
 	int m_lastStationNumber = 0;
 
 	// Reassemblers — one per characteristic
