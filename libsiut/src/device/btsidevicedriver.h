@@ -19,6 +19,7 @@
 #include <QLowEnergyController>
 #include <QLowEnergyService>
 #include <QObject>
+#include <QSet>
 #include <QVariantMap>
 #include <qbluetoothdeviceinfo.h>
 
@@ -78,7 +79,7 @@ private:
 	void onControllerDisconnected();
 	void onControllerError(QLowEnergyController::Error error);
 	void onServiceDiscoveryFinished();
-	void onServiceStateChanged(QLowEnergyService::ServiceState state);
+	void onServiceStateChanged(QLowEnergyService *svc, QLowEnergyService::ServiceState state);
 	void onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value);
 
 private:
@@ -120,7 +121,7 @@ private:
 	// State
 	bool m_connected = false;
 	bool m_cardStateSubscribed = false;
-	int m_pendingServices = 0;
+	QSet<QLowEnergyService *> m_pendingServices;
 	int m_lastStationNumber = 0;
 
 	// Reassemblers — one per characteristic

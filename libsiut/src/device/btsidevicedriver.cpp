@@ -241,7 +241,6 @@ void BtSiDeviceDriver::disconnectFromDevice()
 	}
 
 	m_cardStateSubscribed = false;
-	m_pendingServices = 0;
 	m_cardStateReassembler.reset();
 	m_cardDataReassembler.reset();
 
@@ -323,6 +322,7 @@ void BtSiDeviceDriver::clearServices()
 	for (auto *svc : m_services)
 		svc->deleteLater();
 	m_services.clear();
+	m_pendingServices.clear();
 	m_cardDataService = nullptr;
 }
 
@@ -362,33 +362,35 @@ void BtSiDeviceDriver::onControllerError(QLowEnergyController::Error error)
 void BtSiDeviceDriver::onServiceDiscoveryFinished()
 {
 	const auto uuids = m_controller->services();
-	m_pendingServices = uuids.count();
-
 	for (const QBluetoothUuid &uuid : uuids) {
 		QLowEnergyService *svc = m_controller->createServiceObject(uuid, this);
-		if (!svc) {
-			--m_pendingServices;
+		if (!svc)
 			continue;
-		}
 		m_services.append(svc);
-		connect(svc, &QLowEnergyService::stateChanged, this, &BtSiDeviceDriver::onServiceStateChanged);
-		svc->discoverDetails();
+		m_pendingServices.insert(svc);
+		connect(svc, &QLowEnergyService::stateChanged, this, [this, svc](QLowEnergyService::ServiceState state) {
+			onServiceStateChanged(svc, state);
+		});
 	}
+	// start discovery only after the pending set is complete, so a synchronous
+	// state change can't make it look empty too early
+	for (auto *svc : std::as_const(m_services))
+		svc->discoverDetails();
 
-	if (m_pendingServices == 0)
+	if (m_pendingServices.isEmpty())
 		checkAllServicesReady();
 }
 
-void BtSiDeviceDriver::onServiceStateChanged(QLowEnergyService::ServiceState state)
+void BtSiDeviceDriver::onServiceStateChanged(QLowEnergyService *svc, QLowEnergyService::ServiceState state)
 {
-	if (state == QLowEnergyService::RemoteServiceDiscovered) {
-		subscribeCharacteristicsFrom(qobject_cast<QLowEnergyService *>(sender()));
-		if (--m_pendingServices == 0)
-			checkAllServicesReady();
-	} else if (state == QLowEnergyService::InvalidService) {
-		if (--m_pendingServices == 0)
-			checkAllServicesReady();
-	}
+	if (state != QLowEnergyService::RemoteServiceDiscovered && state != QLowEnergyService::InvalidService)
+		return;
+	if (!m_pendingServices.remove(svc))
+		return; // already settled; ignore late transitions (e.g. InvalidService on disconnect)
+	if (state == QLowEnergyService::RemoteServiceDiscovered)
+		subscribeCharacteristicsFrom(svc);
+	if (m_pendingServices.isEmpty())
+		checkAllServicesReady();
 }
 
 void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
@@ -438,7 +440,7 @@ void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
 
 void BtSiDeviceDriver::checkAllServicesReady()
 {
-	if (m_pendingServices > 0)
+	if (!m_pendingServices.isEmpty())
 		return;
 
 	if (isCardStateSubscribed() && isCardDataSubscribed()) {
