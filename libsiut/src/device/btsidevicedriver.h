@@ -85,6 +85,7 @@ private:
 	void startScan();
 	void createController(const QBluetoothDeviceInfo &info);
 	void subscribeCharacteristicsFrom(QLowEnergyService *svc);
+	void clearServices();
 	void checkAllServicesReady();
 	bool isCardStateSubscribed() const { return m_cardStateSubscribed; }
 	bool isCardDataSubscribed() const { return m_cardDataService != nullptr; }

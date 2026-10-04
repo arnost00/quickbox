@@ -185,10 +185,7 @@ BtSiDeviceDriver::~BtSiDeviceDriver()
 	// if (m_discoveryAgent->isActive())
 	// 	m_discoveryAgent->stop();
 
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
-	m_cardDataService = nullptr;
+	clearServices();
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -235,10 +232,7 @@ void BtSiDeviceDriver::disconnectFromDevice()
 	// if (m_discoveryAgent->isActive())
 	// 	m_discoveryAgent->stop();
 
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
-	m_cardDataService = nullptr;
+	clearServices();
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -324,6 +318,14 @@ void BtSiDeviceDriver::createController(const QBluetoothDeviceInfo &info)
 	m_controller->connectToDevice();
 }
 
+void BtSiDeviceDriver::clearServices()
+{
+	for (auto *svc : m_services)
+		svc->deleteLater();
+	m_services.clear();
+	m_cardDataService = nullptr;
+}
+
 void BtSiDeviceDriver::onControllerConnected()
 {
 	emitInfo(NecroLog::Level::Info, tr("Connected, discovering services..."));
@@ -336,10 +338,7 @@ void BtSiDeviceDriver::onControllerDisconnected()
 	bool wasConnected = m_connected;
 	m_connected = false;
 	m_cardStateSubscribed = false;
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
-	m_cardDataService = nullptr;
+	clearServices();
 	if (wasConnected)
 		emit connectionStateChanged(false);
 }
