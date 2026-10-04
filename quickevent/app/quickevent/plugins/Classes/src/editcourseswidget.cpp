@@ -9,6 +9,10 @@
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/model/sqltablemodel.h>
 #include <qf/core/sql/connection.h>
+#include <qf/core/sql/query.h>
+#include <qf/core/sql/transaction.h>
+#include <qf/core/exception.h>
+#include <qf/core/log.h>
 #include <qf/gui/dialogs/dialog.h>
 #include <qf/gui/dialogbuttonbox.h>
 
@@ -66,6 +70,63 @@ public:
 		}
 		return Super::data(index, role);
 	}
+
+	bool dropRows(int row_ix, int count, bool throw_exc) override
+	{
+		/// check before rows are removed from the model, failure in removeTableRow() leaves the view inconsistent
+		for(int i=row_ix; i<row_ix+count; i++) {
+			QString err = deleteCourseError(i);
+			if(!err.isEmpty()) {
+				if(throw_exc)
+					QF_EXCEPTION(err);
+				qfError() << err;
+				return false;
+			}
+		}
+		return Super::dropRows(row_ix, count, throw_exc);
+	}
+
+	bool removeTableRow(int row_no, bool throw_exc) override
+	{
+		int course_id = m_table.row(row_no).value("courses.id").toInt();
+		if(course_id <= 0)
+			return Super::removeTableRow(row_no, throw_exc);
+		qfs::Transaction transaction(sqlConnection());
+		qfs::Query q(sqlConnection());
+		q.exec("DELETE FROM coursecodes WHERE courseId=" QF_IARG(course_id), qf::core::Exception::Throw);
+		bool ok = Super::removeTableRow(row_no, throw_exc);
+		if(ok)
+			transaction.commit();
+		return ok;
+	}
+private:
+	QString deleteCourseError(int row_no) const
+	{
+		const auto row = m_table.row(row_no);
+		int course_id = row.value("courses.id").toInt();
+		if(course_id <= 0)
+			return {};
+		QString err;
+		qfs::Query q(sqlConnection());
+		q.exec("SELECT classes.name, classdefs.stageId FROM classdefs"
+			   " INNER JOIN classes ON classes.id=classdefs.classId"
+			   " WHERE classdefs.courseId=" QF_IARG(course_id)
+			   " ORDER BY classes.name, classdefs.stageId", qf::core::Exception::Throw);
+		QStringList classes;
+		while(q.next())
+			classes << tr("%1 (stage %2)").arg(q.value(0).toString()).arg(q.value(1).toInt());
+		if(!classes.isEmpty()) {
+			err = tr("Course is assigned to class: %1.").arg(classes.join(", "));
+		}
+		else {
+			q.exec("SELECT COUNT(*) FROM runs WHERE courseId=" QF_IARG(course_id), qf::core::Exception::Throw);
+			if(q.next() && q.value(0).toInt() > 0)
+				err = tr("Course is assigned to %n run(s).", nullptr, q.value(0).toInt());
+		}
+		if(err.isEmpty())
+			return {};
+		return tr("Cannot delete course %1.").arg(row.value("courses.name").toString()) + ' ' + err;
+	}
 };
 }
 
@@ -81,6 +142,9 @@ EditCoursesWidget::EditCoursesWidget(int stage_id, QWidget *parent)
 		ui->tblCourses->setDirtyRowsMenuSectionEnabled(false);
 		ui->tblCoursesTB->setTableView(ui->tblCourses);
 		ui->tblCourses->setRowEditorMode(qfw::TableView::RowEditorMode::EditRowsInline);
+		ui->tblCourses->setRemoveRowsQuestion([](int row_count) {
+			return tr("Do you really want to delete %n course(s) including their codes? This cannot be undone.", nullptr, row_count);
+		});
 		connect(ui->tblCourses, &qfw::TableView::editCellRequest, this, [this](const QModelIndex &ix) {
 			if(ix.column() == this->m_coursesModel->columnIndex("code_list")) {
 				editCourseCodes(ix);
