@@ -2408,6 +2408,27 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
     </message>
 </context>
 <context>
+    <name>CodesTableModel</name>
+    <message numerus="yes">
+        <location filename="plugins/Classes/src/editcodeswidget.cpp" line="55"/>
+        <source>and %n more</source>
+        <translation>
+            <numerusform>a %n další</numerusform>
+            <numerusform>a %n další</numerusform>
+            <numerusform>a %n dalších</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="plugins/Classes/src/editcodeswidget.cpp" line="56"/>
+        <source>Cannot delete code %1, it is used in %n course(s): %2.</source>
+        <translation>
+            <numerusform>Kontrolu %1 nelze smazat, je použita v %n trati: %2.</numerusform>
+            <numerusform>Kontrolu %1 nelze smazat, je použita v %n tratích: %2.</numerusform>
+            <numerusform>Kontrolu %1 nelze smazat, je použita v %n tratích: %2.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>CourseCodesTableModel</name>
     <message>
         <location filename="plugins/Classes/src/classeswidget.cpp" line="76"/>
@@ -2491,6 +2512,30 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
 </context>
 <context>
     <name>CoursesTableModel</name>
+    <message>
+        <location filename="plugins/Classes/src/editcourseswidget.cpp" line="117"/>
+        <source>%1 (stage %2)</source>
+        <translation>%1 (etapa %2)</translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/editcourseswidget.cpp" line="119"/>
+        <source>Course is assigned to class: %1.</source>
+        <translation>Trať je přiřazena kategorii: %1.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="plugins/Classes/src/editcourseswidget.cpp" line="124"/>
+        <source>Course is assigned to %n run(s).</source>
+        <translation>
+            <numerusform>Trať je přiřazena %n běhu.</numerusform>
+            <numerusform>Trať je přiřazena %n běhům.</numerusform>
+            <numerusform>Trať je přiřazena %n běhům.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="plugins/Classes/src/editcourseswidget.cpp" line="128"/>
+        <source>Cannot delete course %1.</source>
+        <translation>Trať %1 nelze smazat.</translation>
+    </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.cpp" line="45"/>
         <source>Id</source>
@@ -2635,6 +2680,15 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
 </context>
 <context>
     <name>EditCodesWidget</name>
+    <message numerus="yes">
+        <location filename="plugins/Classes/src/editcodeswidget.cpp" line="76"/>
+        <source>Do you really want to delete %n code(s)? This cannot be undone.</source>
+        <translation>
+            <numerusform>Opravdu chcete smazat %n kontrolu? Tuto akci nelze vrátit zpět.</numerusform>
+            <numerusform>Opravdu chcete smazat %n kontroly? Tuto akci nelze vrátit zpět.</numerusform>
+            <numerusform>Opravdu chcete smazat %n kontrol? Tuto akci nelze vrátit zpět.</numerusform>
+        </translation>
+    </message>
     <message>
         <location filename="plugins/Classes/src/editcodeswidget.ui" line="14"/>
         <source>Form</source>
@@ -2747,6 +2801,15 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
 </context>
 <context>
     <name>EditCoursesWidget</name>
+    <message numerus="yes">
+        <location filename="plugins/Classes/src/editcourseswidget.cpp" line="146"/>
+        <source>Do you really want to delete %n course(s) including their codes? This cannot be undone.</source>
+        <translation>
+            <numerusform>Opravdu chcete smazat %n trať včetně jejích kontrol? Tuto akci nelze vrátit zpět.</numerusform>
+            <numerusform>Opravdu chcete smazat %n tratě včetně jejich kontrol? Tuto akci nelze vrátit zpět.</numerusform>
+            <numerusform>Opravdu chcete smazat %n tratí včetně jejich kontrol? Tuto akci nelze vrátit zpět.</numerusform>
+        </translation>
+    </message>
     <message>
         <location filename="plugins/Classes/src/editcourseswidget.ui" line="14"/>
         <source>Form</source>

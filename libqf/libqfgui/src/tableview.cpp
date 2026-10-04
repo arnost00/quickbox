@@ -2139,7 +2139,10 @@ void TableView::removeSelectedRowsInline()
 	if(!continuous_section.isEmpty()) {
 		continuous_sections << continuous_section;
 	}
-	if(rows_to_delete.count() == 1) {
+	if(m_removeRowsQuestion) {
+		if(!qf::gui::dialogs::MessageBox::askYesNo(this, m_removeRowsQuestion(rows_to_delete.count()), true)) return;
+	}
+	else if(rows_to_delete.count() == 1) {
 		if(!qf::gui::dialogs::MessageBox::askYesNo(this, tr("Do you really want to remove row?"), true)) return;
 	}
 	else {
