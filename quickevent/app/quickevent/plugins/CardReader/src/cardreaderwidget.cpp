@@ -595,7 +595,7 @@ siut::BtSiDeviceDriver *CardReaderWidget::btDriver()
 void CardReaderWidget::setConnectionInfoLabel(const QString &info, NecroLog::Level level)
 {
 	ui->lblConnectionInfo->setText(info);
-	ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "bacground: salmon": "");
+    ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "background: salmon": "");
 }
 
 void CardReaderWidget::updateButtonsEnabled()

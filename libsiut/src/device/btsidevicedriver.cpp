@@ -19,6 +19,11 @@
 
 #include <ios>
 
+#define logBtSiReaderD() qfCDebug("BtSiReader")
+#define logBtSiReaderM() qfCMessage("BtSiReader")
+#define logBtSiReaderI() qfCInfo("BtSiReader")
+#define logBtSiReaderW() qfCWarning("BtSiReader")
+
 namespace siut {
 
 // ===========================================================================
@@ -36,9 +41,8 @@ constexpr quint16 MSG_CARD_STATE		= 0x1101;
 constexpr quint16 MSG_CARD_MINIMAL		= 0x1102;
 constexpr quint16 MSG_CARD_COMPLETE		= 0x1103;
 
-// Wrapper chunk flags (payload byte 0)
+// Wrapper chunk flags (payload byte 0), middle chunk has no flag set
 constexpr quint8 WRAP_FLAG_FIRST		= 0x01;
-constexpr quint8 WRAP_FLAG_MIDDLE		= 0x00;
 constexpr quint8 WRAP_FLAG_LAST			= 0x02;
 
 // Punch type codes
@@ -82,15 +86,22 @@ QByteArray BtSiReassembler::feed(const QByteArray &chunk)
 	quint16 payloadLen = static_cast<quint16>(static_cast<quint8>(chunk[2]))
 	                   | (static_cast<quint16>(static_cast<quint8>(chunk[3])) << 8);
 
-	if (chunk.size() < 4 + payloadLen || payloadLen < 1)
+	if (chunk.size() < 4 + payloadLen || payloadLen < 1) {
+		logBtSiReaderW() << "BtSiReassembler: wrapper chunk too short, size:" << chunk.size() << "payload len:" << payloadLen;
 		return {};
+	}
 
+	// flag is a bit mask, single chunk message has both FIRST and LAST bits set
 	auto flag = static_cast<quint8>(chunk[4]);
+	const int payloadEnd = 4 + payloadLen;
+	int dataStart = 5;
 
-	if (flag == WRAP_FLAG_FIRST) {
+	if (flag & WRAP_FLAG_FIRST) {
 		// payload[1..5] = total_len (u32le), payload[5..] = data
-		if (payloadLen < 5)
+		if (payloadLen < 5) {
+			logBtSiReaderW() << "BtSiReassembler: first chunk too short, payload len:" << payloadLen;
 			return {};
+		}
 		quint32 totalLen =
 			  static_cast<quint32>(static_cast<quint8>(chunk[5]))
 			| (static_cast<quint32>(static_cast<quint8>(chunk[6])) << 8)
@@ -100,29 +111,24 @@ QByteArray BtSiReassembler::feed(const QByteArray &chunk)
 		m_expectedLen = static_cast<int>(totalLen);
 		m_started = true;
 		// data starts at chunk[9] (4 header bytes + 1 flag + 4 total_len bytes)
-		if (chunk.size() > 9)
-			m_buf.append(chunk.constData() + 9, chunk.size() - 9);
+		dataStart = 9;
+	}
+	else if (!m_started) {
+		logBtSiReaderW() << "BtSiReassembler: continuation chunk without first chunk, flag:" << flag;
+		return {};
+	}
 
-	} else if (flag == WRAP_FLAG_MIDDLE) {
-		if (!m_started)
-			return {};
-		// data = payload[1..] → chunk[5..]
-		if (chunk.size() > 5)
-			m_buf.append(chunk.constData() + 5, chunk.size() - 5);
+	if (payloadEnd > dataStart)
+		m_buf.append(chunk.constData() + dataStart, payloadEnd - dataStart);
 
-	} else if (flag == WRAP_FLAG_LAST) {
-		if (!m_started)
-			return {};
-		// data = payload[1..] → chunk[5..]
-		if (chunk.size() > 5)
-			m_buf.append(chunk.constData() + 5, chunk.size() - 5);
-
+	if (flag & WRAP_FLAG_LAST) {
 		if (m_buf.size() == m_expectedLen) {
 			QByteArray result = m_buf;
 			reset();
 			return result;
 		}
-		// Size mismatch — discard
+		logBtSiReaderW() << "BtSiReassembler: size mismatch, expected:" << m_expectedLen << "got:" << m_buf.size()
+						 << "data:" << m_buf.toHex().toStdString();
 		reset();
 	}
 
@@ -182,6 +188,7 @@ BtSiDeviceDriver::~BtSiDeviceDriver()
 	for (auto *svc : m_services)
 		svc->deleteLater();
 	m_services.clear();
+	m_cardDataService = nullptr;
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -231,6 +238,7 @@ void BtSiDeviceDriver::disconnectFromDevice()
 	for (auto *svc : m_services)
 		svc->deleteLater();
 	m_services.clear();
+	m_cardDataService = nullptr;
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -333,6 +341,7 @@ void BtSiDeviceDriver::onControllerDisconnected()
 	for (auto *svc : m_services)
 		svc->deleteLater();
 	m_services.clear();
+	m_cardDataService = nullptr;
 	if (wasConnected)
 		emit connectionStateChanged(false);
 }
@@ -397,18 +406,36 @@ void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
 				connect(svc, &QLowEnergyService::characteristicChanged,
 				        this, &BtSiDeviceDriver::onCharacteristicChanged,
 				        Qt::UniqueConnection);
+				connect(svc, &QLowEnergyService::descriptorWritten, this, [](const QLowEnergyDescriptor &d, const QByteArray &value) {
+					logBtSiReaderI() << "CCCD written:" << d.uuid().toString().toStdString() << "value:" << value.toHex().toStdString();
+				});
+				connect(svc, &QLowEnergyService::errorOccurred, this, [this](QLowEnergyService::ServiceError err) {
+					emitInfo(NecroLog::Level::Error, tr("BT SI Reader service error: %1").arg(static_cast<int>(err)));
+				});
 				connectedSignal = true;
 			}
-			// Enable notifications via Client Characteristic Configuration Descriptor
+			logBtSiReaderI() << "Subscribing characteristic" << ch.uuid().toString().toStdString()
+							 << "properties:" << static_cast<int>(ch.properties());
+			// Enable notifications (or indications if notify is not supported)
+			// via Client Characteristic Configuration Descriptor
 			const QLowEnergyDescriptor cccd = ch.descriptor(
 				QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
-			if (cccd.isValid())
-				svc->writeDescriptor(cccd, QByteArray::fromHex("0100"));
+			if (cccd.isValid()) {
+				const bool use_indication = !(ch.properties() & QLowEnergyCharacteristic::Notify)
+											&& (ch.properties() & QLowEnergyCharacteristic::Indicate);
+				svc->writeDescriptor(cccd, use_indication? QLowEnergyCharacteristic::CCCDEnableIndication: QLowEnergyCharacteristic::CCCDEnableNotification);
+			}
+			else {
+				logBtSiReaderW() << "CCCD descriptor not found for characteristic" << ch.uuid().toString().toStdString();
+			}
 
-			if (ch.uuid() == m_cardStateUuid)
+			if (ch.uuid() == m_cardStateUuid) {
 				m_cardStateSubscribed = true;
-			else
+			}
+			else {
 				m_cardDataSubscribed = true;
+				m_cardDataService = svc;
+			}
 		}
 	}
 }
@@ -431,6 +458,7 @@ void BtSiDeviceDriver::checkAllServicesReady()
 
 void BtSiDeviceDriver::onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value)
 {
+	logBtSiReaderD() << "characteristic changed:" << ch.uuid().toString().toStdString() << "data:" << value.toHex().toStdString();
 	if (ch.uuid() == m_cardStateUuid) {
 		QByteArray msg = m_cardStateReassembler.feed(value);
 		if (!msg.isEmpty())
@@ -455,7 +483,7 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_STATE) {
-		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardState notification:"
+        logBtSiReaderW() << "BtSiDeviceDriver: unexpected msgId in cardState notification:"
 		          << std::hex << msgId;
 		return;
 	}
@@ -473,14 +501,35 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 
 	m_lastStationNumber = static_cast<int>(codeNumber);
 
-	qfDebug() << "BtSiDeviceDriver: CardState card=" << cardNumber
-	          << "state=" << state << "station=" << codeNumber;
+    logBtSiReaderI() << "BtSiDeviceDriver: CardState card=" << cardNumber
+	          << "state=" << static_cast<int>(state) << "station=" << codeNumber;
 
 	if (state == 0) {
 		emitInfo(NecroLog::Level::Info, tr("SI card %1 removed from station %2.").arg(cardNumber).arg(codeNumber));
 	} else {
 		emitInfo(NecroLog::Level::Info, tr("SI card %1 inserted at station %2.").arg(cardNumber).arg(codeNumber));
+		requestCardReadout();
 	}
+}
+
+void BtSiDeviceDriver::requestCardReadout()
+{
+	// reader sends card data only on request, written to card data characteristic
+	// request: msg_id(u16le) | payload_len(u16le) = 0
+	if (!m_cardDataService) {
+		emitInfo(NecroLog::Level::Error, tr("Cannot request card readout, card data characteristic not available."));
+		return;
+	}
+	const QLowEnergyCharacteristic ch = m_cardDataService->characteristic(m_cardDataUuid);
+	if (!ch.isValid()) {
+		emitInfo(NecroLog::Level::Error, tr("Cannot request card readout, card data characteristic is invalid."));
+		return;
+	}
+	QByteArray request(4, 0);
+	request[0] = static_cast<char>(MSG_CARD_COMPLETE & 0xFF);
+	request[1] = static_cast<char>(MSG_CARD_COMPLETE >> 8);
+	logBtSiReaderI() << "Requesting card readout:" << request.toHex().toStdString();
+	m_cardDataService->writeCharacteristic(ch, request, QLowEnergyService::WriteWithResponse);
 }
 
 void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
@@ -491,7 +540,7 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_MINIMAL && msgId != MSG_CARD_COMPLETE) {
-		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardData notification:"
+        logBtSiReaderW() << "BtSiDeviceDriver: unexpected msgId in cardData notification:"
 		           << std::hex << msgId;
 		return;
 	}
@@ -507,7 +556,7 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 
 	card.stationNumber = m_lastStationNumber;
 
-	qfDebug() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber;
+    logBtSiReaderI() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber;
 	emitInfo(NecroLog::Level::Info,
 	         tr("SI card %1 readout complete (%2 punches).")
 	             .arg(card.cardNumber)

@@ -90,6 +90,7 @@ private:
 	// Message handlers
 	void handleCardStateMessage(const QByteArray &message);
 	void handleCardDataMessage(const QByteArray &message);
+	void requestCardReadout();
 
 	// SI card building
 	SICard buildSICard(const QByteArray &payload);
@@ -100,12 +101,14 @@ private:
 
 	void emitInfo(NecroLog::Level level, const QString &msg);
 
+private:
 	QBluetoothDeviceInfo m_deviceInfo;
 
 	// Qt Bluetooth objects
 	// QBluetoothDeviceDiscoveryAgent *m_discoveryAgent = nullptr;
 	QLowEnergyController *m_controller = nullptr;
 	QList<QLowEnergyService *>	m_services;
+	QLowEnergyService *m_cardDataService = nullptr;
 
 	// Known characteristic UUIDs
 	QBluetoothUuid m_cardStateUuid;
