@@ -247,7 +247,6 @@ void BtSiDeviceDriver::disconnectFromDevice()
 	}
 
 	m_cardStateSubscribed = false;
-	m_cardDataSubscribed = false;
 	m_pendingServices = 0;
 	m_cardStateReassembler.reset();
 	m_cardDataReassembler.reset();
@@ -337,7 +336,6 @@ void BtSiDeviceDriver::onControllerDisconnected()
 	bool wasConnected = m_connected;
 	m_connected = false;
 	m_cardStateSubscribed = false;
-	m_cardDataSubscribed = false;
 	for (auto *svc : m_services)
 		svc->deleteLater();
 	m_services.clear();
@@ -432,8 +430,7 @@ void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
 			if (ch.uuid() == m_cardStateUuid) {
 				m_cardStateSubscribed = true;
 			}
-			else {
-				m_cardDataSubscribed = true;
+			else if (ch.uuid() == m_cardDataUuid) {
 				m_cardDataService = svc;
 			}
 		}
@@ -445,7 +442,7 @@ void BtSiDeviceDriver::checkAllServicesReady()
 	if (m_pendingServices > 0)
 		return;
 
-	if (m_cardStateSubscribed && m_cardDataSubscribed) {
+	if (isCardStateSubscribed() && isCardDataSubscribed()) {
 		m_connected = true;
 		emit connectionStateChanged(true);
 		emitInfo(NecroLog::Level::Info, tr("BT SI Reader ready."));

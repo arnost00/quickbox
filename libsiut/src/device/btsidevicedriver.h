@@ -86,6 +86,8 @@ private:
 	void createController(const QBluetoothDeviceInfo &info);
 	void subscribeCharacteristicsFrom(QLowEnergyService *svc);
 	void checkAllServicesReady();
+	bool isCardStateSubscribed() const { return m_cardStateSubscribed; }
+	bool isCardDataSubscribed() const { return m_cardDataService != nullptr; }
 
 	// Message handlers
 	void handleCardStateMessage(const QByteArray &message);
@@ -117,7 +119,6 @@ private:
 	// State
 	bool m_connected = false;
 	bool m_cardStateSubscribed = false;
-	bool m_cardDataSubscribed = false;
 	int m_pendingServices = 0;
 	int m_lastStationNumber = 0;
 
