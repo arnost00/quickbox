@@ -56,7 +56,7 @@ jobs:
         shell: bash
 
       - name: Run windeployqt
-        run: windeployqt -serialport -multimedia --no-compiler-runtime --qmldir '${{ github.workspace }}/install/bin/qml' --qmldir '${{ github.workspace }}/install/bin/reports' '${{ github.workspace }}/install/bin/quickevent.exe'
+        run: windeployqt -serialport -multimedia --no-compiler-runtime --qmldir '${{ github.workspace }}/install/bin/qml' '${{ github.workspace }}/install/bin/quickevent.exe'
 
       - name: Copy MSVC runtime libraries
         # App-local deployment, so neither the installer nor the 7zip needs the VC++ redistributable installed.

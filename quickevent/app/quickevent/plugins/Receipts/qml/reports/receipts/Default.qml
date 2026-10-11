@@ -247,8 +247,11 @@ Report {
 						width: paraCheckTime.width
 						textHAlign: Frame.AlignLeft
 						textFn: function() {
+							var finish_msec = bandCard.data("finishTimeMs");
+							if(!finish_msec)
+								return "--:--:--"; // finish not punched
 							var start00msec = bandCard.data("stageStartTimeMs");
-							return TimeExt.msecToString_hhmmss(start00msec + bandCard.data("finishTimeMs"));
+							return TimeExt.msecToString_hhmmss(start00msec + finish_msec);
 						}
 					}
 				}

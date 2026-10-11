@@ -27,6 +27,7 @@
 #include <qf/gui/framework/application.h>
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/framework/dockwidget.h>
+#include <qf/gui/framework/reportfilecache.h>
 #include <qf/gui/action.h>
 #include <qf/gui/menubar.h>
 #include <qf/gui/dialogs/dialog.h>
@@ -1459,7 +1460,7 @@ bool RunsPlugin::exportResultsCsosOverall(int stage_count, const QString &file_n
 	return true;
 }
 
-qf::core::sql::QueryBuilder RunsPlugin::runsQuery(int stage_id, int class_id, bool show_offrace)
+qf::core::sql::QueryBuilder RunsPlugin::runsQuery(int stage_id, int class_id, bool show_offrace, bool only_on_track)
 {
 	bool is_relays = getPlugin<EventPlugin>()->eventConfig().isRelays();
 	qfs::QueryBuilder qb;
@@ -1499,8 +1500,16 @@ qf::core::sql::QueryBuilder RunsPlugin::runsQuery(int stage_id, int class_id, bo
 		else
 			qb.where("competitors.classId=" + QString::number(class_id));
 	}
-	if(!show_offrace)
+	if(!show_offrace || only_on_track)
 		qb.where("runs.isRunning");
+	if(only_on_track) {
+		auto *event_plugin = getPlugin<EventPlugin>();
+		// stage_id is a leg in relays
+		int time_stage_id = (is_relays || stage_id <= 0)? event_plugin->currentStageId(): stage_id;
+		qint64 started_until_ms = event_plugin->stageStartDateTime(time_stage_id).msecsTo(QDateTime::currentDateTime());
+		qb.joinRestricted("classes.id", "classdefs.classId", "classdefs.stageId=runs.stageId");
+		qb.where(onTrackSqlCondition(started_until_ms));
+	}
 	return qb;
 }
 
@@ -2295,27 +2304,11 @@ void RunsPlugin::report_resultsAwards()
 	if(rep_path.isEmpty())
 		return;
 
-	static const QLatin1String DB_PREFIX("db:");
 	auto tt = stageResultsTable(opts.value("stageId").toInt(), opts.value("classFilter").toString(), opts.value("numPlaces").toInt(), /*exclude_disq=*/true);
 
-	if(rep_path.startsWith(DB_PREFIX)) {
-		QString design_name = rep_path.mid(DB_PREFIX.size());
-		auto design = AwardDesigner::Design::loadFromDb(design_name);
-		if(!design.isValid()) {
-			qfWarning() << "Award design not found in DB:" << design_name;
-			return;
-		}
-		QString typ = design.toTypst();
-		QStringList images = design.imageFiles();
-		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget::showReport(typ, images, pages, fwk);
-		return;
-	}
 	if(rep_path.endsWith(QStringLiteral(".typ"))) {
-		QString typ;
-		QStringList images;
-		if(!AwardDesigner::loadTypstTemplate(findReportFile(rep_path), typ, images)) {
+		auto [typ, images] = AwardDesigner::loadTypstTemplate(Plugin::reportFileCache()->localReportFile(rep_path));
+		if(typ.isEmpty()) {
 			qfWarning() << "Cannot load Typst award template:" << rep_path;
 			return;
 		}
@@ -2389,27 +2382,11 @@ void RunsPlugin::report_nStagesAwards()
 	if(rep_path.isEmpty())
 		return;
 
-	static const QLatin1String DB_PREFIX("db:");
 	auto tt = nstagesResultsTable(opts.value("classFilter").toString(), opts.value("stageId").toInt(), opts.value("numPlaces").toInt(), /*exclude_disq=*/true);
 
-	if(rep_path.startsWith(DB_PREFIX)) {
-		QString design_name = rep_path.mid(DB_PREFIX.size());
-		AwardDesigner::Design design = AwardDesigner::Design::loadFromDb(design_name);
-		if(!design.isValid()) {
-			qfWarning() << "Award design not found in DB:" << design_name;
-			return;
-		}
-		QString typ = design.toTypst();
-		QStringList images = design.imageFiles();
-		AwardTypstRenderer renderer(typ, images);
-		auto pages = renderer.collectRunsPagesData(tt, getPlugin<EventPlugin>()->eventConfig());
-		AwardReportViewWidget::showReport(typ, images, pages, fwk);
-		return;
-	}
 	if(rep_path.endsWith(QStringLiteral(".typ"))) {
-		QString typ;
-		QStringList images;
-		if(!AwardDesigner::loadTypstTemplate(findReportFile(rep_path), typ, images)) {
+		auto [typ, images] = AwardDesigner::loadTypstTemplate(findReportFile(rep_path));
+		if(typ.isEmpty()) {
 			qfWarning() << "Cannot load Typst award template:" << rep_path;
 			return;
 		}
