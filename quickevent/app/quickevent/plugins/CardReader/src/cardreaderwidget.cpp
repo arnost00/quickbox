@@ -805,6 +805,7 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 	ui->btBtReader->setStyleSheet(QString());
 	if(checked) {
 		delete m_btDriver;
+		m_btDriver = nullptr;
 		CardReaderSettings settings;
 		const QString address = settings.btsiDeviceAddress().trimmed();
 		if (!address.isEmpty()) {
