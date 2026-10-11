@@ -27,4 +27,11 @@
 #  define QFCORE_DECL_EXPORT Q_DECL_IMPORT
 #endif
 
+#ifdef Q_CC_MSVC
+/// MSVC exports the Qt container base of every exported class derived from it, which causes duplicate symbols
+/// when more DLLs do so. Export the instances from libqfcore only, others import them.
+#include <QVariantMap>
+extern template class QFCORE_DECL_EXPORT QMap<QString, QVariant>;
+#endif
+
 #endif // QFCOREGLOBAL_H
