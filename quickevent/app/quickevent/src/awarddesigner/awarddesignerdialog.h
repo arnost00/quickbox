@@ -1,12 +1,10 @@
 #pragma once
 #include "awarddesign.h"
+#include "awarddesignerscene.h"
 
 #include <QDialog>
 #include <QShowEvent>
 #include <QWheelEvent>
-
-class AwardDesignerScene;
-class AwardSceneItem;
 
 namespace Ui {
 class AwardDesignerDialog;

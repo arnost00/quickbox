@@ -553,7 +553,8 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 			//qfInfo() << qb.toString();
 			auto q = qf::core::sql::Query::fromExec(qb.toString());
 			while (q.next()) {
-				bool dis = q.value("dis").toBool();
+				// runner without start time has no time computed, it cannot be ranked
+				bool dis = q.value("dis").toBool() || q.value("timeMs").isNull();
 				int time = q.value("timeMs").toInt();
 				if(!dis) {
 					if(time < checked_card.timeMs())

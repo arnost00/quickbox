@@ -19,7 +19,7 @@ private:
 	siut::DeviceDriver* siDriver();
 	void sendData(const QByteArray &data);
 	QByteArray cardBlock(int ix);
-	void onSiTaskFinished(int task_type, QVariant result);
+	void onSiTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 	void onDriverInfo(NecroLogLevel level, const QString &msg);
 private:
 	uint64_t m_cardNumber = 0;

@@ -617,7 +617,7 @@ qf::core::utils::Table RunsPlugin::nstagesClassResultsTable(
 		qfs::QueryBuilder qb;
 		qb.select2("runs", "competitorId, timeMs, notCompeting, disqualified")
 				.from("competitors")
-				.joinRestricted("competitors.id", "runs.competitorId", "runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0", "JOIN")
+				.joinRestricted("competitors.id", "runs.competitorId", "runs.stageId=" QF_IARG(stage_id) " AND runs.isRunning AND runs.finishTimeMs>0 AND (runs.timeMs>0 OR runs.disqualified)", "JOIN")
 				.where("competitors.classId=" QF_IARG(class_id))
 				.orderBy("runs.notCompeting, runs.disqualified, runs.timeMs");
 		qfs::Query q;
@@ -882,7 +882,7 @@ qf::core::utils::TreeTable RunsPlugin::stageResultsTable(int stage_id, const QSt
 							, "runs.competitorId"
 							, QStringLiteral("runs.stageId={{stage_id}}"
 											 " AND runs.isRunning"
-											 " AND (runs.finishTimeMs>0 OR runs.checkTimeMs IS NOT NULL OR runs.disqualified)")
+											 " AND (runs.timeMs>0 OR runs.disqualified)")
 							+ (exclude_disq? " AND NOT runs.disqualified": "")
 							, "JOIN")
 			.where("competitors.classId={{class_id}}")
@@ -1388,7 +1388,7 @@ bool RunsPlugin::exportResultsCsosStage(int stage_id, const QString &file_name)
 		.join("competitors.classId", "classes.id")
 		.joinRestricted("competitors.id"
 						, "runs.competitorId"
-						, QStringLiteral("runs.stageId=%1 AND runs.isRunning AND runs.finishTimeMs>0").arg(stage_id)
+						, QStringLiteral("runs.stageId=%1 AND runs.isRunning AND runs.finishTimeMs>0 AND (runs.timeMs>0 OR runs.disqualified)").arg(stage_id)
 						, qfs::QueryBuilder::INNER_JOIN)
 		//.where("competitors.classId={{class_id}}")
 		.orderBy("classes.name, runs.notCompeting, runs.disqualified, runs.timeMs");
@@ -3065,6 +3065,8 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 	QVariantList xml_root{"StartList" ,
 		QVariantMap {
 			{"xmlns", "http://www.orienteering.org/datastandard/3.0"},
+			// IOF XSD requires Extensions children in a non-IOF namespace
+			{"xmlns:qe", "http://quickevent.cz/datastandard/extensions"},
 			{"iofVersion", "3.0"},
 			{"creator", QStringLiteral("QuickEvent %1").arg(QCoreApplication::applicationVersion())},
 			{"createTime", datetime_to_string(QDateTime::currentDateTime())}
@@ -3117,7 +3119,16 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 	for(int i=0; i<tt1.rowCount(); i++) {
 		qf::core::utils::TreeTableRow tt1_row = tt1.row(i);
 		QVariantList class_start{"ClassStart"};
-		append_list(class_start, QVariantList{"Class", QVariantList{"Id", tt1_row.value(QStringLiteral("classes.id"))}, QVariantList{"Name", tt1_row.value(QStringLiteral("classes.name"))}});
+		qf::core::utils::TreeTable tt2 = tt1_row.table();
+		if (tt2.rowCount() == 0 && is_iof_race)
+			continue; // not save empty class
+		bool is_free_start = tt1_row.value(QStringLiteral("startIntervalMin")).toInt() == 0;
+		int max_competitors = tt1_row.value(QStringLiteral("mapCount")).toInt();
+		append_list(class_start, QVariantList{"Class",
+								(max_competitors > 0) ? QVariantMap{{"maxNumberOfCompetitors", max_competitors}} : QVariantMap{},
+								QVariantList{"Id", tt1_row.value(QStringLiteral("classes.id"))},
+								QVariantList{"Name", tt1_row.value(QStringLiteral("classes.name"))},
+								QVariantList{"Extensions", QVariantList{"qe:StartMode", is_free_start ? "FreeStart" : "StartList"}}});
 		append_list(class_start, QVariantList{"Course", QVariantList{"Length", tt1_row.value(QStringLiteral("courses.length"))},
 								QVariantList{"Climb", tt1_row.value(QStringLiteral("courses.climb"))},
 								QVariantList{"NumberOfControls", tt1_row.value(QStringLiteral("courses.numberOfControls"))}});
@@ -3126,9 +3137,8 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 			append_list(class_start, QVariantList{"StartName", QVariantMap{{"raceNumber", iof_xml_race_number}}, QStringLiteral("Start%1").arg(course_start_number)});
 		else
 			append_list(class_start, QVariantList{"StartName", QStringLiteral("Start%1").arg(course_start_number)});
-		qf::core::utils::TreeTable tt2 = tt1_row.table();
-		if (tt2.rowCount() == 0 && is_iof_race)
-			continue; // not save empty class
+		bool has_fixed_start_time = tt1_row.value(QStringLiteral("classdefs.startIntervalMin")).toInt() > 0
+				|| event_config.disciplineId == static_cast<int>(Event::EventConfig::Discipline::MassStart);
 		for(int j=0; j<tt2.rowCount(); j++) {
 			auto tt2_row = tt2.row(j);
 			QVariantList xml_person{"PersonStart"};
@@ -3159,10 +3169,10 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 			auto bib_number = tt2_row.value(QStringLiteral("competitors.startNumber"));
 			if(!is_vacant && !bib_number.isNull())
 				append_list(xml_start, QVariantList{"BibNumber", bib_number});
-
-			int stime_msec = tt2_row.value(QStringLiteral("startTimeMs")).toInt();
-			append_list(xml_start, QVariantList{"StartTime", datetime_to_string(start00.addMSecs(stime_msec))});
-
+			if (has_fixed_start_time) {
+				int stime_msec = tt2_row.value(QStringLiteral("startTimeMs")).toInt();
+				append_list(xml_start, QVariantList{"StartTime", datetime_to_string(start00.addMSecs(stime_msec))});
+			}
 			QVariant siId = tt2_row.value(QStringLiteral("runs.siId"));
 			if (siId.toBool()) {
 				append_list(xml_start, QVariantList{"ControlCard", siId.toInt()});
