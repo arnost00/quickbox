@@ -3,7 +3,6 @@
 #include "ui_cardreaderwidget.h"
 #include "cardreadersettings.h"
 
-#include "btdeviceinfoutil.h"
 #include "cardreaderplugin.h"
 #include "testcardreader.h"
 #include "../../Core/src/coreplugin.h"
@@ -804,10 +803,10 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 	qfLogFuncFrame() << "checked:" << checked;
 	if(checked) {
 		CardReaderSettings settings;
-		const QBluetoothDeviceInfo bt_info = CardReader::btDeviceInfoFromMap(settings.btsiDeviceInfoMap());
-		if (bt_info.isValid()) {
-			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(bt_info.address().toString()));
-			btDriver()->connectToDevice(bt_info);
+		const QString address = settings.btsiDeviceInfoMap().value(QStringLiteral("address")).toString().trimmed();
+		if (!address.isEmpty()) {
+			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(address));
+			btDriver()->connectToDevice(address);
 		} else {
 			qf::gui::dialogs::MessageBox::showError(
 				this, tr("BT SI Reader: no device address configured.\n"
