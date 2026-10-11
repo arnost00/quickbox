@@ -377,24 +377,28 @@ void CardReaderPlugin::updateCheckedCardValuesSql(int card_id,
 		QF_TIME_SCOPE("DELETE FROM runlaps");
 		q.exec("DELETE FROM runlaps WHERE runId=" + QString::number(run_id), qf::core::Exception::Throw);
 	}
-	q.prepare(QStringLiteral("INSERT INTO runlaps (runId, position, code, stpTimeMs, lapTimeMs)"
-							 " VALUES (:runId, :position, :code, :stpTimeMs, :lapTimeMs)"), qf::core::Exception::Throw);
 	auto punch_list = checked_card.punches();
 	if(punch_list.count()) {
 		QF_TIME_SCOPE("INSERT INTO runlaps, records cnt: " + QString::number(punch_list.count()));
+		// all the laps are inserted by single query, query per lap is slow when SQL server is connected via slow network
+		QStringList rows;
 		int position = 0;
 		for(const auto &v : punch_list) {
 			position++;
 			quickevent::core::si::CheckedPunch cp(v.toMap());
 			//qfInfo() << run_id << position << cp;
 			if(cp.stpTimeMs() > 0) {
-				q.bindValue(QStringLiteral(":runId"), run_id);
-				q.bindValue(QStringLiteral(":code"), cp.code());
-				q.bindValue(QStringLiteral(":position"), position);
-				q.bindValue(QStringLiteral(":stpTimeMs"), cp.stpTimeMs());
-				q.bindValue(QStringLiteral(":lapTimeMs"), cp.lapTimeMs());
-				q.exec(qf::core::Exception::Throw);
+				rows << QStringLiteral("(%1, %2, %3, %4, %5)")
+						.arg(run_id)
+						.arg(position)
+						.arg(cp.code())
+						.arg(cp.stpTimeMs())
+						.arg(cp.lapTimeMs());
 			}
+		}
+		if(!rows.isEmpty()) {
+			q.exec(QStringLiteral("INSERT INTO runlaps (runId, position, code, stpTimeMs, lapTimeMs) VALUES ") + rows.join(QStringLiteral(", "))
+				   , qf::core::Exception::Throw);
 		}
 	}
 
