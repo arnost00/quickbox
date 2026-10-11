@@ -120,6 +120,7 @@ void AddLegDialogWidget::onCompetitorSelected()
 		q.exec("UPDATE runs SET "
 			   "relayId=" + QString::number(relayId())
 			   + ", leg=" + QString::number(free_leg)
+			   + ", startTimeMs=NULL" // start time from the previous relay is not valid in this one
 			   + ", isRunning=(1=1)" // TRUE is not accepted by SQLite
 			   + " WHERE id=" + QString::number(curr_run_id), qf::core::Exception::Throw);
 	}

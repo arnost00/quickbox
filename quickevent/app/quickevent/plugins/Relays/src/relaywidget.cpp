@@ -253,6 +253,8 @@ void RelayWidget::moveLegUp()
 		   + " WHERE "
 		   + " id=" + QString::number(run_id)
 		   , qf::core::Exception::Throw);
+	// leg moved to the empty first leg has no start time
+	getPlugin<RelaysPlugin>()->assignFirstLegStartTime(relay_id);
 	loadLegsTable();
 	if(curr_ix.row() > 0) {
 		curr_ix = ui->tblLegs->model()->index(curr_ix.row()-1, curr_ix.column());

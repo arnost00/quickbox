@@ -76,9 +76,13 @@ void RelaysPlugin::assignFirstLegStartTime(int relay_id)
 	qfs::Query q;
 	q.execThrow("SELECT classdefs.startTimeMin FROM relays"
 				" JOIN classdefs ON classdefs.classId=relays.classId"
-				" WHERE relays.id=" QF_IARG(relay_id));
+				" WHERE relays.id=" QF_IARG(relay_id)
+				" AND classdefs.stageId=1");
 	if(q.next()) {
-		int start_time = q.value(0).toInt() * 60 * 1000;
+		QVariant start_time_min = q.value(0);
+		if(start_time_min.isNull())
+			return; // class start time is not set yet
+		int start_time = start_time_min.toInt() * 60 * 1000;
 		q.execThrow("UPDATE runs SET startTimeMs=" QF_IARG(start_time)
 					" WHERE relayId=" QF_IARG(relay_id)
 					" AND leg=1"
