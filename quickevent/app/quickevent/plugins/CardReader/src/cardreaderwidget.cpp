@@ -755,6 +755,7 @@ void CardReaderWidget::onBtConnectionChanged(bool connected)
 	// keep the button in sync (e.g. on unexpected disconnect)
 	QSignalBlocker blocker(ui->btBtReader);
 	ui->btBtReader->setChecked(connected);
+	ui->btBtReader->setStyleSheet(connected ? (qf::gui::isDarkTheme()? "background: darkgreen;": "background: lime;") : QString());
 	updateConnectionInfoLabel();
 }
 
@@ -801,6 +802,7 @@ void CardReaderWidget::onOpenUsbTriggered(bool checked)
 void CardReaderWidget::onOpenBtTriggered(bool checked)
 {
 	qfLogFuncFrame() << "checked:" << checked;
+	ui->btBtReader->setStyleSheet(QString());
 	if(checked) {
 		delete m_btDriver;
 		CardReaderSettings settings;
