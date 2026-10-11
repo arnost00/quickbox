@@ -807,7 +807,7 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 		delete m_btDriver;
 		m_btDriver = nullptr;
 		CardReaderSettings settings;
-		const QString address = settings.btsiDeviceAddress().trimmed();
+		const QString address = settings.btsiDevice().value(QStringLiteral("address")).toString().trimmed();
 		if (!address.isEmpty()) {
 			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(address));
 			btDriver()->connectToDevice(address);

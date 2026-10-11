@@ -21,7 +21,7 @@ public:
 	SETTINGS_FIELD(bool, isD, setD, isableCRCCheck, "comm/debug/disableCRCCheck", false);
 	// BT SI Reader connection
 	SETTINGS_FIELD(bool, isB, setB, tEnabled, "comm/btEnabled", false);
-	SETTINGS_FIELD(QString, b, setB, tsiDeviceAddress, "comm/btle/deviceAddress", {});
+	SETTINGS_FIELD(QVariantMap, b, setB, tsiDevice, "comm/btle/device", {});
 	// Reader behaviour
 	SETTINGS_FIELD1(QString, c, setC, ardCheckType, "Classic");
 	SETTINGS_FIELD1(QString, r, setR, eaderMode, "Readout");
