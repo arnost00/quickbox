@@ -721,7 +721,7 @@ siut::BtSiDeviceDriver *CardReaderWidget::btDriver()
 void CardReaderWidget::setConnectionInfoLabel(const QString &info, NecroLog::Level level)
 {
 	ui->lblConnectionInfo->setText(info);
-    ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "background: salmon": "");
+	ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "background: salmon": "");
 }
 
 void CardReaderWidget::updateButtonsEnabled()
@@ -802,8 +802,9 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 {
 	qfLogFuncFrame() << "checked:" << checked;
 	if(checked) {
+		delete m_btDriver;
 		CardReaderSettings settings;
-		const QString address = settings.btsiDeviceInfoMap().value(QStringLiteral("address")).toString().trimmed();
+		const QString address = settings.btsiDeviceAddress().trimmed();
 		if (!address.isEmpty()) {
 			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(address));
 			btDriver()->connectToDevice(address);
@@ -813,7 +814,8 @@ void CardReaderWidget::onOpenBtTriggered(bool checked)
 				         "Please set it in Settings Card reader."));
 		}
 	} else {
-		btDriver()->disconnectFromDevice();
+		delete m_btDriver;
+		m_btDriver = nullptr;
 	}
 }
 

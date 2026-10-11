@@ -7,7 +7,7 @@
 
 #include "cardreadersettingspage.h"
 #include "ui_cardreadersettingspage.h"
-#include "btdeviceinfoutil.h"
+
 #include "cardchecker.h"
 //#include "cardreaderwidget.h"
 #include "cardreaderplugin.h"
@@ -115,25 +115,21 @@ void CardReaderSettingsPage::load()
 	ui->chkShowRawComData->setChecked(settings.isShowRawComData());
 	ui->chkDisableCRCCheck->setChecked(settings.isDisableCRCCheck());
 	{
-		// BT SI Reader settings — select the item whose data matches the saved address
-		{
-			const auto bt_info_map = settings.btsiDeviceInfoMap();
-			const auto bt_info = btDeviceInfoFromMap(bt_info_map);
-			if (bt_info.isValid()) {
-				int matchIndex = -1;
-				for (int i = 0; i < ui->cbxBtsiAddress->count(); ++i) {
-					if (ui->cbxBtsiAddress->itemData(i).toMap() == bt_info_map) {
-						matchIndex = i;
-						break;
-					}
-				}
-				if (matchIndex < 0) {
-					ui->cbxBtsiAddress->addItem(btsiDisplayAddress(bt_info), btDeviceInfoToMap(bt_info));
-					ui->cbxBtsiAddress->setCurrentIndex(ui->cbxBtsiAddress->count() - 1);
-				} else {
-					ui->cbxBtsiAddress->setCurrentIndex(matchIndex);
+		// BT SI Reader settings — select the item whose data matches the saved address.
+		const QString address = settings.btsiDeviceAddress();
+		if (!address.isEmpty()) {
+			int matchIndex = -1;
+			for (int i = 0; i < ui->cbxBtsiAddress->count(); ++i) {
+				if (ui->cbxBtsiAddress->itemData(i).toString().compare(address, Qt::CaseInsensitive) == 0) {
+					matchIndex = i;
+					break;
 				}
 			}
+			if (matchIndex < 0) {
+				ui->cbxBtsiAddress->addItem(address, address);
+				matchIndex = ui->cbxBtsiAddress->count() - 1;
+			}
+			ui->cbxBtsiAddress->setCurrentIndex(matchIndex);
 		}
 	}
 
@@ -183,12 +179,10 @@ void CardReaderSettingsPage::save()
 	settings.setDisableCRCCheck(ui->chkDisableCRCCheck->isChecked());
 	{
 		const int ix = ui->cbxBtsiAddress->currentIndex();
-		if (ix >= 0) {
-			const auto map = ui->cbxBtsiAddress->itemData(ix).toMap();
-			settings.setBtsiDeviceInfoMap(map);
-		} else {
-			settings.setBtsiDeviceInfoMap({});
-		}
+		if (ix >= 0)
+			settings.setBtsiDeviceAddress(ui->cbxBtsiAddress->itemData(ix).toString());
+		else
+			settings.setBtsiDeviceAddress({});
 	}
 
 	settings.setCardCheckType(ui->cbxCardCheckType->currentData().toString());
@@ -226,7 +220,7 @@ void CardReaderSettingsPage::onScanBtClicked()
 		const QString current = ui->cbxBtsiAddress->currentText();
 		ui->cbxBtsiAddress->clear();
 		for (const auto &bt_info : bleDevices) {
-			ui->cbxBtsiAddress->addItem(btsiDisplayAddress(bt_info), btDeviceInfoToMap(bt_info));
+			ui->cbxBtsiAddress->addItem(btsiDisplayAddress(bt_info), bt_info.address().toString());
 		}
 		ui->cbxBtsiAddress->setCurrentText(current);
 	});
