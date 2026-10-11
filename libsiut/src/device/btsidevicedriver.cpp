@@ -222,8 +222,9 @@ void BtSiDeviceDriver::connectToDevice(const QBluetoothDeviceInfo &info)
 		return;
 	}
 	m_deviceInfo = info;
-	emitInfo(NecroLog::Level::Info,
-	         tr("Connecting to BLE device %1 %2 ...").arg(info.address().toString().toUpper()).arg(info.name()));
+	emitInfo(NecroLog::Level::Info, tr("Connecting to BLE device %1 %2 ...")
+			 .arg(info.address().toString().toUpper())
+			 .arg(info.name()));
 	createController(info);
 }
 

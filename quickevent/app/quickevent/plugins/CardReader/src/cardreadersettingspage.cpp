@@ -201,6 +201,7 @@ void CardReaderSettingsPage::onScanBtClicked()
 {
 	ui->btScanBt->setEnabled(false);
 	ui->btScanBt->setText(tr("Scanning..."));
+	ui->cbxBtsiAddress->clear();
 
 	if (m_btDiscoveryAgent) {
 		m_btDiscoveryAgent->stop();
