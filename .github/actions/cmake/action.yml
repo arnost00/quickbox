@@ -29,10 +29,14 @@ runs:
         version: 1.0
 
     # Windows deps
-    - name: Install windows deps
+    - name: Setup MSVC environment
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Select Ninja generator
       if: runner.os == 'Windows'
       run: |
-        echo cmake_extra_args="'-DMINGW=ON' '-G MinGW Makefiles'" >> "$GITHUB_ENV"
+        echo cmake_extra_args="'-G Ninja'" >> "$GITHUB_ENV"
       shell: bash
 
     # Qt for non-Windows using jurplel
