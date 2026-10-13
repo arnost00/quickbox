@@ -1595,7 +1595,10 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		}
 		else if (type == "competitor_create")
 		{
-			processNewRunner(ofeed_competitor_id);
+			// marked as processed in the async callback, only after the runner is stored
+			processNewRunner(ofeed_competitor_id, change["id"].toInt());
+			storeChange(change);
+			continue;
 		}
 		else
 		{
@@ -1737,7 +1740,7 @@ void OFeedClient::processCorridorTimeUpdate(int runs_id, const QDateTime &create
 	}
 }
 
-void OFeedClient::processNewRunner(int ofeed_competitor_id)
+void OFeedClient::processNewRunner(int ofeed_competitor_id, int protocol_id)
 {
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 	QString graphQLquery = R"(
@@ -1757,7 +1760,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 
 	QJsonObject variables;
 	variables["competitorByIdId"] = ofeed_competitor_id;
-	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id](QJsonObject data)
+	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id, protocol_id](QJsonObject data)
 	{
 		if (!data.isEmpty())
 		{
@@ -1777,7 +1780,15 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			isInsertFromOFeed = true;
 
 			// Save emits db event
-			doc.save();
+			try {
+				doc.save();
+			}
+			catch (const std::exception &e) {
+				// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
+				isInsertFromOFeed = false;
+				qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
+				return;
+			}
 
 			// auto competitor_id = doc.value("competitors.id");
 
@@ -1797,6 +1808,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			// Convert std::string to QString
 			QString json_body = QString::fromStdString(json_str);
 			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
+			markChangelogEntryAsProcessed(protocol_id);
 		}
 		else
 		{
