@@ -6,6 +6,7 @@
 #include "../service.h"
 
 #include <QMap>
+#include <QSet>
 #include <QVariantMap>
 
 #include <functional>
@@ -117,6 +118,10 @@ private:
 	QTimer *m_credentialCheckTimer = nullptr;
 	QTimer *m_runChangeFlushTimer = nullptr;
 	QMap<int, PendingRunChange> m_pendingRunChanges;
+	/// runs not created in OFeed yet (start time is required, but not set, or the create request failed)
+	QSet<int> m_pendingNewRuns;
+	/// runs with a create request on the way, protects against duplicate creates
+	QSet<int> m_createsInFlight;
 	QNetworkAccessManager *m_networkManager = nullptr;
 	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
 	bool m_eventImageStartupAttempted = false;
@@ -149,9 +154,11 @@ private:
 	void checkCredentials();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr, std::function<void()> on_done = nullptr);
 	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
-	void sendCompetitorAdded(QString json_body);
+	void sendCompetitorAdded(QString json_body, int run_id);
 	void sendCompetitorDeleted(int run_id);
 	void onCompetitorAdded(int competitor_id);
+	bool canCreateCompetitor(int run_id) const;
+	void createCompetitorOrDefer(int run_id);
 	void queueRunChange(int run_id, const QString &table, const QVariantMap &fields);
 	void flushRunChanges();
 	void onRunChanged(int run_id, const QVariantMap &run_fields, const QVariantMap &competitor_fields);
