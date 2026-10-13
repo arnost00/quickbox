@@ -355,9 +355,16 @@ void OFeedClient::init()
 	ensureEventImageCachedAtStartup();
 }
 
-void OFeedClient::exportStartListAndResults()
+void OFeedClient::exportStartListAndResults(bool only_enabled)
 {
-	exportStartListIofXml3([this]() { exportResultsIofXml3(); });
+	const bool start_list = !only_enabled || uploadStartList();
+	const bool results = !only_enabled || uploadResults();
+	if (start_list) {
+		exportStartListIofXml3(results ? [this]() { exportResultsIofXml3(); } : std::function<void()>());
+	}
+	else if (results) {
+		exportResultsIofXml3();
+	}
 }
 
 void OFeedClient::onExportTimerTimeOut()
@@ -369,7 +376,7 @@ void OFeedClient::onExportTimerTimeOut()
 		m_exportDeferred = true;
 		return;
 	}
-	exportStartListAndResults();
+	exportStartListAndResults(true);
 }
 
 void OFeedClient::onChangesTimerTimeOut()
@@ -388,7 +395,7 @@ void OFeedClient::runDeferredExport()
 		return;
 	}
 	m_exportDeferred = false;
-	exportStartListAndResults();
+	exportStartListAndResults(true);
 }
 
 void OFeedClient::loadSettings()
@@ -884,6 +891,38 @@ void OFeedClient::setRunOfficeChangesProcessing(bool runOfficeChangesProcessing)
 	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	auto cfg = config.ofeedConfig(current_stage);
 	cfg.runOfficeChangesProcessing = runOfficeChangesProcessing;
+	config.setOfeedConfig(current_stage, cfg);
+}
+
+bool OFeedClient::uploadStartList()
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	auto current_stage = config.eventConfig().currentStageId;
+	return config.ofeedConfig(current_stage).uploadStartList;
+}
+
+void OFeedClient::setUploadStartList(bool on)
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	auto cfg = config.ofeedConfig(current_stage);
+	cfg.uploadStartList = on;
+	config.setOfeedConfig(current_stage, cfg);
+}
+
+bool OFeedClient::uploadResults()
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	auto current_stage = config.eventConfig().currentStageId;
+	return config.ofeedConfig(current_stage).uploadResults;
+}
+
+void OFeedClient::setUploadResults(bool on)
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	auto cfg = config.ofeedConfig(current_stage);
+	cfg.uploadResults = on;
 	config.setOfeedConfig(current_stage, cfg);
 }
 

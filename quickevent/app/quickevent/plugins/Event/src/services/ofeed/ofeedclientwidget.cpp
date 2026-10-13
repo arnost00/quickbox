@@ -214,6 +214,8 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		updateEventImagePreview();
 		ui->processChangesOnOffButton->setChecked(svc->runStartChangesProcessing());
 		ui->processOfficeChangesOnOffButton->setChecked(svc->runOfficeChangesProcessing());
+		ui->uploadStartListOnOffButton->setChecked(svc->uploadStartList());
+		ui->uploadResultsOnOffButton->setChecked(svc->uploadResults());
 		updateCredentialStatus(svc->credentialsValid() == 1);
 		connect(svc, &OFeedClient::credentialsStatusChanged, this, &OFeedClientWidget::updateCredentialStatus);
 	}
@@ -253,6 +255,20 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 		OFeedClient *svc = service();
 		if(svc)
 			svc->setRunOfficeChangesProcessing(checked);
+	});
+	connect(ui->uploadStartListOnOffButton, &QAbstractButton::toggled, this, [this](bool checked) {
+		OFeedClient *svc = service();
+		if(svc) {
+			svc->setUploadStartList(checked);
+		}
+		updateTimerIndicators();
+	});
+	connect(ui->uploadResultsOnOffButton, &QAbstractButton::toggled, this, [this](bool checked) {
+		OFeedClient *svc = service();
+		if(svc) {
+			svc->setUploadResults(checked);
+		}
+		updateTimerIndicators();
 	});
 	connect(ui->btContinueToSynchronization, &QPushButton::clicked, this, [this]() {
 		ui->tabWidget->setCurrentWidget(ui->tabSynchronization);
@@ -526,14 +542,21 @@ void OFeedClientWidget::updateTestConnectionState()
 void OFeedClientWidget::updateTimerIndicators()
 {
 	OFeedClient *svc = service();
+	// setProgress() decides visibility itself, so hide the indicators of disabled sections afterwards
 	m_exportTimerIndicator->setProgress(
 		svc ? svc->exportTimerRemainingMs() : -1,
 		svc ? svc->exportTimerIntervalMs() : 0
 	);
+	if(!svc || !(svc->uploadStartList() || svc->uploadResults())) {
+		m_exportTimerIndicator->hide();
+	}
 	m_changesTimerIndicator->setProgress(
 		svc ? svc->changesTimerRemainingMs() : -1,
 		svc ? svc->changesTimerIntervalMs() : 0
 	);
+	if(!svc || !(svc->runStartChangesProcessing() || svc->runOfficeChangesProcessing())) {
+		m_changesTimerIndicator->hide();
+	}
 	m_credentialTimerIndicator->setProgress(
 		svc ? svc->credentialCheckRemainingMs() : -1,
 		svc ? svc->credentialCheckIntervalMs() : 0

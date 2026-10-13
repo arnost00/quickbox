@@ -70,6 +70,10 @@ public:
 	void setRunStartChangesProcessing(bool runStartChangesProcessing);
 	bool runOfficeChangesProcessing();
 	void setRunOfficeChangesProcessing(bool runOfficeChangesProcessing);
+	bool uploadStartList();
+	void setUploadStartList(bool on);
+	bool uploadResults();
+	void setUploadResults(bool on);
 	bool printEventImageOnReceipt() const;
 	void setPrintEventImageOnReceipt(bool on);
 	bool printEventQrCodeOnReceipt() const;
@@ -130,7 +134,7 @@ private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
 	void onExportTimerTimeOut();
 	void onChangesTimerTimeOut();
-	void exportStartListAndResults();
+	void exportStartListAndResults(bool only_enabled = false);
 	void runDeferredExport();
 	void init();
 	void ensureEventImageCachedAtStartup();
