@@ -172,20 +172,16 @@
             <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
             <layout class="QFormLayout">
              <item row="0" column="0">
-              <widget class="QLabel"><property name="text"><string>Pole:</string></property></widget>
+              <widget class="QLabel"><property name="text"><string>Text:</string></property></widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="cbxItemField"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="lblCustomText">
-               <property name="text"><string>Text:</string></property>
+              <widget class="QPlainTextEdit" name="edText">
+               <property name="maximumSize"><size><width>16777215</width><height>70</height></size></property>
+               <property name="placeholderText"><string>Text, např. Získává $(competitorName)</string></property>
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QLineEdit" name="edCustomText">
-               <property name="placeholderText"><string>Vlastní text</string></property>
-              </widget>
+              <widget class="QComboBox" name="cbxItemField"/>
              </item>
             </layout>
            </widget>

@@ -33,8 +33,8 @@ struct Item {
 	QByteArray imageData;
 
 	// Field
-	QString fieldId = QStringLiteral("eventName");
-	QString customText;
+	// Free text; `$(key)` is replaced by the award data value, `$$(` yields a literal `$(`
+	QString text = QStringLiteral("$(eventName)");
 
 	// Text formatting (used for Field items)
 	QString fontFamily = QStringLiteral("Arial");

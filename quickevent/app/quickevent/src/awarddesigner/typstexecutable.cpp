@@ -1,6 +1,7 @@
 #include "typstexecutable.h"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QStandardPaths>
 
@@ -16,6 +17,12 @@ QString executablePath()
 	if (QFile::exists(bundled))
 		return bundled;
 	return QStandardPaths::findExecutable(QStringLiteral("typst"));
+}
+
+QString fontsDir()
+{
+	const QString dir = QCoreApplication::applicationDirPath() + QStringLiteral("/fonts");
+	return QDir(dir).exists() ? dir : QString();
 }
 
 } // namespace Typst

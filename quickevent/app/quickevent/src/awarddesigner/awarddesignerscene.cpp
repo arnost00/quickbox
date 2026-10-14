@@ -187,15 +187,8 @@ void AwardSceneItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 		painter->setFont(font);
 		painter->setPen(QColor(m_item.color));
 
-		QString label;
-		if (m_item.fieldId == QLatin1String("customText")) {
-			label = m_item.customText.isEmpty() ? QStringLiteral("[vlastní text]") : m_item.customText;
-		} else {
-			label = fieldLabel(m_item.fieldId);
-		}
-
 		Qt::Alignment align = static_cast<Qt::Alignment>(m_item.halign) | Qt::AlignVCenter;
-		painter->drawText(r.adjusted(3, 2, -3, -2), align, label);
+		painter->drawText(r.adjusted(3, 2, -3, -2), align, m_item.text);
 	}
 
 	if (option->state & QStyle::State_Selected) {
@@ -311,20 +304,6 @@ void AwardSceneItem::ensurePixmap()
 	}
 }
 
-QString AwardSceneItem::fieldLabel(const QString &field_id) const
-{
-	const auto *s = qobject_cast<const AwardDesignerScene *>(scene());
-	const QList<AwardDesigner::FieldDef> &fields = s
-		? s->availableFields()
-		: AwardDesigner::relayFields();
-	for (const auto &fd : fields) {
-		if (fd.id == field_id) {
-			return QStringLiteral("[") + fd.label + QStringLiteral("]");
-		}
-	}
-	return QStringLiteral("[") + field_id + QStringLiteral("]");
-}
-
 // ─── AwardDesignerScene ───────────────────────────────────────────────────────
 
 AwardDesignerScene::AwardDesignerScene(QObject *parent)
@@ -345,14 +324,6 @@ AwardDesignerScene::~AwardDesignerScene()
 	// selectionChanged after the derived destructor has started. Avoid dispatching
 	// to a derived-class member while the base destructor is running.
 	disconnect(this, &QGraphicsScene::selectionChanged, this, &AwardDesignerScene::onSelectionChanged);
-}
-
-void AwardDesignerScene::setAvailableFields(const QList<AwardDesigner::FieldDef> &fields)
-{
-	m_availableFields = fields;
-	for (auto *item : m_items) {
-		item->update();
-	}
 }
 
 void AwardDesignerScene::loadDesign(const AwardDesigner::Design &design)

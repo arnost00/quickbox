@@ -358,6 +358,7 @@ if(APPLE)
 	install(TARGETS quickevent BUNDLE DESTINATION .)
 	install(FILES ${ICON_OUTPUT} DESTINATION quickevent.app/Contents/Resources)
 	install(FILES ${QM_FILES} DESTINATION quickevent.app/Contents/MacOS/translations)
+	install(DIRECTORY fonts/ DESTINATION quickevent.app/Contents/MacOS/fonts)
 
 	# Post-install: copy libraries, QML plugins, translations into bundle MacOS directory
 	install(CODE "
@@ -372,4 +373,5 @@ if(APPLE)
 else()
 	install(TARGETS quickevent)
 	install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR}/translations)
+	install(DIRECTORY fonts/ DESTINATION ${CMAKE_INSTALL_BINDIR}/fonts)
 endif()
