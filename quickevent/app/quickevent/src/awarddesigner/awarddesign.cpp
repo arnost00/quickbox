@@ -295,10 +295,16 @@ QString Design::toTypst() const
 	QString src;
 	src += QStringLiteral("// @design")
 		+ QStringLiteral(" pageW=") + QString::number(pageW, 'f', 3)
-		+ QStringLiteral(" pageH=") + QString::number(pageH, 'f', 3) + QLatin1Char('\n');
+		+ QStringLiteral(" pageH=") + QString::number(pageH, 'f', 3)
+		+ QStringLiteral(" bgPath=") + enc(bgPath)
+		+ QStringLiteral(" bgData=") + QString::fromLatin1(bgData.toBase64()) + QLatin1Char('\n');
 	src += QStringLiteral("#set page(width: ") + QString::number(pageW, 'f', 3)
 		+ QStringLiteral("mm, height: ") + QString::number(pageH, 'f', 3)
-		+ QStringLiteral("mm, margin: 0mm)\n");
+		+ QStringLiteral("mm, margin: 0mm");
+	if (!bgPath.isEmpty())
+		src += QStringLiteral(", background: image(\"") + escapeTypstString(QFileInfo(bgPath).fileName())
+			+ QStringLiteral("\", width: 100%, height: 100%, fit: \"cover\")");
+	src += QStringLiteral(")\n");
 	src += QStringLiteral("#let pages = json(\"data.json\")\n");
 	src += QStringLiteral("#for (i, page) in pages.enumerate() [\n");
 	for (int idx = 0; idx < sorted.size(); ++idx)
@@ -315,6 +321,14 @@ Design Design::fromTypst(const QString &src)
 	d.pageW = sz.width();
 	d.pageH = sz.height();
 
+	static const QRegularExpression re_bg(QStringLiteral("^// @design .*bgPath=(\\S*) bgData=(\\S*)$"),
+		QRegularExpression::MultilineOption);
+	auto bg = re_bg.match(src);
+	if (bg.hasMatch()) {
+		d.bgPath = dec(bg.captured(1));
+		d.bgData = QByteArray::fromBase64(bg.captured(2).toLatin1());
+	}
+
 	static const QRegularExpression re_item(QStringLiteral("^\\s*// @item (.+)$"),
 		QRegularExpression::MultilineOption);
 	auto it = re_item.globalMatch(src);
@@ -326,6 +340,8 @@ Design Design::fromTypst(const QString &src)
 QStringList Design::imageFiles() const
 {
 	QStringList files;
+	if (!bgPath.isEmpty())
+		files << bgPath;
 	for (const auto &item : items) {
 		if (item.kind == Item::Image && !item.imagePath.isEmpty())
 			files << item.imagePath;
@@ -336,6 +352,8 @@ QStringList Design::imageFiles() const
 QList<QPair<QString, QByteArray>> Design::imageBlobs() const
 {
 	QList<QPair<QString, QByteArray>> blobs;
+	if (!bgPath.isEmpty() && !bgData.isEmpty())
+		blobs << qMakePair(QFileInfo(bgPath).fileName(), bgData);
 	for (const auto &item : items) {
 		if (item.kind == Item::Image && !item.imageData.isEmpty())
 			blobs << qMakePair(QFileInfo(item.imagePath).fileName(), item.imageData);
@@ -345,6 +363,11 @@ QList<QPair<QString, QByteArray>> Design::imageBlobs() const
 
 void Design::embedImages()
 {
+	if (bgData.isEmpty() && !bgPath.isEmpty()) {
+		QFile f(bgPath);
+		if (f.open(QIODevice::ReadOnly))
+			bgData = f.readAll();
+	}
 	for (auto &item : items) {
 		if (item.kind != Item::Image || !item.imageData.isEmpty() || item.imagePath.isEmpty())
 			continue;

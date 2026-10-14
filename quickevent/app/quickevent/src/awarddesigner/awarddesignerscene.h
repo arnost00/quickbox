@@ -8,6 +8,7 @@
 #include <QKeyEvent>
 
 class QGraphicsRectItem;
+class QGraphicsPixmapItem;
 
 class AwardSceneItem : public QGraphicsObject
 {
@@ -68,6 +69,12 @@ public:
 	void loadDesign(const AwardDesigner::Design &design);
 	AwardDesigner::Design collectDesign() const;
 
+	void setPageSize(qreal w, qreal h);
+	void setBackground(const QString &path, const QByteArray &data);
+	qreal pageW() const { return m_pageW; }
+	qreal pageH() const { return m_pageH; }
+	const QString &backgroundPath() const { return m_bgPath; }
+
 	void setAvailableFields(const QList<AwardDesigner::FieldDef> &fields);
 	const QList<AwardDesigner::FieldDef> &availableFields() const { return m_availableFields; }
 
@@ -90,6 +97,10 @@ private:
 	qreal m_pageW = 210;
 	qreal m_pageH = 297;
 	QGraphicsRectItem *m_pageRect = nullptr;
+	QGraphicsPixmapItem *m_bgItem = nullptr;
+	QString m_bgPath;
+	QByteArray m_bgData;
+	void updateBackground();
 	QList<AwardSceneItem *> m_items;
 	QList<AwardDesigner::FieldDef> m_availableFields;
 };

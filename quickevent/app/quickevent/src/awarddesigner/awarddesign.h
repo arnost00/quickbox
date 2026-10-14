@@ -52,6 +52,9 @@ struct Design
 {
 	qreal pageW = 210;
 	qreal pageH = 297;
+	// Full-page background image drawn below all items. Bytes are embedded like Item::imageData.
+	QString bgPath;
+	QByteArray bgData;
 	QList<Item> items;
 
 	// Serialize the design to a self-contained, renderable Typst document. The item

@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsRectItem>
+#include <QGraphicsPixmapItem>
 #include <QFileInfo>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneHoverEvent>
@@ -362,14 +363,48 @@ void AwardDesignerScene::loadDesign(const AwardDesigner::Design &design)
 	qDeleteAll(m_items);
 	m_items.clear();
 
-	m_pageW = design.pageW;
-	m_pageH = design.pageH;
-	setSceneRect(0, 0, m_pageW * MM, m_pageH * MM);
-	m_pageRect->setRect(0, 0, m_pageW * MM, m_pageH * MM);
+	m_bgPath = design.bgPath;
+	m_bgData = design.bgData;
+	setPageSize(design.pageW, design.pageH);
 
 	for (const auto &item : design.items) {
 		addDesignItem(item);
 	}
+}
+
+void AwardDesignerScene::setPageSize(qreal w, qreal h)
+{
+	m_pageW = w;
+	m_pageH = h;
+	setSceneRect(0, 0, m_pageW * MM, m_pageH * MM);
+	m_pageRect->setRect(0, 0, m_pageW * MM, m_pageH * MM);
+	updateBackground();
+}
+
+void AwardDesignerScene::setBackground(const QString &path, const QByteArray &data)
+{
+	m_bgPath = path;
+	m_bgData = data;
+	updateBackground();
+}
+
+// Mirrors Typst `fit: "cover"`: fill the page keeping aspect ratio, crop the overflow.
+void AwardDesignerScene::updateBackground()
+{
+	delete m_bgItem;
+	m_bgItem = nullptr;
+	QPixmap pm;
+	if (!m_bgData.isEmpty())
+		pm.loadFromData(m_bgData);
+	else if (!m_bgPath.isEmpty())
+		pm.load(m_bgPath);
+	if (pm.isNull())
+		return;
+	const QSize page(qRound(m_pageW * MM), qRound(m_pageH * MM));
+	pm = pm.scaled(page, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+	pm = pm.copy((pm.width() - page.width()) / 2, (pm.height() - page.height()) / 2, page.width(), page.height());
+	m_bgItem = addPixmap(pm);
+	m_bgItem->setZValue(-0.5);
 }
 
 AwardDesigner::Design AwardDesignerScene::collectDesign() const
@@ -377,6 +412,8 @@ AwardDesigner::Design AwardDesignerScene::collectDesign() const
 	AwardDesigner::Design d;
 	d.pageW = m_pageW;
 	d.pageH = m_pageH;
+	d.bgPath = m_bgPath;
+	d.bgData = m_bgData;
 	for (const auto *si : m_items) {
 		d.items.append(si->designItem());
 	}

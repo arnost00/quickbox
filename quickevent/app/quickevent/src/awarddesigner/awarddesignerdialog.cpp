@@ -3,6 +3,7 @@
 #include "awarddesignerscene.h"
 
 #include <QColorDialog>
+#include <QFile>
 #include <QFileDialog>
 #include <QFontComboBox>
 #include <QGraphicsView>
@@ -39,6 +40,18 @@ AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &a
 	ui->cbxAlign->addItem(tr("Left"), static_cast<int>(Qt::AlignLeft));
 	ui->cbxAlign->addItem(tr("Center"), static_cast<int>(Qt::AlignHCenter));
 	ui->cbxAlign->addItem(tr("Right"), static_cast<int>(Qt::AlignRight));
+
+	ui->cbxPaper->addItem(QStringLiteral("A4"), 210);
+	ui->cbxPaper->addItem(QStringLiteral("A5"), 148);
+	ui->cbxOrientation->addItem(tr("Na výšku"), false);
+	ui->cbxOrientation->addItem(tr("Na šířku"), true);
+	connect(ui->cbxPaper, qOverload<int>(&QComboBox::currentIndexChanged), this, &AwardDesignerDialog::onPageChanged);
+	connect(ui->cbxOrientation, qOverload<int>(&QComboBox::currentIndexChanged), this, &AwardDesignerDialog::onPageChanged);
+	connect(ui->btnBrowseBg, &QPushButton::clicked, this, &AwardDesignerDialog::onBrowseBgClicked);
+	connect(ui->btnClearBg, &QPushButton::clicked, this, [this]() {
+		m_scene->setBackground({}, {});
+		ui->edBgPath->clear();
+	});
 
 	connect(m_scene, &AwardDesignerScene::selectedItemChanged,
 		this, &AwardDesignerDialog::onSelectedItemChanged);
@@ -104,9 +117,47 @@ void AwardDesignerDialog::loadDesign(const QString &file_name)
 void AwardDesignerDialog::setDesign(const AwardDesigner::Design &design)
 {
 	m_scene->loadDesign(design);
+	syncPageControls();
 	QTimer::singleShot(0, this, [this]() {
 		ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 	});
+}
+
+// Paper/orientation are derived from the page size, so nothing extra is persisted.
+void AwardDesignerDialog::syncPageControls()
+{
+	const QSignalBlocker b1(ui->cbxPaper), b2(ui->cbxOrientation);
+	const qreal shorter = qMin(m_scene->pageW(), m_scene->pageH());
+	ui->cbxPaper->setCurrentIndex(shorter < 180 ? 1 : 0);
+	ui->cbxOrientation->setCurrentIndex(m_scene->pageW() > m_scene->pageH() ? 1 : 0);
+	ui->edBgPath->setText(m_scene->backgroundPath());
+}
+
+void AwardDesignerDialog::onPageChanged()
+{
+	const bool a5 = ui->cbxPaper->currentIndex() == 1;
+	const qreal shorter = a5 ? 148 : 210;
+	const qreal longer = a5 ? 210 : 297;
+	if (ui->cbxOrientation->currentData().toBool())
+		m_scene->setPageSize(longer, shorter);
+	else
+		m_scene->setPageSize(shorter, longer);
+	ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+}
+
+void AwardDesignerDialog::onBrowseBgClicked()
+{
+	const QString path = QFileDialog::getOpenFileName(this, tr("Select a background image"), QString(),
+		tr("Images (*.png *.jpg *.jpeg *.svg *.bmp);;All files (*)"));
+	if (path.isEmpty())
+		return;
+	QFile f(path);
+	if (!f.open(QIODevice::ReadOnly)) {
+		QMessageBox::warning(this, tr("Background"), tr("Cannot read '%1'.").arg(path));
+		return;
+	}
+	m_scene->setBackground(path, f.readAll());
+	ui->edBgPath->setText(path);
 }
 
 AwardDesigner::Design AwardDesignerDialog::currentDesign() const
@@ -244,7 +295,7 @@ void AwardDesignerDialog::onNewDesignClicked()
 {
 	AwardDesigner::Design empty;
 	ui->edDesignName->clear();
-	m_scene->loadDesign(empty);
+	setDesign(empty);
 }
 
 void AwardDesignerDialog::accept()
