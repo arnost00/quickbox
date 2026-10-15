@@ -276,6 +276,7 @@ add_executable(quickevent
 	plugins/Runs/qml/reports/competitorsStatistics.qml
 
 	plugins/Runs/reports/awards/results_stage_awards.typ
+	plugins/Runs/reports/awards/results_stage_awards_ceskyorientak.typ
 
 	plugins/shared/qml/reports/Cell.qml
 	plugins/shared/qml/reports/HeaderCell.qml
