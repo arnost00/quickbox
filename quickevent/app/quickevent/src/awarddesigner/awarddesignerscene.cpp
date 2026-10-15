@@ -365,12 +365,14 @@ void AwardDesignerScene::updateBackground()
 	delete m_bgItem;
 	m_bgItem = nullptr;
 	QPixmap pm;
-	if (!m_bgData.isEmpty())
+	if (!m_bgData.isEmpty()) {
 		pm.loadFromData(m_bgData);
-	else if (!m_bgPath.isEmpty())
+	} else if (!m_bgPath.isEmpty()) {
 		pm.load(m_bgPath);
-	if (pm.isNull())
+	}
+	if (pm.isNull()) {
 		return;
+	}
 	const QSize page(qRound(m_pageW * MM), qRound(m_pageH * MM));
 	pm = pm.scaled(page, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
 	pm = pm.copy((pm.width() - page.width()) / 2, (pm.height() - page.height()) / 2, page.width(), page.height());

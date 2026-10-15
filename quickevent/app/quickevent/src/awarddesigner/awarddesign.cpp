@@ -329,14 +329,15 @@ QString Design::toTypst() const
 	src += QStringLiteral("// @design")
 		+ QStringLiteral(" pageW=") + QString::number(pageW, 'f', 3)
 		+ QStringLiteral(" pageH=") + QString::number(pageH, 'f', 3)
-		+ QStringLiteral(" bgPath=") + enc(bgPath)
+		+ QStringLiteral(" bgPath=") + enc(QFileInfo(bgPath).fileName()) // no absolute path in a shareable template
 		+ QStringLiteral(" bgData=") + QString::fromLatin1(bgData.toBase64()) + QLatin1Char('\n');
 	src += QStringLiteral("#set page(width: ") + QString::number(pageW, 'f', 3)
 		+ QStringLiteral("mm, height: ") + QString::number(pageH, 'f', 3)
 		+ QStringLiteral("mm, margin: 0mm");
-	if (!bgPath.isEmpty())
+	if (!bgPath.isEmpty()) {
 		src += QStringLiteral(", background: image(\"") + escapeTypstString(QFileInfo(bgPath).fileName())
 			+ QStringLiteral("\", width: 100%, height: 100%, fit: \"cover\")");
+	}
 	src += QStringLiteral(")\n");
 	src += QStringLiteral("#let pages = json(\"data.json\")\n");
 	src += QStringLiteral("#for (i, page) in pages.enumerate() [\n");
@@ -373,8 +374,9 @@ Design Design::fromTypst(const QString &src)
 QStringList Design::imageFiles() const
 {
 	QStringList files;
-	if (!bgPath.isEmpty())
+	if (!bgPath.isEmpty()) {
 		files << bgPath;
+	}
 	for (const auto &item : items) {
 		if (item.kind == Item::Image && !item.imagePath.isEmpty())
 			files << item.imagePath;
@@ -385,8 +387,9 @@ QStringList Design::imageFiles() const
 QList<QPair<QString, QByteArray>> Design::imageBlobs() const
 {
 	QList<QPair<QString, QByteArray>> blobs;
-	if (!bgPath.isEmpty() && !bgData.isEmpty())
+	if (!bgPath.isEmpty() && !bgData.isEmpty()) {
 		blobs << qMakePair(QFileInfo(bgPath).fileName(), bgData);
+	}
 	for (const auto &item : items) {
 		if (item.kind == Item::Image && !item.imageData.isEmpty())
 			blobs << qMakePair(QFileInfo(item.imagePath).fileName(), item.imageData);
@@ -398,8 +401,9 @@ void Design::embedImages()
 {
 	if (bgData.isEmpty() && !bgPath.isEmpty()) {
 		QFile f(bgPath);
-		if (f.open(QIODevice::ReadOnly))
+		if (f.open(QIODevice::ReadOnly)) {
 			bgData = f.readAll();
+		}
 	}
 	for (auto &item : items) {
 		if (item.kind != Item::Image || !item.imageData.isEmpty() || item.imagePath.isEmpty())

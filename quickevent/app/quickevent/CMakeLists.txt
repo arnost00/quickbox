@@ -319,6 +319,11 @@ qt_add_resources(quickevent reports_resources
 target_include_directories(quickevent PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(quickevent PUBLIC libquickeventcore libquickeventgui libqfgui libsiut)
 
+# Bundled fonts next to the executable, so the award designer finds them also in the build tree.
+add_custom_command(TARGET quickevent POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/fonts" "$<TARGET_FILE_DIR:quickevent>/fonts"
+)
+
 # Extract version from appversion.h
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/appversion.h" APP_VERSION_H)
 string(REGEX MATCH "#define APP_VERSION \"([0-9.]+)\"" _ ${APP_VERSION_H})

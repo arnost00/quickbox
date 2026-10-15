@@ -167,10 +167,11 @@ void AwardDesignerDialog::onPageChanged()
 	const bool a5 = ui->cbxPaper->currentIndex() == 1;
 	const qreal shorter = a5 ? 148 : 210;
 	const qreal longer = a5 ? 210 : 297;
-	if (ui->cbxOrientation->currentData().toBool())
+	if (ui->cbxOrientation->currentData().toBool()) {
 		m_scene->setPageSize(longer, shorter);
-	else
+	} else {
 		m_scene->setPageSize(shorter, longer);
+	}
 	ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
@@ -178,8 +179,9 @@ void AwardDesignerDialog::onBrowseBgClicked()
 {
 	const QString path = QFileDialog::getOpenFileName(this, tr("Select a background image"), QString(),
 		tr("Images (*.png *.jpg *.jpeg *.svg *.bmp);;All files (*)"));
-	if (path.isEmpty())
+	if (path.isEmpty()) {
 		return;
+	}
 	QFile f(path);
 	if (!f.open(QIODevice::ReadOnly)) {
 		QMessageBox::warning(this, tr("Background"), tr("Cannot read '%1'.").arg(path));
