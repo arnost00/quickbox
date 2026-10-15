@@ -438,10 +438,8 @@ void OFeedClient::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *
 			if (getPlugin<EventPlugin>()->stageIdForRun(run_id) != stage_id) {
 				return;
 			}
-			if (isInsertFromOFeed) {
+			if (m_runsInsertedFromOFeed.remove(run_id)) {
 				qfWarning() << serviceName().toStdString() + " [new competitor]: added from OFeed, no need to send back as a new competitor from QE (already exists in OFeed)";
-				// Set back default value
-				isInsertFromOFeed = false;
 				return;
 			}
 			qfInfo() << serviceName().toStdString() + " rec chng competitor ADDED, run id: " << run_id;
@@ -528,8 +526,6 @@ QString OFeedClient::eventPassword() const
 	OFeedConfig cfg = getPlugin<EventPlugin>()->appDbConfig().ofeedConfig(current_stage);
 	return cfg.eventPassword;
 }
-
-bool OFeedClient::isInsertFromOFeed = false;
 
 QDateTime OFeedClient::lastChangelogCall(const QString &origin) {
     int current_stage = getPlugin<EventPlugin>()->currentStageId();
@@ -1776,16 +1772,12 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id, int protocol_id)
 			doc.setSiid(competitor_by_id.value("card").toInt());
 			doc.setValue("note", competitor_by_id.value("note").toString());
 
-			// Change the flag to handle emited db event
-			isInsertFromOFeed = true;
-
 			// Save emits db event
 			try {
 				doc.save();
 			}
 			catch (const std::exception &e) {
 				// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
-				isInsertFromOFeed = false;
 				qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
 				return;
 			}
@@ -1795,6 +1787,8 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id, int protocol_id)
 			// Get runs.id for current stage
 			int current_stage = getPlugin<EventPlugin>()->currentStageId();
 			int run_id = doc.runsIds().value(current_stage - 1);
+			// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
+			m_runsInsertedFromOFeed.insert(run_id);
 
 			// Update externalId at OFeed
 			std::stringstream json_payload;

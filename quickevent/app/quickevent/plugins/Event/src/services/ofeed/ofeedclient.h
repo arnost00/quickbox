@@ -49,7 +49,6 @@ public:
 	OFeedClientSettings settings() const {return OFeedClientSettings(m_settings);}
 
 	static QString serviceName();
-	static bool isInsertFromOFeed;
 
 	void exportResultsIofXml3();
 	void exportStartListIofXml3(std::function<void()> on_success = nullptr);
@@ -122,6 +121,8 @@ private:
 	QSet<int> m_pendingNewRuns;
 	/// runs with a create request on the way, protects against duplicate creates
 	QSet<int> m_createsInFlight;
+	/// runs of competitors stored from OFeed, their insert DB event must not be sent back (consumed once per run)
+	QSet<int> m_runsInsertedFromOFeed;
 	QNetworkAccessManager *m_networkManager = nullptr;
 	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
 	bool m_eventImageStartupAttempted = false;
