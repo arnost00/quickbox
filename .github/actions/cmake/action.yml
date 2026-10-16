@@ -34,7 +34,9 @@ runs:
     # Windows deps
     - name: Setup MSVC environment
       if: runner.os == 'Windows' && inputs.toolchain == 'msvc'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: TheMrMilchmann/setup-msvc-dev@v4
+      with:
+        arch: x64
 
     - name: Select Ninja generator
       if: runner.os == 'Windows' && inputs.toolchain == 'msvc'
