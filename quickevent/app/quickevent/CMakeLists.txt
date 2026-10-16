@@ -309,6 +309,7 @@ file(GLOB_RECURSE REPORT_RESOURCE_FILES CONFIGURE_DEPENDS
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Relays/reports/*"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Receipts/qml/reports/*"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/shared/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/shared/reports/*"
 )
 qt_add_resources(quickevent reports_resources
 	PREFIX "/reports"
@@ -318,11 +319,6 @@ qt_add_resources(quickevent reports_resources
 
 target_include_directories(quickevent PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(quickevent PUBLIC libquickeventcore libquickeventgui libqfgui libsiut)
-
-# Bundled fonts next to the executable, so the award designer finds them also in the build tree.
-add_custom_command(TARGET quickevent POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/fonts" "$<TARGET_FILE_DIR:quickevent>/fonts"
-)
 
 # Extract version from appversion.h
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/appversion.h" APP_VERSION_H)
@@ -364,7 +360,6 @@ if(APPLE)
 	install(TARGETS quickevent BUNDLE DESTINATION .)
 	install(FILES ${ICON_OUTPUT} DESTINATION quickevent.app/Contents/Resources)
 	install(FILES ${QM_FILES} DESTINATION quickevent.app/Contents/MacOS/translations)
-	install(DIRECTORY fonts/ DESTINATION quickevent.app/Contents/MacOS/fonts)
 
 	# Post-install: copy libraries, QML plugins, translations into bundle MacOS directory
 	install(CODE "
@@ -379,5 +374,4 @@ if(APPLE)
 else()
 	install(TARGETS quickevent)
 	install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR}/translations)
-	install(DIRECTORY fonts/ DESTINATION ${CMAKE_INSTALL_BINDIR}/fonts)
 endif()

@@ -193,8 +193,6 @@ QString itemTag(const Item &it)
 	kv << QStringLiteral("h=") + QString::number(it.h, 'f', 3);
 	kv << QStringLiteral("zOrder=") + QString::number(it.zOrder);
 	kv << QStringLiteral("imagePath=") + enc(it.imagePath);
-	// base64 is space-free, so it survives the space-delimited tag parsing untouched
-	kv << QStringLiteral("imageData=") + QString::fromLatin1(it.imageData.toBase64());
 	kv << QStringLiteral("text=") + enc(it.text);
 	kv << QStringLiteral("fontFamily=") + enc(it.fontFamily);
 	kv << QStringLiteral("fontSize=") + QString::number(it.fontSize);
@@ -224,7 +222,6 @@ Item itemFromTag(const QString &tag)
 	it.h = m.value(QStringLiteral("h"), QStringLiteral("15")).toDouble();
 	it.zOrder = m.value(QStringLiteral("zOrder")).toInt();
 	it.imagePath = dec(m.value(QStringLiteral("imagePath")));
-	it.imageData = QByteArray::fromBase64(m.value(QStringLiteral("imageData")).toLatin1());
 	if (m.contains(QStringLiteral("text"))) {
 		it.text = dec(m.value(QStringLiteral("text")));
 	} else {
@@ -329,8 +326,7 @@ QString Design::toTypst() const
 	src += QStringLiteral("// @design")
 		+ QStringLiteral(" pageW=") + QString::number(pageW, 'f', 3)
 		+ QStringLiteral(" pageH=") + QString::number(pageH, 'f', 3)
-		+ QStringLiteral(" bgPath=") + enc(QFileInfo(bgPath).fileName()) // no absolute path in a shareable template
-		+ QStringLiteral(" bgData=") + QString::fromLatin1(bgData.toBase64()) + QLatin1Char('\n');
+		+ QStringLiteral(" bgPath=") + enc(QFileInfo(bgPath).fileName()) + QLatin1Char('\n'); // no absolute path in a shareable template
 	src += QStringLiteral("#set page(width: ") + QString::number(pageW, 'f', 3)
 		+ QStringLiteral("mm, height: ") + QString::number(pageH, 'f', 3)
 		+ QStringLiteral("mm, margin: 0mm");
@@ -355,12 +351,11 @@ Design Design::fromTypst(const QString &src)
 	d.pageW = sz.width();
 	d.pageH = sz.height();
 
-	static const QRegularExpression re_bg(QStringLiteral("^// @design .*bgPath=(\\S*) bgData=(\\S*)$"),
+	static const QRegularExpression re_bg(QStringLiteral("^// @design .*bgPath=(\\S*)$"),
 		QRegularExpression::MultilineOption);
 	auto bg = re_bg.match(src);
 	if (bg.hasMatch()) {
 		d.bgPath = dec(bg.captured(1));
-		d.bgData = QByteArray::fromBase64(bg.captured(2).toLatin1());
 	}
 
 	static const QRegularExpression re_item(QStringLiteral("^\\s*// @item (.+)$"),
@@ -441,6 +436,11 @@ QSizeF Design::pageSizeFromTypst(const QString &src)
 // }
 // }
 
+static QString imageReportPath(const QString &relative_file_name, const QString &image_path)
+{
+	return QFileInfo(relative_file_name).path() + QStringLiteral("/images/") + QFileInfo(image_path).fileName();
+}
+
 bool Design::saveToDb(const QString &relative_file_name) const
 {
 	if (relative_file_name.isEmpty()) {
@@ -451,6 +451,12 @@ bool Design::saveToDb(const QString &relative_file_name) const
 	design_copy.embedImages();
 	auto typst = design_copy.toTypst();
 	auto *cache = qf::gui::framework::Plugin::reportFileCache();
+	// images are stored as separate report files next to the template
+	for (const auto &[file_name, data] : design_copy.imageBlobs()) {
+		if (!cache->saveRemoteFileContent(imageReportPath(relative_file_name, file_name), data)) {
+			return false;
+		}
+	}
 	return cache->saveRemoteFileContent(relative_file_name, typst.toUtf8());
 }
 
@@ -462,6 +468,14 @@ Design Design::loadFile(const QString &relative_file_name)
 		return Design{};
 	}
 	Design d = fromTypst(QString::fromUtf8(data));
+	if (!d.bgPath.isEmpty()) {
+		d.bgData = cache->loadReportFile(imageReportPath(relative_file_name, d.bgPath));
+	}
+	for (auto &item : d.items) {
+		if (item.kind == Item::Image && !item.imagePath.isEmpty()) {
+			item.imageData = cache->loadReportFile(imageReportPath(relative_file_name, item.imagePath));
+		}
+	}
 	return d;
 }
 

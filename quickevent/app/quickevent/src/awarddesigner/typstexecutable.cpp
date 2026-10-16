@@ -1,5 +1,8 @@
 #include "typstexecutable.h"
 
+#include <qf/gui/framework/plugin.h>
+#include <qf/gui/framework/reportfilecache.h>
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -21,7 +24,12 @@ QString executablePath()
 
 QString fontsDir()
 {
-	const QString dir = QCoreApplication::applicationDirPath() + QStringLiteral("/fonts");
+	// fonts are report files (resources -> local cache, optionally overridden in SQL)
+	const QString reports_dir = qf::gui::framework::Plugin::reportFileCache()->localReportsDir();
+	if (reports_dir.isEmpty()) {
+		return {};
+	}
+	const QString dir = reports_dir + QStringLiteral("/shared/reports/fonts");
 	return QDir(dir).exists() ? dir : QString();
 }
 
