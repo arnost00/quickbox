@@ -351,7 +351,7 @@ Design Design::fromTypst(const QString &src)
 	d.pageW = sz.width();
 	d.pageH = sz.height();
 
-	static const QRegularExpression re_bg(QStringLiteral("^// @design .*bgPath=(\\S*)$"),
+	static const QRegularExpression re_bg(QStringLiteral("^// @design .*bgPath=(\\S*)(?: bgData=\\S*)?\\s*$"), // bgData: legacy templates with embedded image, CRLF tolerant
 		QRegularExpression::MultilineOption);
 	auto bg = re_bg.match(src);
 	if (bg.hasMatch()) {
