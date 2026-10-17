@@ -250,6 +250,7 @@ void OFeedClient::stop()
 	m_processingOFeedChanges = false;
 	m_runChangeFlushTimer->stop();
 	m_pendingRunChanges.clear();
+	m_pendingNewRuns.clear();
 }
 
 void OFeedClient::exportResultsIofXml3()
@@ -287,7 +288,21 @@ void OFeedClient::exportStartListIofXml3(std::function<void()> on_success)
 					  ? getPlugin<RelaysPlugin>()->startListIofXml30()
 					  : getPlugin<RunsPlugin>()->startListStageIofXml30(current_stage, quickevent::gui::ReportOptionsDialog::VacantsOption::AllVacants);
 
-	sendFile(tr("start list upload"), "/rest/v1/upload/iof", str, on_success, [this]() {
+	// OFeed creates the competitors from the start list, except those without the required start
+	// time, those stay pending until the time is set
+	QSet<int> uploaded_runs;
+	for (int run_id : std::as_const(m_pendingNewRuns)) {
+		if (canCreateCompetitor(run_id)) {
+			uploaded_runs.insert(run_id);
+		}
+	}
+
+	sendFile(tr("start list upload"), "/rest/v1/upload/iof", str, [this, uploaded_runs, on_success]() {
+		m_pendingNewRuns.subtract(uploaded_runs);
+		if (on_success) {
+			on_success();
+		}
+	}, [this]() {
 		m_startListExportInProgress = false;
 	});
 }
@@ -355,9 +370,16 @@ void OFeedClient::init()
 	ensureEventImageCachedAtStartup();
 }
 
-void OFeedClient::exportStartListAndResults()
+void OFeedClient::exportStartListAndResults(bool only_enabled)
 {
-	exportStartListIofXml3([this]() { exportResultsIofXml3(); });
+	const bool start_list = !only_enabled || uploadStartList();
+	const bool results = !only_enabled || uploadResults();
+	if (start_list) {
+		exportStartListIofXml3(results ? [this]() { exportResultsIofXml3(); } : std::function<void()>());
+	}
+	else if (results) {
+		exportResultsIofXml3();
+	}
 }
 
 void OFeedClient::onExportTimerTimeOut()
@@ -369,7 +391,7 @@ void OFeedClient::onExportTimerTimeOut()
 		m_exportDeferred = true;
 		return;
 	}
-	exportStartListAndResults();
+	exportStartListAndResults(true);
 }
 
 void OFeedClient::onChangesTimerTimeOut()
@@ -388,7 +410,7 @@ void OFeedClient::runDeferredExport()
 		return;
 	}
 	m_exportDeferred = false;
-	exportStartListAndResults();
+	exportStartListAndResults(true);
 }
 
 void OFeedClient::loadSettings()
@@ -416,15 +438,12 @@ void OFeedClient::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *
 			if (getPlugin<EventPlugin>()->stageIdForRun(run_id) != stage_id) {
 				return;
 			}
-			if (isInsertFromOFeed) {
+			if (m_runsInsertedFromOFeed.remove(run_id)) {
 				qfWarning() << serviceName().toStdString() + " [new competitor]: added from OFeed, no need to send back as a new competitor from QE (already exists in OFeed)";
-				// Set back default value
-				isInsertFromOFeed = false;
 				return;
 			}
-			int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(run_id);
-			qfInfo() << serviceName().toStdString() + " rec chng competitor ADDED, competitor id: " << competitor_id;
-			onCompetitorAdded(competitor_id);
+			qfInfo() << serviceName().toStdString() + " rec chng competitor ADDED, run id: " << run_id;
+			createCompetitorOrDefer(run_id);
 			return;
 		}
 		case qf::core::sql::RecOp::Delete: {
@@ -432,6 +451,10 @@ void OFeedClient::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *
 			// event this sends a delete request for the run of every stage, while OFeed knows the
 			// current stage run id only and answers with an error for the rest of them.
 			m_pendingRunChanges.remove(run_id);
+			if (m_pendingNewRuns.remove(run_id)) {
+				// never created in OFeed
+				return;
+			}
 			qfInfo() << serviceName().toStdString() + " rec chng competitor DELETED, run id: " << run_id;
 			sendCompetitorDeleted(run_id);
 			return;
@@ -474,6 +497,11 @@ void OFeedClient::flushRunChanges()
 	const auto pending = m_pendingRunChanges;
 	m_pendingRunChanges.clear();
 	for (const auto &[run_id, chng] : pending.asKeyValueRange()) {
+		if (m_pendingNewRuns.contains(run_id)) {
+			// not in OFeed yet, the create request carries the current data of the run
+			createCompetitorOrDefer(run_id);
+			continue;
+		}
 		onRunChanged(run_id, chng.runFields, chng.competitorFields);
 	}
 }
@@ -498,8 +526,6 @@ QString OFeedClient::eventPassword() const
 	OFeedConfig cfg = getPlugin<EventPlugin>()->appDbConfig().ofeedConfig(current_stage);
 	return cfg.eventPassword;
 }
-
-bool OFeedClient::isInsertFromOFeed = false;
 
 QDateTime OFeedClient::lastChangelogCall(const QString &origin) {
     int current_stage = getPlugin<EventPlugin>()->currentStageId();
@@ -887,6 +913,38 @@ void OFeedClient::setRunOfficeChangesProcessing(bool runOfficeChangesProcessing)
 	config.setOfeedConfig(current_stage, cfg);
 }
 
+bool OFeedClient::uploadStartList()
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	auto current_stage = config.eventConfig().currentStageId;
+	return config.ofeedConfig(current_stage).uploadStartList;
+}
+
+void OFeedClient::setUploadStartList(bool on)
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	auto cfg = config.ofeedConfig(current_stage);
+	cfg.uploadStartList = on;
+	config.setOfeedConfig(current_stage, cfg);
+}
+
+bool OFeedClient::uploadResults()
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	auto current_stage = config.eventConfig().currentStageId;
+	return config.ofeedConfig(current_stage).uploadResults;
+}
+
+void OFeedClient::setUploadResults(bool on)
+{
+	auto &config = getPlugin<EventPlugin>()->appDbConfig();
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	auto cfg = config.ofeedConfig(current_stage);
+	cfg.uploadResults = on;
+	config.setOfeedConfig(current_stage, cfg);
+}
+
 bool OFeedClient::introTourShowed() const
 {
 	auto &config = getPlugin<EventPlugin>()->appDbConfig();
@@ -1180,12 +1238,16 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	// Send request
 	QNetworkReply *reply = m_networkManager->put(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=]()
+	connect(reply, &QNetworkReply::finished, this, [=, this]()
 			{
 				if(reply->error()) {
 					qfError() << serviceName().toStdString() + " [competitor update]: " << reply->errorString()
 							  << "HTTP status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
 							  << "response:" << QString::fromUtf8(reply->readAll());
+					// the competitor is not in OFeed (QE was restarted, the create request failed ...)
+					if (using_external_id && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 404) {
+						createCompetitorOrDefer(competitor_or_external_id);
+					}
 				}
 				else {
 					QByteArray response = reply->readAll();
@@ -1209,8 +1271,10 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 				reply->deleteLater(); });
 }
 
-void OFeedClient::sendCompetitorAdded(QString json_body)
+void OFeedClient::sendCompetitorAdded(QString json_body, int run_id)
 {
+	m_createsInFlight.insert(run_id);
+
 	// Prepare the Authorization header base64 username:password
 	QString combined = eventId() + ":" + eventPassword();
 	QByteArray base_64_auth = combined.toUtf8().toBase64();
@@ -1228,12 +1292,15 @@ void OFeedClient::sendCompetitorAdded(QString json_body)
 	// Send request
 	QNetworkReply *reply = m_networkManager->post(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=]()
+	connect(reply, &QNetworkReply::finished, this, [=, this]()
 			{
+				m_createsInFlight.remove(run_id);
 				if(reply->error()) {
 					qfError() << serviceName().toStdString() + " [new competitor]: " << reply->errorString()
 							  << "HTTP status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
 							  << "response:" << QString::fromUtf8(reply->readAll());
+					// try again with the next change of the run
+					m_pendingNewRuns.insert(run_id);
 				}
 				else {
 					QByteArray response = reply->readAll();
@@ -1524,7 +1591,10 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		}
 		else if (type == "competitor_create")
 		{
-			processNewRunner(ofeed_competitor_id);
+			// marked as processed in the async callback, only after the runner is stored
+			processNewRunner(ofeed_competitor_id, change["id"].toInt());
+			storeChange(change);
+			continue;
 		}
 		else
 		{
@@ -1666,7 +1736,7 @@ void OFeedClient::processCorridorTimeUpdate(int runs_id, const QDateTime &create
 	}
 }
 
-void OFeedClient::processNewRunner(int ofeed_competitor_id)
+void OFeedClient::processNewRunner(int ofeed_competitor_id, int protocol_id)
 {
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 	QString graphQLquery = R"(
@@ -1686,7 +1756,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 
 	QJsonObject variables;
 	variables["competitorByIdId"] = ofeed_competitor_id;
-	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id](QJsonObject data)
+	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id, protocol_id](QJsonObject data)
 	{
 		if (!data.isEmpty())
 		{
@@ -1702,17 +1772,23 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			doc.setSiid(competitor_by_id.value("card").toInt());
 			doc.setValue("note", competitor_by_id.value("note").toString());
 
-			// Change the flag to handle emited db event
-			isInsertFromOFeed = true;
-
 			// Save emits db event
-			doc.save();
+			try {
+				doc.save();
+			}
+			catch (const std::exception &e) {
+				// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
+				qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
+				return;
+			}
 
 			// auto competitor_id = doc.value("competitors.id");
 
 			// Get runs.id for current stage
 			int current_stage = getPlugin<EventPlugin>()->currentStageId();
 			int run_id = doc.runsIds().value(current_stage - 1);
+			// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
+			m_runsInsertedFromOFeed.insert(run_id);
 
 			// Update externalId at OFeed
 			std::stringstream json_payload;
@@ -1726,6 +1802,7 @@ void OFeedClient::processNewRunner(int ofeed_competitor_id)
 			// Convert std::string to QString
 			QString json_body = QString::fromStdString(json_str);
 			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
+			markChangelogEntryAsProcessed(protocol_id);
 		}
 		else
 		{
@@ -1999,8 +2076,37 @@ void OFeedClient::onCompetitorAdded(int competitor_id)
 		QString json_qstr = QString::fromStdString(json_str);
 
 		qfInfo() << serviceName().toStdString() + " [onCompetitorAdded] sending body:" << json_qstr;
-		sendCompetitorAdded(json_qstr);
+		sendCompetitorAdded(json_qstr, run_id);
 	}
+}
+
+bool OFeedClient::canCreateCompetitor(int run_id) const
+{
+	// OFeed requires the start time in classes with drawn start times
+	qf::core::sql::Query q;
+	q.exec("SELECT runs.startTimeMs, COALESCE(classdefs.startIntervalMin, 0) AS startIntervalMin "
+		   "FROM runs "
+		   "INNER JOIN competitors ON competitors.id = runs.competitorId "
+		   "LEFT JOIN relays ON relays.id = runs.relayId "
+		   "LEFT JOIN classdefs ON (classdefs.classId = competitors.classId OR classdefs.classId = relays.classId) "
+		   "AND classdefs.stageId = runs.stageId "
+		   "WHERE runs.id=" QF_IARG(run_id), qf::core::Exception::Throw);
+	return q.next() && (!q.value("startTimeMs").isNull() || q.value("startIntervalMin").toInt() == 0);
+}
+
+/// @brief Creates the competitor in OFeed, when the start time is not set yet, waits for it
+void OFeedClient::createCompetitorOrDefer(int run_id)
+{
+	if (m_createsInFlight.contains(run_id)) {
+		return;
+	}
+	if (!canCreateCompetitor(run_id)) {
+		qfInfo() << serviceName().toStdString() + " [new competitor]: not ready to be created in OFeed (start time or competitor missing), run id:" << run_id;
+		m_pendingNewRuns.insert(run_id);
+		return;
+	}
+	m_pendingNewRuns.remove(run_id);
+	onCompetitorAdded(getPlugin<RunsPlugin>()->competitorForRun(run_id));
 }
 
 void OFeedClient::onRunChanged(int run_id, const QVariantMap &run_fields, const QVariantMap &competitor_fields)

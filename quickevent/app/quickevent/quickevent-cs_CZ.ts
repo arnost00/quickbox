@@ -3851,6 +3851,26 @@ Otevř prosím nastavení služby OFeed a aktualizuj své přihlašovací údaje
     </message>
     <message>
         <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="415"/>
+        <source>Upload start list</source>
+        <translation>Nahrávat startovní listinu</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="415"/>
+        <source>Upload results</source>
+        <translation>Nahrávat výsledky</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="415"/>
+        <source>Enable or disable automatic upload of the start list</source>
+        <translation>Zapnout nebo vypnout automatické nahrávání startovní listiny</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="415"/>
+        <source>Enable or disable automatic upload of the results</source>
+        <translation>Zapnout nebo vypnout automatické nahrávání výsledků</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclientwidget.ui" line="415"/>
         <source>Process late entries and changes from OFeed</source>
         <translation type="unfinished">Zpracovat dohlášky a změny z OFeedu</translation>
     </message>

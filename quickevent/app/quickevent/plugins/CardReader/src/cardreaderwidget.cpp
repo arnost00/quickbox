@@ -3,7 +3,6 @@
 #include "ui_cardreaderwidget.h"
 #include "cardreadersettings.h"
 
-#include "btdeviceinfoutil.h"
 #include "cardreaderplugin.h"
 #include "testcardreader.h"
 #include "../../Core/src/coreplugin.h"
@@ -722,7 +721,7 @@ siut::BtSiDeviceDriver *CardReaderWidget::btDriver()
 void CardReaderWidget::setConnectionInfoLabel(const QString &info, NecroLog::Level level)
 {
 	ui->lblConnectionInfo->setText(info);
-    ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "background: salmon": "");
+	ui->lblConnectionInfo->setStyleSheet(level < NecroLogLevel::Info? "background: salmon": "");
 }
 
 void CardReaderWidget::updateButtonsEnabled()
@@ -756,6 +755,7 @@ void CardReaderWidget::onBtConnectionChanged(bool connected)
 	// keep the button in sync (e.g. on unexpected disconnect)
 	QSignalBlocker blocker(ui->btBtReader);
 	ui->btBtReader->setChecked(connected);
+	ui->btBtReader->setStyleSheet(connected ? (qf::gui::isDarkTheme()? "background: darkgreen;": "background: lime;") : QString());
 	updateConnectionInfoLabel();
 }
 
@@ -802,19 +802,23 @@ void CardReaderWidget::onOpenUsbTriggered(bool checked)
 void CardReaderWidget::onOpenBtTriggered(bool checked)
 {
 	qfLogFuncFrame() << "checked:" << checked;
+	ui->btBtReader->setStyleSheet(QString());
 	if(checked) {
+		delete m_btDriver;
+		m_btDriver = nullptr;
 		CardReaderSettings settings;
-		const QBluetoothDeviceInfo bt_info = CardReader::btDeviceInfoFromMap(settings.btsiDeviceInfoMap());
-		if (bt_info.isValid()) {
-			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(bt_info.address().toString()));
-			btDriver()->connectToDevice(bt_info);
+		const QString address = settings.btsiDevice().value(QStringLiteral("address")).toString().trimmed();
+		if (!address.isEmpty()) {
+			ui->lblConnectionInfo->setText(tr("Connecting to BT SI Reader %1 …").arg(address));
+			btDriver()->connectToDevice(address);
 		} else {
 			qf::gui::dialogs::MessageBox::showError(
 				this, tr("BT SI Reader: no device address configured.\n"
 				         "Please set it in Settings Card reader."));
 		}
 	} else {
-		btDriver()->disconnectFromDevice();
+		delete m_btDriver;
+		m_btDriver = nullptr;
 	}
 }
 

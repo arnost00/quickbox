@@ -86,6 +86,7 @@ QxLateRegistrationsWidget::QxLateRegistrationsWidget(QWidget *parent) :
 	}
 
 	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::dbEventNotify, this, &QxLateRegistrationsWidget::onDbEventNotify, Qt::QueuedConnection);
+	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::eventOpenChanged, this, &QxLateRegistrationsWidget::reload);
 
 	connect(ui->lstType, &QComboBox::currentIndexChanged, this, &QxLateRegistrationsWidget::reload);
 	connect(ui->chkNull, &QCheckBox::checkStateChanged, this, &QxLateRegistrationsWidget::reload);
