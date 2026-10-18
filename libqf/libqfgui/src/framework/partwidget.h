@@ -3,6 +3,7 @@
 
 #include "../guiglobal.h"
 #include "ipersistentsettings.h"
+#include "../toolbar.h"
 
 #include <qf/core/utils.h>
 
@@ -16,7 +17,6 @@ namespace qf {
 namespace gui {
 class Frame;
 class MenuBar;
-class ToolBar;
 namespace dialogs {
 namespace internal {
 class CaptionFrame;

@@ -432,14 +432,14 @@ void SiTaskReadCard5::onSiMessageReceived(const SIMessageData &msg)
 			punches << SIPunch(code, SICard::INVALID_SI_TIME);
 		}
 
-		m_card.setStationNumber(station_number);
-		m_card.setCardNumber(card_number);
-		m_card.setCheckTime(check_time);
-		m_card.setStartTime(start_time);
-		m_card.setFinishTime(finish_time);
-		m_card.setPunches(punches);
+		m_card.stationNumber = station_number;
+		m_card.cardNumber    = card_number;
+		m_card.checkTime     = check_time;
+		m_card.startTime     = start_time;
+		m_card.finishTime    = finish_time;
+		m_card.punches       = punches;
 		//qfInfo() << "\n" << m_card.toString();
-		finishAndDestroy(true, m_card);
+		finishAndDestroy(true, m_card.toVariantMap());
 	}
 	else {
 		qfError() << "Invalid command:" << "0x" + QString::number((int)cmd, 16) << "received";
@@ -473,21 +473,21 @@ void SiTaskReadCard6::onSiMessageReceived(const SIMessageData &msg)
 			int card_number = (int)SIPunch::getUnsigned(data, base + 11, 3);
 			m_cardSerie = Card6;// static_cast<CardSerie>(((uint8_t)data[base + 0x18]) & 15);
 			logCardRead() << "CS:" << m_cardSerie << cardSerieToString(m_cardSerie) << "SI:" << card_number;
-			m_card.setStationNumber(station_number);
-			m_card.setCardNumber(card_number);
+			m_card.stationNumber = station_number;
+			m_card.cardNumber    = card_number;
 			if(m_cardSerie == Card6 || m_cardSerie == Card6Star) {
 				m_punchCnt = (int)SIPunch::getUnsigned(data, base + 18, 1);
 				logCardRead() << "Punch cnt:" << m_punchCnt;
-				int clear_time = SIPunch(data, base + 32).time();
-				int check_time = SIPunch(data, base + 28).time();
+				int clear_time = SIPunch(data, base + 32).time;
+				int check_time = SIPunch(data, base + 28).time;
 				if(check_time == siut::SICard::INVALID_SI_TIME)
 					check_time = clear_time;
-				int start_time = SIPunch(data, base + 24).time();
-				int finish_time = SIPunch(data, base + 20).time();
-				m_card.setCardNumber(card_number);
-				m_card.setCheckTime(check_time);
-				m_card.setStartTime(start_time);
-				m_card.setFinishTime(finish_time);
+				int start_time = SIPunch(data, base + 24).time;
+				int finish_time = SIPunch(data, base + 20).time;
+				m_card.cardNumber = card_number;
+				m_card.checkTime  = check_time;
+				m_card.startTime  = start_time;
+				m_card.finishTime = finish_time;
 
 				if(!m_withAutosend) {
 					sendCommand((int)SIMessageData::Command::GetSICard6, QByteArray(1, 0x06));
@@ -500,21 +500,21 @@ void SiTaskReadCard6::onSiMessageReceived(const SIMessageData &msg)
 		}
 		else {
 			if(block_number >= 1 && block_number <= 7) {
-				if(m_card.cardNumber() > 0) {
-					QVariantList punches = m_card.punches();
+				if(m_card.cardNumber > 0) {
+					SICard::PunchList punches = m_card.punches;
 					int pcnt = punches.count();
 					for (int i = 0; pcnt + i < m_punchCnt && i < 32; ++i) {
 						SIPunch p(data, base + (i*4));
-						//qfInfo() << "B1" << p.code();
+						//qfInfo() << "B1" << p.code;
 						punches << p;
 					}
-					m_card.setPunches(punches);
+					m_card.punches = punches;
 					logCardRead() << punches.count() << "of" << m_punchCnt << "punches read.";
 					if(m_withAutosend) {
 						// it seems that we have to always expect blocks 0,6,7 in autosend mode
 						if(m_card.punchCount() >= m_punchCnt) {
 							logCardRead() << "All the punches in auto-send received, DONE";
-							finishAndDestroy(true, m_card);
+							finishAndDestroy(true, m_card.toVariantMap());
 						}
 					}
 					else {
@@ -527,7 +527,7 @@ void SiTaskReadCard6::onSiMessageReceived(const SIMessageData &msg)
 						}
 						else {
 							logCardRead() << "All the punches received, DONE";
-							finishAndDestroy(true, m_card);
+							finishAndDestroy(true, m_card.toVariantMap());
 						}
 					}
 				}
@@ -651,40 +651,40 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			m_cardSerie = static_cast<CardSerie>(((uint8_t)data[base + 0x18]) & 15);
 			// qfInfo() << "CS:" << m_cardSerie;
 			logCardRead() << "CS:" << m_cardSerie << cardSerieToString(m_cardSerie) << "SI:" << card_number;
-			m_card.setStationNumber(station_number);
-			m_card.setCardNumber(card_number);
+			m_card.stationNumber = station_number;
+			m_card.cardNumber    = card_number;
 			if(m_cardSerie == Card8 || m_cardSerie == Card9 || m_cardSerie == pCard || m_cardSerie == Siac) {
 				m_punchCnt = (uint8_t)data[base + 0x16];
 				logCardRead() << "Punch cnt:" << m_punchCnt;
-				int check_time = SIPunch(data, base + 0x08).time();
-				int start_time = SIPunch(data, base + 0x0c).time();
-				int finish_time = SIPunch(data, base + 0x10).time();
-				m_card.setCardNumber(card_number);
-				m_card.setCheckTime(check_time);
-				m_card.setStartTime(start_time);
-				m_card.setFinishTime(finish_time);
+				int check_time = SIPunch(data, base + 0x08).time;
+				int start_time = SIPunch(data, base + 0x0c).time;
+				int finish_time = SIPunch(data, base + 0x10).time;
+				m_card.cardNumber = card_number;
+				m_card.checkTime  = check_time;
+				m_card.startTime  = start_time;
+				m_card.finishTime = finish_time;
 
 				if(m_cardSerie == Card9) {
 					base += 14 * 4;
-					QVariantList punches = m_card.punches();
+					SICard::PunchList punches = m_card.punches;
 					for (int i = 0; i < m_punchCnt && i < 18; ++i) {
 						SIPunch p(data, base + (i*4));
-						//qfInfo() << "B0" << p.code();
+						//qfInfo() << "B0" << p.code;
 						punches << p;
 					}
-					m_card.setPunches(punches);
+					m_card.punches = punches;
 					if((punches.count() == m_punchCnt) && !m_withAutosend)
-						finishAndDestroy(true, m_card);
+						finishAndDestroy(true, m_card.toVariantMap());
 				}
 				if(!m_withAutosend) {
 					if(m_cardSerie == Card8)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
-					else if(m_cardSerie == Card9 && m_card.punches().count() < m_punchCnt)
+					else if(m_cardSerie == Card9 && m_card.punches.count() < m_punchCnt)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
 					else if(m_cardSerie == pCard)
 						sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, 0x01));
 					else if(m_cardSerie == Siac) {
-						if (cardNumberToType(m_card.cardNumber()) == CardTypeByNumber::Siac) {
+						if (cardNumberToType(m_card.cardNumber) == CardTypeByNumber::Siac) {
 							// Invoke battery voltage measurement
 							// 02 EA 05 7E 05 05 05 05 B2 31 03 - EA - PROBABLY SIAC battery measurement request
 							auto ba = QByteArray::fromHex("7E05050505");
@@ -705,16 +705,16 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			if(m_cardSerie == Card8) {
 				if(block_number == 1) {
 					base += 8;
-					QVariantList punches = m_card.punches();
+					SICard::PunchList punches = m_card.punches;
 					int pcnt = punches.count();
 					for (int i = 0; pcnt + i < m_punchCnt && i < 30; ++i) {
 						SIPunch p(data, base + (i*4));
-						//qfInfo() << "B1" << p.code();
+						//qfInfo() << "B1" << p.code;
 						punches << p;
 					}
-					m_card.setPunches(punches);
+					m_card.punches = punches;
 					//qfInfo() << "\n" << m_card.toString();
-					finishAndDestroy(true, m_card);
+					finishAndDestroy(true, m_card.toVariantMap());
 				}
 				else {
 					qfError() << "Card8 unexpected block number:" << block_number;
@@ -723,14 +723,14 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			}
 			else if(m_cardSerie == Card9) {
 				if(block_number == 1) {
-					QVariantList punches = m_card.punches();
+					SICard::PunchList punches = m_card.punches;
 					int pcnt = punches.count();
 					for (int i = 0; pcnt + i < m_punchCnt && i < 32; ++i) {
 						punches << SIPunch(data, base + (i*4));
 					}
-					m_card.setPunches(punches);
+					m_card.punches = punches;
 					//qfInfo() << "\n" << m_card.toString();
-					finishAndDestroy(true, m_card);
+					finishAndDestroy(true, m_card.toVariantMap());
 				}
 				else {
 					qfError() << "Card8 unexpected block number:" << block_number;
@@ -740,13 +740,13 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 			else if(m_cardSerie == pCard) {
 				if(block_number == 1) {
 					base += 12*4;
-					QVariantList punches = m_card.punches();
+					SICard::PunchList punches = m_card.punches;
 					int pcnt = punches.count();
 					for (int i = 0; pcnt + i < m_punchCnt && i < 20; ++i) {
 						punches << SIPunch(data, base + (i*4));
 					}
-					m_card.setPunches(punches);
-					finishAndDestroy(true, m_card);
+					m_card.punches = punches;
+					finishAndDestroy(true, m_card.toVariantMap());
 				}
 				else {
 					qfError() << "Card8 unexpected block number:" << block_number;
@@ -761,8 +761,8 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 					int mm = (uint8_t)data[base + (0xf*4) + 1];
 					int dd = (uint8_t)data[base + (0xf*4) + 2];
 					QDate date(yy + 2000, mm, dd);
-					battery_status.setReplaceDate(date.toString(Qt::ISODate));
-					logCardRead().nospace() << "SIAC batery date: " << battery_status.replaceDate();
+					battery_status.replaceDate = date.toString(Qt::ISODate);
+					logCardRead().nospace() << "SIAC batery date: " << battery_status.replaceDate;
 					auto hw_ver_1 = (uint8_t)data[base + (0x10*4) + 0];
 					auto hw_ver_0 = (uint8_t)data[base + (0x10*4) + 1];
 					auto sw_ver_1 = (uint8_t)data[base + (0x10*4) + 2];
@@ -772,25 +772,25 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 					auto mvbat = (uint8_t)data[base + (0x11*4) + 3];
 					auto rbat = (uint8_t)data[base + (0x15*4) + 0];
 					auto lbat = (uint8_t)data[base + (0x15*4) + 1];
-					battery_status.setLow(lbat != 0xAA);
-					battery_status.setVoltage(1.9 + 0.09 * mvbat);
-					battery_status.setReferenceVoltage(1.9 + 0.09 * rbat);
+					battery_status.isLow            = (lbat != 0xAA);
+					battery_status.voltage          = 1.9 + 0.09 * mvbat;
+					battery_status.referenceVoltage = 1.9 + 0.09 * rbat;
 					logCardRead().nospace() << "MVBAT: " << " 0x" << QString::number(mvbat, 16);
 					logCardRead().nospace() << "RBAT : " << " 0x" << QString::number(rbat, 16);
 					logCardRead().nospace() << "LBAT : " << " 0x" << QString::number(lbat, 16) << " " << (lbat == 0xAA? "OK": "LOW");
-					m_card.setBatteryStatus(battery_status);
+					m_card.batteryStatus = battery_status;
 
 					sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, (char)(block_number + 1)));
 				}
 				else if(block_number >= 4 && block_number <= 7) {
-					QVariantList punches = m_card.punches();
+					SICard::PunchList punches = m_card.punches;
 					int pcnt = punches.count();
 					for (int i = 0; pcnt + i < m_punchCnt && i < 128/4; ++i)
 						punches << SIPunch(data, base + (i*4));
-					m_card.setPunches(punches);
+					m_card.punches = punches;
 					if(m_withAutosend) {
 						if(block_number == 7) {
-							finishAndDestroy(true, m_card);
+							finishAndDestroy(true, m_card.toVariantMap());
 						}
 					}
 					else {
@@ -798,7 +798,7 @@ void SiTaskReadCard8::onSiMessageReceived(const SIMessageData &msg)
 							sendCommand((int)SIMessageData::Command::GetSICard8, QByteArray(1, (char)(block_number + 1)));
 						}
 						else {
-							finishAndDestroy(true, m_card);
+							finishAndDestroy(true, m_card.toVariantMap());
 						}
 					}
 				}

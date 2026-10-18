@@ -2,11 +2,10 @@
 #define APPLICATION_H
 
 #include <qf/gui/framework/application.h>
+#include <qf/core/logentrymap.h>
 
 class AppCliOptions;
 class TableModelLogDevice;
-
-namespace qf { namespace core { class LogEntryMap; }}
 
 class Application : public qf::gui::framework::Application
 {

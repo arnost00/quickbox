@@ -17,7 +17,7 @@ private:
 	using Super = Core::SettingsPage;
 
 public:
-	explicit LentCardsSettingsPage(QWidget *parent = 0);
+	explicit LentCardsSettingsPage(QWidget *parent = nullptr);
 	~LentCardsSettingsPage() override;
 protected:
 	void load() override;
@@ -27,4 +27,3 @@ private:
 	Ui::LentCardsSettingsPage *ui;
 	qf::gui::model::SqlTableModel *m_tableModel;
 };
-

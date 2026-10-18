@@ -196,6 +196,13 @@ Schema {
 					comment: 'in miliseconds'
 				},
 
+				Field { name: 'startGateTime'; type: DateTime {}
+					comment: 'DateTime when competitor crossed start photocell'
+				},
+				Field { name: 'finishGateTime'; type: DateTime {}
+					comment: 'DateTime when competitor crossed finish photocell'
+				},
+
 				Field { name: 'isRunning'; type: Boolean { }
 					defaultValue: true;
 					notNull: true
@@ -502,6 +509,17 @@ Schema {
 					comment: 'Only one pending late entry can be present for single runs.id (foreign_id).'
 					unique: true
 				}
+			]
+		},
+		Table { name: 'reports'
+			fields: [
+				Field { name: 'id'; type: Serial { primaryKey: true } },
+				Field { name: 'path'; type: String { } },
+				Field { name: 'hash'; type: String { } },
+				Field { name: 'data'; type: Blob { } }
+			]
+			indexes: [
+				Index {fields: ['path']; unique: true }
 			]
 		}
 	]

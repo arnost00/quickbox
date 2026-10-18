@@ -1,12 +1,17 @@
 #include "printawardsoptionsdialogwidget.h"
 #include "ui_printawardsoptionsdialogwidget.h"
-#include "runsplugin.h"
+
+#include <awarddesigner/awarddesign.h>
+#include <awarddesigner/awarddesignerdialog.h>
+
+#include <quickevent/gui/reportoptionsdialog.h>
 
 #include <qf/gui/framework/mainwindow.h>
-
 #include <qf/core/log.h>
 
-#include <QDirIterator>
+namespace {
+auto constexpr AWARDS_PATH = "Runs/reports/awards";
+}
 
 PrintAwardsOptionsDialogWidget::PrintAwardsOptionsDialogWidget(QWidget *parent)
 	: Super(parent)
@@ -16,11 +21,9 @@ PrintAwardsOptionsDialogWidget::PrintAwardsOptionsDialogWidget(QWidget *parent)
 	ui->setupUi(this);
 	ui->edNumPlaces->setValue(3);
 
-	auto *runs_plugin = qf::gui::framework::getPlugin<Runs::RunsPlugin>();
-	for(const auto &i : runs_plugin->listReportFiles("awards")) {
-		qfDebug() << i.reportName << i.reportFilePath;
-		ui->edReportPath->addItem(i.reportName, i.reportFilePath);
-	}
+	refreshTemplateList();
+
+	connect(ui->btnDesigner, &QPushButton::clicked, this, &PrintAwardsOptionsDialogWidget::onDesignerClicked);
 }
 
 PrintAwardsOptionsDialogWidget::~PrintAwardsOptionsDialogWidget()
@@ -28,20 +31,81 @@ PrintAwardsOptionsDialogWidget::~PrintAwardsOptionsDialogWidget()
 	delete ui;
 }
 
+void PrintAwardsOptionsDialogWidget::refreshTemplateList()
+{
+	QString currentData = ui->edReportPath->currentData().toString();
+	ui->edReportPath->clear();
+
+	for (const auto &[name, path] : AwardDesigner::Design::listAwards(AWARDS_PATH).asKeyValueRange()) {
+		ui->edReportPath->addItem(name, path);
+	}
+
+	if (!currentData.isEmpty()) {
+		int ix = ui->edReportPath->findData(currentData);
+		if (ix >= 0)
+			ui->edReportPath->setCurrentIndex(ix);
+	}
+}
+
 QVariantMap PrintAwardsOptionsDialogWidget::printOptions() const
 {
 	QVariantMap ret;
-	if(ui->edReportPath->currentIndex() >= 0) {
+	if (ui->edReportPath->currentIndex() >= 0) {
 		ret["numPlaces"] = ui->edNumPlaces->value();
-		ret["stageId"] = ui->edStageNumber->value();
+		ret["stageId"]   = ui->edStageNumber->value();
 		ret["reportPath"] = ui->edReportPath->currentData().toString();
-		qfDebug() << "reportPath:" << ui->edReportPath->currentData().toString();
 	}
+
+	quickevent::gui::ReportOptionsDialog::Options filterOpts;
+	filterOpts.setUseClassFilter(ui->grpClassFilter->isChecked());
+	filterOpts.setClassFilter(ui->edFilter->text().trimmed());
+	filterOpts.setInvertClassFilter(ui->chkClassFilterDoesntMatch->isChecked());
+	int ft = ui->btWildCard->isChecked()  ? 0
+	       : ui->btRegExp->isChecked()    ? 1
+	       : 2;
+	filterOpts.setClassFilterType(ft);
+	ret["classFilter"]       = quickevent::gui::ReportOptionsDialog::sqlWhereExpression(filterOpts, ui->edStageNumber->value());
+	ret["classFilterText"]   = filterOpts.classFilter();
+	ret["classFilterType"]   = filterOpts.classFilterType();
+	ret["useClassFilter"]    = filterOpts.isUseClassFilter();
+	ret["invertClassFilter"] = filterOpts.isInvertClassFilter();
+
 	return ret;
 }
 
 void PrintAwardsOptionsDialogWidget::setPrintOptions(const QVariantMap &opts)
 {
-	ui->edNumPlaces->setValue(opts.value("numPlaces").toInt());
+	ui->edNumPlaces->setValue(opts.value("numPlaces", 3).toInt());
 	ui->edStageNumber->setValue(opts.value("stageId").toInt());
+	QString report_path = opts.value("reportPath").toString();
+	if (!report_path.isEmpty()) {
+		int ix = ui->edReportPath->findData(report_path);
+		if (ix >= 0)
+			ui->edReportPath->setCurrentIndex(ix);
+	}
+
+	ui->grpClassFilter->setChecked(opts.value("useClassFilter", false).toBool());
+	ui->edFilter->setText(opts.value("classFilterText").toString());
+	ui->chkClassFilterDoesntMatch->setChecked(opts.value("invertClassFilter", false).toBool());
+	int ft = opts.value("classFilterType", 0).toInt();
+	if (ft == 1)      ui->btRegExp->setChecked(true);
+	else if (ft == 2) ui->btClassNames->setChecked(true);
+	else              ui->btWildCard->setChecked(true);
+}
+
+void PrintAwardsOptionsDialogWidget::onDesignerClicked()
+{
+	AwardDesignerDialog dlg(AwardDesigner::runsFields(), AwardDesigner::Design::defaultRunsDesign(), AWARDS_PATH, this);
+	QString file_name = ui->edReportPath->currentText();
+	dlg.loadDesign(file_name);
+	dlg.exec();
+
+	refreshTemplateList();
+
+	QString savedName = dlg.designName();
+	if (!savedName.isEmpty()) {
+		int ix = ui->edReportPath->findText(savedName);
+		if (ix >= 0)
+			ui->edReportPath->setCurrentIndex(ix);
+	}
 }

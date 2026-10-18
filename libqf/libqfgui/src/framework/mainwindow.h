@@ -4,6 +4,9 @@
 #include "../guiglobal.h"
 #include "ipersistentsettings.h"
 #include "../statusbar.h"
+#include "../toolbar.h"
+#include "partwidget.h"
+#include "plugin.h"
 //#include "pluginloader.h"
 
 #include <qf/core/utils.h>
@@ -20,7 +23,6 @@ namespace qf {
 namespace gui {
 
 class MenuBar;
-class ToolBar;
 
 namespace dialogs {
 class QmlDialog;
@@ -31,9 +33,7 @@ namespace framework {
 class Application;
 class PluginLoader;
 class DockWidget;
-class PartWidget;
 class CentralWidget;
-class Plugin;
 typedef QList<qf::gui::framework::Plugin*> PluginList;
 
 class QFGUI_DECL_EXPORT MainWindow : public QMainWindow, public IPersistentSettings
@@ -126,14 +126,14 @@ static T* getPlugin()
 }
 
 template<typename Widget, typename PartWidget>
-static PartWidget* initPluginWidget(QString title, QString featureId)
+static std::pair<PartWidget*, Widget*> initPluginWidget(QString title, QString featureId)
 {
 	auto* widget = new Widget();
 	auto *part_widget = new PartWidget(title, featureId);
 	qf::gui::framework::MainWindow::frameWork()->addPartWidget(part_widget);
 	part_widget->addWidget(widget);
 	widget->settleDownInPartWidget(part_widget);
-	return part_widget;
+	return std::make_pair(part_widget, widget);
 }
 
 }}}

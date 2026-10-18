@@ -76,9 +76,9 @@ public:
 	//! Sorting information fo one field.
 	struct QFCORE_DECL_EXPORT SortDef
 	{
-		static const bool Ascending = true;
-		static const bool CaseSensitive = true;
-		static const bool Ascii7Bit = true;
+		static constexpr bool Ascending = true;
+		static constexpr bool CaseSensitive = true;
+		static constexpr bool Ascii7Bit = true;
 		int fieldIndex; //!< index of field to sort.
 		int ascending:1, caseSensitive:1, ascii7bit:1; //!< convert values to ASCII 7 bit for before sorting.
 
@@ -131,6 +131,7 @@ public:
 		Field(const QString &name, int user_type);
 
 		bool isNull() const {return d == sharedNull().d;}
+		bool operator==(const Field &) const = default;
 
 		QString shortName() const;
 		/// [schema.]table

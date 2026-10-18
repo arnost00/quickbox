@@ -3,7 +3,7 @@
 #include "../core/log.h"
 #include "../core/utils.h"
 #include "../core/string.h"
-#include "../utils/timescope.h"
+// #include "../utils/timescope.h"
 
 #include <QMetaType>
 #include <algorithm>
@@ -709,4 +709,3 @@ void TreeTable::setRows(const QVariantList &rows)
 	t[KEY_ROWS] = rows;
 	m_values = t;
 }
-

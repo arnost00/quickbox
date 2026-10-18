@@ -42,9 +42,17 @@ EventConfig EventConfig::fromVariantMap(const QVariantMap &values)
 	data.importId = values.value("importId").toInt();
 	data.orisEventKey = values.value("orisEventKey").toString();
 	data.cardCheckTimeSec = values.value("cardChechCheckTimeSec").toInt();
-	data.oneTenthSecResults = values.value("oneTenthSecResults").toInt();
 	data.iofRace = values.value("iofRace").toBool();
 	data.iofXmlRaceNumber = values.value("iofXmlRaceNumber").toInt();
+
+	data.pointResultsMaxPoints = values.value("pointResultsMaxPoints", 1000).toInt();
+	data.pointResultsBestResultsCount = values.value("pointResultsBestResultsCount", 0).toInt();
+
+	data.startGateToleranceMs = values.value("startGateToleranceMs", 3000).toInt();
+	data.finishGateToleranceMs = values.value("finishGateToleranceMs", 2000).toInt();
+
+	data.timeMeasurementPrecision = static_cast<TimeMeasurementPrecision>(values.value("timeMeasurementPrecision", 0).toInt());
+
 	data.currentStageId = values.value("currentStageId", 1).toInt();
 	return data;
 }
@@ -78,9 +86,17 @@ QVariantMap EventConfig::toVariantMap() const
 	values.insert("importId", importId);
 	values.insert("orisEventKey", orisEventKey);
 	values.insert("cardChechCheckTimeSec", cardCheckTimeSec);
-	values.insert("oneTenthSecResults", oneTenthSecResults);
 	values.insert("iofRace", iofRace);
 	values.insert("iofXmlRaceNumber", iofXmlRaceNumber);
+
+	values.insert("pointResultsMaxPoints", pointResultsMaxPoints);
+	values.insert("pointResultsBestResultsCount", pointResultsBestResultsCount);
+
+	values.insert("startGateToleranceMs", startGateToleranceMs);
+	values.insert("finishGateToleranceMs", finishGateToleranceMs);
+
+	values.insert("timeMeasurementPrecision", static_cast<int>(timeMeasurementPrecision));
+
 	values.insert("currentStageId", currentStageId);
 	return values;
 }

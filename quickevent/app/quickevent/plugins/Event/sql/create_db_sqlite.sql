@@ -135,6 +135,8 @@ CREATE TABLE runs (
 	finishTimeMs integer,
 	penaltyTimeMs integer,
 	timeMs integer,
+	startGateTime timestamp,
+	finishGateTime timestamp,
 	isRunning boolean NOT NULL DEFAULT 1,
 	disqualified boolean GENERATED ALWAYS AS (disqualifiedByOrganizer OR  misPunch OR  notStart OR  notFinish OR  badCheck OR  overTime OR notCompeting) STORED,
 	disqualifiedByOrganizer boolean NOT NULL DEFAULT 0,
@@ -163,6 +165,10 @@ CREATE INDEX runs_ix2 ON runs (stageId, siId);
 -- COMMENT ON COLUMN runs.penaltyTimeMs IS 'in miliseconds';
 -- comments not suported for driver: SQLITE
 -- COMMENT ON COLUMN runs.timeMs IS 'in miliseconds';
+-- comments not suported for driver: SQLITE
+-- COMMENT ON COLUMN runs.startGateTime IS 'DateTime when competitor crossed start photocell';
+-- comments not suported for driver: SQLITE
+-- COMMENT ON COLUMN runs.finishGateTime IS 'DateTime when competitor crossed finish photocell';
 -- comments not suported for driver: SQLITE
 -- COMMENT ON COLUMN runs.isRunning IS 'Competitor is running in this stage';
 -- comments not suported for driver: SQLITE
@@ -323,10 +329,19 @@ CREATE UNIQUE INDEX qxchanges_unique2 ON qxchanges (stage_id, foreign_id) WHERE 
 -- comments not suported for driver: SQLITE
 -- COMMENT ON COLUMN qxchanges.orig_data IS 'Store data overriden by change here to enable change rollback.';
 ;
+-- create table: reports;
+CREATE TABLE reports (
+	id integer PRIMARY KEY,
+	path character varying,
+	data BLOB,
+	hash character varying,
+	CONSTRAINT reports_unique0 UNIQUE (path)
+);
+;
 ------------------------------------;
 -- insert initial data;
 ------------------------------------;
 ;
 -- insert into table: config;
-INSERT INTO config (ckey, cname, cvalue, ctype) VALUES 
-('db.version', 'Data version', '30600', 'int');
+INSERT INTO config (ckey, cname, cvalue, ctype) VALUES
+('db.version', 'Data version', '30700', 'int');

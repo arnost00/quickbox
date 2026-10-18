@@ -53,13 +53,18 @@ RunsTableWidget::RunsTableWidget(QWidget *parent) :
 	// ui->tblRuns->setEditRowsMenuSectionEnabled(false);
 	ui->tblRuns->setCloneRowEnabled(false);
 	ui->tblRuns->setDirtyRowsMenuSectionEnabled(false);
-	ui->tblRuns->setPersistentSettingsId("tblRuns");
+	ui->tblRuns->setPersistentSettingsId({}); // controlled by Runs settings
 	ui->tblRuns->setRowEditorMode(qfw::TableView::EditRowsMixed);
 	ui->tblRuns->setInlineEditSaveStrategy(qfw::TableView::OnEditedValueCommit);
 	m_runsTableItemDelegate = new RunsTableItemDelegate(ui->tblRuns);
 	ui->tblRuns->setItemDelegate(m_runsTableItemDelegate);
 	auto *event_plugin = getPlugin<Event::EventPlugin>();
 	connect(event_plugin, &EventPlugin::eventOpenChanged, this, [this, event_plugin](bool is_open) {
+		if(is_open) {
+			auto hidden_columns = RunsPlugin::loadRunsTableHiddenColumns();
+			setColumnsHidden(hidden_columns);
+			setColumnsOrder(RunsPlugin::loadRunsTableColumnOrder());
+		}
 		if (is_open && !event_plugin->appDbConfig().eventConfig().isRelays() && !m_courseItemDelegate) {
 			m_courseItemDelegate = new CourseItemDelegate(ui->tblRuns);
 			m_courseItemDelegate->setNullText(tr("Implicit"));
@@ -158,7 +163,7 @@ void RunsTableWidget::clear()
 	m_runsModel->clearRows();
 }
 
-void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, const QString &sort_column, int select_competitor_id)
+void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, const QString &sort_column, int select_competitor_id, bool only_on_track)
 {
 	qfLogFuncFrame() << "class id:" << class_id;
 	{
@@ -179,11 +184,8 @@ void RunsTableWidget::reload(int stage_id, int class_id, bool show_offrace, cons
 	if (!is_relays && m_courseItemDelegate) {
 		m_courseItemDelegate->setCourses(definedCourses());
 	}
-	auto qb = getPlugin<RunsPlugin>()->runsQuery(stage_id, class_id, show_offrace);
-	qfDebug() << qb.toString();
 	m_runsTableItemDelegate->setHighlightedClassId(class_id, stage_id);
-	m_runsModel->setQueryBuilder(qb, false);
-	m_runsModel->reload();
+	m_runsModel->load(stage_id, class_id, show_offrace, only_on_track);
 	updateStartTimeHighlight();
 
 	QHeaderView *hh = ui->tblRuns->horizontalHeader();
@@ -235,6 +237,33 @@ void RunsTableWidget::reload()
 qf::gui::TableView *RunsTableWidget::tableView()
 {
 	return ui->tblRuns;
+}
+
+void RunsTableWidget::setColumnsHidden(const QStringList &hidden_field_names)
+{
+    for (int i = 0; i < m_runsModel->columnCount({}); ++i) {
+        auto field_name = m_runsModel->columnDefinition(i).fieldName();
+		ui->tblRuns->horizontalHeader()->setSectionHidden(i, hidden_field_names.contains(field_name));
+	}
+}
+
+void RunsTableWidget::setColumnsOrder(const QStringList &ordered_field_names)
+{
+	if(ordered_field_names.isEmpty())
+		return;
+	auto *hh = ui->tblRuns->horizontalHeader();
+	const int col_count = RunsTableModel::col_COUNT;
+	for(int target_visual = 0; target_visual < ordered_field_names.size() && target_visual < col_count; ++target_visual) {
+		const auto &field_name = ordered_field_names[target_visual];
+		for(int logical = 0; logical < col_count; ++logical) {
+			if(m_runsModel->columnDefinition(logical).fieldName() == field_name) {
+				const int current_visual = hh->visualIndex(logical);
+				if(current_visual != target_visual)
+					hh->moveSection(current_visual, target_visual);
+				break;
+			}
+		}
+	}
 }
 
 QMap<int, QString> RunsTableWidget::definedCourses()
@@ -434,4 +463,3 @@ void RunsTableWidget::onBadTableDataInput(const QString &message)
 {
 	qf::gui::dialogs::MessageBox::showError(this, message);
 }
-

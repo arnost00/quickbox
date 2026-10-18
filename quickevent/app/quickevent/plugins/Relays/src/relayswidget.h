@@ -4,6 +4,8 @@
 
 #include "partwidget.h"
 
+#include <functional>
+
 class QCheckBox;
 class RelaysTableItemDelegate;
 
@@ -46,6 +48,7 @@ private:
 	void print_results_nlegs();
 	void print_results_overal();
 	void print_results_overal_condensed();
+	void print_results_awards();
 
 	void export_results_iofxml3();
 	void export_start_list_iofxml3();
@@ -58,6 +61,6 @@ private:
 	qf::gui::ForeignKeyComboBox *m_cbxClasses = nullptr;
 	RelaysTableItemDelegate *m_relaysTableItemDelegate = nullptr;
 
-	void save_xml_file(QString str, QString fn);
+	void save_xml_file(const std::function<QString()> &generate_xml, QString fn);
 };
 

@@ -128,7 +128,10 @@ quickevent::core::si::CheckedCard CardCheckerFreeOrderCpp::checkCard(const quick
 	quickevent::core::si::CheckedPunch finish_punch;
 	if(!finish_code.isEmpty())
 		finish_punch = quickevent::core::si::CheckedPunch::fromCodeDef(finish_code);
-	finish_punch.setStpTimeMs(msecIntervalAM(checked_card.startTimeMs(), checked_card.finishTimeMs()));
+	// no finish split time when finish is not punched, interval to the not set finish time is nonsense
+	if(read_card.finishTime() != 0xEEEE) {
+		finish_punch.setStpTimeMs(msecIntervalAM(checked_card.startTimeMs(), checked_card.finishTimeMs()));
+	}
 	checked_punches << finish_punch;
 
 	QVariant prev_stp_time_ms = 0;

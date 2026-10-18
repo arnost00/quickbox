@@ -5,13 +5,17 @@
 
 namespace Event::services {
 
-static QString docsBaseUrl()
+namespace {
+
+QString docsBaseUrl()
 {
 	const bool isCzech = QLocale().language() == QLocale::Czech;
 	return isCzech
 		? QStringLiteral("https://docs.orienteerfeed.com/cs")
 		: QStringLiteral("https://docs.orienteerfeed.com");
 }
+
+} // namespace
 
 OFeedWelcomeDialog::OFeedWelcomeDialog(QWidget *parent)
 	: Super(parent)

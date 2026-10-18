@@ -15,11 +15,13 @@ class EventDialogWidget : public qf::gui::framework::DialogWidget
 	Q_OBJECT
 
 	using Super = qf::gui::framework::DialogWidget;
+
 public:
-    struct Params {
-        Event::EventConfig eventConfig;
-        QList<QDateTime> stageStarts;
-    };
+	struct Params {
+		Event::EventConfig eventConfig;
+		QList<QDateTime> stageStarts;
+	};
+
 public:
 	explicit EventDialogWidget(QWidget *parent = nullptr);
 	~EventDialogWidget() Q_DECL_OVERRIDE;

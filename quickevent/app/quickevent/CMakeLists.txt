@@ -15,8 +15,7 @@ add_executable(quickevent
 	plugins/CardReader/src/cardreadersettingspage.ui
 	plugins/CardReader/src/cardreadersettings.cpp
 	plugins/CardReader/src/services/qropunch.cpp
-	plugins/CardReader/src/services/qropunchwidget.cpp
-	plugins/CardReader/src/services/qropunchwidget.ui
+	plugins/CardReader/src/services/qropunchwidget.cpp plugins/CardReader/src/services/qropunchwidget.h plugins/CardReader/src/services/qropunchwidget.ui
 	plugins/CardReader/src/testcardreader.h plugins/CardReader/src/testcardreader.cpp
 
 	plugins/Classes/src/classdefdocument.cpp
@@ -54,6 +53,8 @@ add_executable(quickevent
 	plugins/Core/src/reportssettings.cpp
 	plugins/Core/src/settings.cpp
 	plugins/Core/src/widgets/reportssettingspage.cpp
+	plugins/Core/src/widgets/reportstablemodel.cpp
+	plugins/Core/src/widgets/reportstablemodel.h
 	plugins/Core/src/widgets/reportssettingspage.ui
 	plugins/Core/src/widgets/appstatusbar.cpp
 	plugins/Core/src/widgets/settingspage.cpp
@@ -113,6 +114,9 @@ add_executable(quickevent
 	plugins/Event/src/services/punchingtest/punchingtestservice.h plugins/Event/src/services/punchingtest/punchingtestservice.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.h plugins/Event/src/services/punchingtest/punchingtestservicewidget.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.ui
+	plugins/Event/src/services/radiosender/radiosenderconfig.cpp plugins/Event/src/services/radiosender/radiosenderconfig.h
+	plugins/Event/src/services/radiosender/radiosenderservice.cpp plugins/Event/src/services/radiosender/radiosenderservice.h
+	plugins/Event/src/services/radiosender/radiosenderservicewidget.cpp plugins/Event/src/services/radiosender/radiosenderservicewidget.h plugins/Event/src/services/radiosender/radiosenderservicewidget.ui
 
 	plugins/Oris/src/chooseoriseventdialog.cpp
 	plugins/Oris/src/chooseoriseventdialog.ui
@@ -137,6 +141,9 @@ add_executable(quickevent
 
 	plugins/Relays/src/addlegdialogwidget.cpp
 	plugins/Relays/src/addlegdialogwidget.ui
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.h
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.cpp
+	plugins/Relays/src/printrelayawardsoptionsdialogwidget.ui
 	plugins/Relays/src/relaydocument.cpp
 	plugins/Relays/src/relaysplugin.cpp
 	plugins/Relays/src/relayswidget.cpp
@@ -154,8 +161,8 @@ add_executable(quickevent
 	plugins/Runs/src/findrunneredit.cpp
 	plugins/Runs/src/findrunnerwidget.cpp
 	plugins/Runs/src/findrunnerwidget.ui
-	plugins/Runs/src/nstagesreportoptionsdialog.cpp
-	plugins/Runs/src/nstagesreportoptionsdialog.ui
+
+
 	plugins/Runs/src/printawardsoptionsdialogwidget.cpp
 	plugins/Runs/src/printawardsoptionsdialogwidget.ui
 	plugins/Runs/src/runflagsdialog.cpp
@@ -165,6 +172,8 @@ add_executable(quickevent
 	plugins/Runs/src/runstabledialogwidget.ui
 	plugins/Runs/src/runstableitemdelegate.cpp
 	plugins/Runs/src/runstablemodel.cpp
+	plugins/Runs/src/runssettingspage.cpp
+	plugins/Runs/src/runssettingspage.ui
 	plugins/Runs/src/runstablewidget.cpp
 	plugins/Runs/src/runstablewidget.ui
 	plugins/Runs/src/runswidget.cpp
@@ -189,6 +198,20 @@ add_executable(quickevent
 	plugins/Relays/Relays.qrc
 	plugins/Runs/Runs.qrc
 	plugins/CardReader/CardReader.qrc
+
+	src/awarddesigner/awarddesign.h
+	src/awarddesigner/awarddesign.cpp
+	src/awarddesigner/awarddesignerscene.h
+	src/awarddesigner/awarddesignerscene.cpp
+	src/awarddesigner/awarddesignerdialog.h
+	src/awarddesigner/awarddesignerdialog.cpp
+	src/awarddesigner/awarddesignerdialog.ui
+	src/awarddesigner/awardtypstrenderer.h
+	src/awarddesigner/awardtypstrenderer.cpp
+	src/awarddesigner/typstexecutable.h
+	src/awarddesigner/typstexecutable.cpp
+	src/awarddesigner/awardreportviewwidget.h
+	src/awarddesigner/awardreportviewwidget.cpp
 
 	src/appclioptions.cpp
 	src/application.cpp
@@ -237,8 +260,12 @@ add_executable(quickevent
 	plugins/Relays/qml/reports/startList_classes_condensed.qml
 	plugins/Relays/qml/reports/startList_clubs_condensed.qml
 
+	plugins/Relays/reports/awards/relay_awards.typ
+
 	plugins/Runs/qml/reports/competitorsWithCardRent.qml
 	plugins/Runs/qml/reports/results_nstages.qml
+	plugins/Runs/qml/reports/results_nstages_points.qml
+	plugins/Runs/qml/reports/results_nstages_points_condensed.qml
 	plugins/Runs/qml/reports/results_nstagesSpeaker.qml
 	plugins/Runs/qml/reports/results_stage.qml
 	plugins/Runs/qml/reports/results_stageSpeaker.qml
@@ -247,13 +274,10 @@ add_executable(quickevent
 	plugins/Runs/qml/reports/startList_clubs.qml
 	plugins/Runs/qml/reports/startList_clubs_nstages.qml
 	plugins/Runs/qml/reports/startList_starters.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-apple.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-apple2.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-covid.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-hsh-2023.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards-hsh.qml
-	plugins/Runs/qml/reports/awards/results_stage_awards.qml
 	plugins/Runs/qml/reports/competitorsStatistics.qml
+
+	plugins/Runs/reports/awards/results_stage_awards.typ
+	plugins/Runs/reports/awards/results_stage_awards_ceskyorientak.typ
 
 	plugins/shared/qml/reports/Cell.qml
 	plugins/shared/qml/reports/HeaderCell.qml
@@ -275,6 +299,25 @@ qt6_add_translation(QM_FILES ${TS_FILES})
 qt6_add_lupdate(quickevent TS_FILES ${TS_FILES})
 
 target_sources(quickevent PRIVATE ${QM_FILES})
+
+# Embed the default report templates. ReportFileCache extracts these resources to
+# the user's writable report cache on its first use.
+file(GLOB_RECURSE REPORT_RESOURCE_FILES CONFIGURE_DEPENDS
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Classes/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Runs/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Runs/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Relays/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Relays/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/Receipts/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/shared/qml/reports/*"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/shared/reports/*"
+)
+qt_add_resources(quickevent reports_resources
+	PREFIX "/reports"
+	BASE "${CMAKE_CURRENT_SOURCE_DIR}/plugins"
+	FILES ${REPORT_RESOURCE_FILES}
+)
+
 target_include_directories(quickevent PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(quickevent PUBLIC libquickeventcore libquickeventgui libqfgui libsiut)
 if (QF_WITH_LIBSHV)
@@ -323,11 +366,6 @@ if(APPLE)
 	install(FILES ${ICON_OUTPUT} DESTINATION quickevent.app/Contents/Resources)
 	install(FILES ${QM_FILES} DESTINATION quickevent.app/Contents/MacOS/translations)
 
-	foreach(plugin IN ITEMS Classes Runs Relays Receipts shared)
-		install(DIRECTORY plugins/${plugin}/qml/reports
-			DESTINATION quickevent.app/Contents/MacOS/reports/${plugin}/qml)
-	endforeach()
-
 	# Post-install: copy libraries, QML plugins, translations into bundle MacOS directory
 	install(CODE "
 		# Copy libraries to Frameworks
@@ -341,8 +379,4 @@ if(APPLE)
 else()
 	install(TARGETS quickevent)
 	install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR}/translations)
-	foreach(plugin IN ITEMS Classes Runs Relays Receipts shared)
-		install(DIRECTORY plugins/${plugin}/qml/reports
-			DESTINATION ${CMAKE_INSTALL_BINDIR}/reports/${plugin}/qml)
-	endforeach()
 endif()

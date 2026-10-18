@@ -24,6 +24,8 @@ public:
 	void onVisibleChanged(bool is_visible);
 private:
 	QxEventService* qxEventService();
+	void updateEnabled();
+	void loadTypes(int stage_id);
 	void reload();
 	void applyQxChange(int sql_id);
 

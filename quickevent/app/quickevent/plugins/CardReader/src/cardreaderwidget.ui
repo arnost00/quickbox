@@ -15,6 +15,51 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="lytStatistics">
+     <item>
+      <widget class="QLabel" name="lblAtStart">
+       <property name="toolTip">
+        <string>Runners on the start list who have not started yet</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblStarted">
+       <property name="toolTip">
+        <string>Runners with a passed start time, a start corridor entry or DNS</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblOnTrack">
+       <property name="toolTip">
+        <string>Started runners who have not finished yet</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblFinished">
+       <property name="toolTip">
+        <string>Runners who finished, are disqualified or did not start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spcStatistics">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="qf::gui::TableViewToolBar" name="tblCardsTB" native="true"/>
@@ -47,7 +92,13 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QPushButton" name="btComPort">
+         <widget class="QPushButton" name="btUsbReader">
+          <property name="toolTip">
+           <string>Connect USB SI reader</string>
+          </property>
+          <property name="text">
+           <string>USB</string>
+          </property>
           <property name="icon">
            <iconset resource="../CardReader.qrc">
             <normaloff>:/quickevent/CardReader/images/comm.svg</normaloff>:/quickevent/CardReader/images/comm.svg</iconset>
@@ -57,6 +108,19 @@
             <width>24</width>
             <height>24</height>
            </size>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btBtReader">
+          <property name="toolTip">
+           <string>Connect BT SI reader</string>
+          </property>
+          <property name="text">
+           <string>BT</string>
           </property>
           <property name="checkable">
            <bool>true</bool>

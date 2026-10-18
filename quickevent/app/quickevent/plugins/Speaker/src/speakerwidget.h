@@ -13,15 +13,13 @@ namespace qf::gui { class ForeignKeyComboBox; }
 namespace quickevent::gui::og { class SqlTableModel; }
 namespace quickevent::core::si { class PunchRecord; }
 
-class ThisPartWidget;
-
 class SpeakerWidget : public QFrame
 {
 	Q_OBJECT
 private:
 	typedef QFrame Super;
 public:
-	explicit SpeakerWidget(QWidget *parent = 0);
+	explicit SpeakerWidget(QWidget *parent = nullptr);
 	~SpeakerWidget() Q_DECL_OVERRIDE;
 
 	void settleDownInPartWidget(::PartWidget *part_widget);

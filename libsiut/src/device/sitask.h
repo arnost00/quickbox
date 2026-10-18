@@ -164,7 +164,7 @@ public:
 	void start() override;
 	void onSiMessageReceived(const siut::SIMessageData &msg) override;
 private:
-	enum CardSerie {Invalid = 0, Card6 = 6, Card6Star};
+	enum CardSerie {Invalid = 0, Card6 = 6, Card6Star = 7};
 	static const char* cardSerieToString(CardSerie cs);
 
 	CardSerie m_cardSerie = Invalid;

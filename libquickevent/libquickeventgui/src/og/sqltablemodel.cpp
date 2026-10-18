@@ -29,9 +29,10 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 			return t.toString();
 		}
 		if(type == qMetaTypeId<core::si::SiId>()) {
-			int id = (int)v.value<core::si::SiId>();
-			if(id == 0)
-				return QString();// QStringLiteral("null");
+			auto id = static_cast<int>(v.value<core::si::SiId>());
+			if(id == 0) {
+				return QString();
+			}
 			return id;
 		}
 	}

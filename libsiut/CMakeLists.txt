@@ -1,11 +1,12 @@
 add_library(libsiut SHARED
     src/device/crc529.c
     src/device/commport.cpp
+    src/device/btsidevicedriver.cpp
     src/device/sidevicedriver.cpp
     src/device/sitask.cpp
     src/message/simessagedata.cpp
-    src/sicard.cpp
-    src/sipunch.cpp
+    src/sicard.cpp src/sicard.h
+    src/sipunch.cpp src/sipunch.h
     )
 
 # Single source of truth for this project's translations: every libsiut-<locale>.ts
@@ -20,7 +21,7 @@ qt6_add_lupdate(libsiut TS_FILES ${TS_FILES})
 
 target_sources(libsiut PRIVATE ${QM_FILES})
 target_compile_definitions(libsiut PRIVATE SIUT_BUILD_DLL)
-target_link_libraries(libsiut PUBLIC Qt::Core Qt::SerialPort libqfcore)
+target_link_libraries(libsiut PUBLIC Qt::Core Qt::Bluetooth Qt::SerialPort libqfcore)
 target_include_directories(libsiut PUBLIC include)
 
 install(TARGETS libsiut)

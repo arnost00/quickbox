@@ -25,7 +25,7 @@ namespace framework { class PartWidget; class Plugin; }
 }
 
 
-namespace siut { class DeviceDriver; class CommPort; class SICard; class SIPunch; }
+namespace siut { class DeviceDriver; class CommPort; class BtSiDeviceDriver; struct SICard; struct SIPunch; }
 
 namespace quickevent { namespace gui { namespace audio { class Player; }}}
 namespace quickevent { namespace core { namespace si { class ReadCard; class CheckedCard; }}}
@@ -56,7 +56,7 @@ class CardReaderWidget : public QFrame
 private:
 	typedef QFrame Super;
 public:
-	explicit CardReaderWidget(QWidget *parent = 0);
+	explicit CardReaderWidget(QWidget *parent = nullptr);
 	~CardReaderWidget() Q_DECL_OVERRIDE;
 
 	Q_SIGNAL void logRequest(NecroLog::Level level, const QString &msg);
@@ -73,9 +73,14 @@ private:
 	void appendLog(NecroLog::Level level, const QString &msg);
 	void processDriverInfo(NecroLog::Level level, const QString &msg);
 	void logDriverRawData(const QByteArray &data);
-	void onOpenCommTriggered(bool checked);
+	void onOpenUsbTriggered(bool checked);
+	void onOpenBtTriggered(bool checked);
+	void updateButtonsEnabled();
 
-	void onSiTaskFinished(int task_type, QVariant result);
+	void updateConnectionInfoLabel();
+	void setConnectionInfoLabel(const QString &info, NecroLog::Level level);
+
+	void onSiTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 
 	void readStationBackupMemory();
 
@@ -87,14 +92,17 @@ private:
 	siut::DeviceDriver *siDriver();
 	siut::CommPort *commPort();
 	void onComOpenChanged(bool comm_is_open);
+	siut::BtSiDeviceDriver *btDriver();
+	void onBtConnectionChanged(bool connected);
 
-	void processSICard(const siut::SICard &card);
+	void processSICard(const siut::SICard &card, const QString &reader_message = QString());
 	void processSIPunch(const siut::SIPunch &rec);
 
 	bool processReadCardInTransaction(const quickevent::core::si::ReadCard &read_card);
 	void processReadCard(const quickevent::core::si::ReadCard &read_card);
 
 	void updateTableView(int card_id);
+	void updateStatistics();
 
 	void onCustomContextMenuRequest(const QPoint &pos);
 	void showSelectedReceipt();
@@ -115,6 +123,7 @@ private:
 	quickevent::gui::audio::Player *m_audioPlayer = nullptr;
 	siut::DeviceDriver *f_siDriver = nullptr;
 	siut::CommPort *m_commPort = nullptr;
+	siut::BtSiDeviceDriver *m_btDriver = nullptr;
 };
 
 #endif // CARDREADERWIDGET_H

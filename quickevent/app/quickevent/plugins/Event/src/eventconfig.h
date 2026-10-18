@@ -1,5 +1,7 @@
 #pragma once
 
+#include <quickevent/core/og/timems.h>
+
 #include <QDate>
 #include <QMap>
 #include <QString>
@@ -27,6 +29,8 @@ struct EventConfig
 						   Indoor = 19,
 						  };
 
+	using TimeMeasurementPrecision = quickevent::core::og::TimeMeasurementPrecision;
+
 	static std::optional<Discipline> disciplineFromInt(int i);
 
 	bool isHandicap() const {return handicapLength > 0;}
@@ -51,9 +55,17 @@ struct EventConfig
 	int importId = 0;
 	QString orisEventKey;
 	int cardCheckTimeSec = 0;
-	int oneTenthSecResults = 0;
 	bool iofRace = false;
 	int iofXmlRaceNumber = 0;
+
+	int pointResultsMaxPoints = 1000;
+	int pointResultsBestResultsCount = 0;
+
+	int startGateToleranceMs = 3000;
+	int finishGateToleranceMs = 2000;
+
+	TimeMeasurementPrecision timeMeasurementPrecision = TimeMeasurementPrecision::Second;
+
 	int currentStageId = 1;
 };
 

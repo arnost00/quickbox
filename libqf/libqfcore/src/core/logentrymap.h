@@ -12,7 +12,7 @@ namespace core {
 class QFCORE_DECL_EXPORT LogEntryMap : public QVariantMap
 {
 public:
-	LogEntryMap() : QVariantMap() {}
+	LogEntryMap() {}
 	LogEntryMap(NecroLog::Level level, const QString &category, const QString &message, const QString &file = QString(), int line = -1, const QString &function = QString());
 	LogEntryMap(const QVariantMap &m) : QVariantMap(m) {}
 	virtual ~LogEntryMap();

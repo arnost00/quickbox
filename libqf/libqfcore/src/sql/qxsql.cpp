@@ -106,7 +106,6 @@ bool QxSqlApi::updateRecord(const QString &table, qint64 id, const Record &recor
 
 	QString qs = QString("UPDATE %1 SET %2 WHERE id = %3")
 			.arg(table, keyVals.join(", "), QString::number(id));
-
 	ExecResult res = exec(qs, record);
 	return res.numRowsAffected == 1;
 }
@@ -127,9 +126,14 @@ QList<Record> QxSqlApi::listOneOrMoreRecords(const QString &table, const std::op
 
 	QString qs = QString("SELECT %1 FROM %2").arg(fieldsStr, table);
 
-	if (id.has_value()) {
+	if (id.has_value() && limit.has_value() && *limit == 1) {
+		qs += QString(" WHERE id = %1").arg(*id);
+	}
+	else if (id.has_value()) {
 		qs += QString(" WHERE id >= %1").arg(*id);
 	}
+
+	qs += QString(" ORDER BY id");
 
 	if (limit.has_value()) {
 		qs += QString(" LIMIT %1").arg(*limit);
@@ -173,7 +177,11 @@ QueryResult QxSqlApiImpl::query(const QString &query, const QVariantMap &params)
 	while (q.next()) {
 		QList<QVariant> row;
 		for (int i = 0; i < q.record().count(); ++i) {
-			row.append(q.value(i));
+			auto v = q.value(i);
+			if (v.isNull()) {
+				v = {};
+			}
+			row.append(v);
 		}
 		result.rows.insert(result.rows.size(), row);
 	}

@@ -13,7 +13,10 @@ CircularTimerWidget::CircularTimerWidget(QWidget *parent)
 		m_just_fired = false;
 		update();
 	});
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	QSizePolicy size_policy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	// keep the space when hidden, otherwise the row height jumps and shifts the widgets below
+	size_policy.setRetainSizeWhenHidden(true);
+	setSizePolicy(size_policy);
 }
 
 QSize CircularTimerWidget::sizeHint() const
@@ -23,6 +26,8 @@ QSize CircularTimerWidget::sizeHint() const
 
 void CircularTimerWidget::setProgress(int remaining_ms, int total_ms)
 {
+	// an inactive timer reports remaining time -1, don't show an idle empty ring at all
+	setVisible(m_just_fired || (total_ms > 0 && remaining_ms >= 0));
 	if(m_just_fired)
 		return;
 	m_remaining_ms = remaining_ms;

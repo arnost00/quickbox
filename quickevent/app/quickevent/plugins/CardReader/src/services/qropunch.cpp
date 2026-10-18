@@ -212,9 +212,9 @@ void QrOPunch::onTcpReadoutReceived(const QVariant &data)
 		connect(m_siDriver.get(), &siut::DeviceDriver::siTaskFinished, getPlugin<CardReaderPlugin>(), &CardReader::CardReaderPlugin::emitSiTaskFinished);
 	}
 	getPlugin<CardReaderPlugin>()->emitSiTaskFinished(static_cast<int>(siut::SiTask::Type::CardRead), data);
-	siut::SICard card(data.toMap());
+	siut::SICard card = siut::SICard::fromVariantMap(data.toMap());
 	for (int i = 0, n = card.punchCount(); i < n; ++i) {
-		getPlugin<CardReaderPlugin>()->emitSiTaskFinished(static_cast<int>(siut::SiTask::Type::Punch), card.punchAt(i));
+		getPlugin<CardReaderPlugin>()->emitSiTaskFinished(static_cast<int>(siut::SiTask::Type::Punch), card.punchAt(i).toVariantMap());
 	}
 }
 

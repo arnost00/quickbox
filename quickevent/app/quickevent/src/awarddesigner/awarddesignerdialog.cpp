@@ -1,0 +1,449 @@
+#include "awarddesignerdialog.h"
+#include "ui_awarddesignerdialog.h"
+#include "awarddesignerscene.h"
+#include "typstexecutable.h"
+
+#include <QColorDialog>
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFontComboBox>
+#include <QFontDatabase>
+#include <QGraphicsView>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QPainter>
+#include <QTimer>
+#include <QWheelEvent>
+
+// Make the bundled fonts selectable in the designer; Typst gets the same directory via --font-path.
+static void registerBundledFonts()
+{
+	static bool registered = false;
+	if (registered) {
+		return;
+	}
+	registered = true;
+	const QString dir = Typst::fontsDir();
+	if (dir.isEmpty()) {
+		return;
+	}
+	const auto files = QDir(dir).entryInfoList({QStringLiteral("*.ttf"), QStringLiteral("*.otf")}, QDir::Files);
+	for (const auto &fi : files) {
+		QFontDatabase::addApplicationFont(fi.absoluteFilePath());
+	}
+}
+
+AwardDesignerDialog::AwardDesignerDialog(const QList<AwardDesigner::FieldDef> &available_fields, const AwardDesigner::Design &default_design, const QString &design_relative_root, QWidget *parent)
+	: QDialog(parent)
+	, ui(new Ui::AwardDesignerDialog)
+	, m_relativeDesignFilesRoot(design_relative_root)
+	, m_availableFields(available_fields)
+{
+	registerBundledFonts(); // before setupUi so the font combo already lists them
+	ui->setupUi(this);
+
+	m_scene = new AwardDesignerScene(this);
+	ui->graphicsView->setScene(m_scene);
+	ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+	ui->graphicsView->setDragMode(QGraphicsView::NoDrag);
+	ui->graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+	ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+	ui->graphicsView->setBackgroundBrush(QColor(130, 130, 130));
+	ui->graphicsView->installEventFilter(this);
+
+	// Populate placeholder selector in properties panel (item 0 is the idle caption)
+	ui->cbxItemField->addItem(tr("Vložit zástupný znak…"), QString());
+	for (const auto &fd : m_availableFields) {
+		ui->cbxItemField->addItem(fd.label, fd.id);
+	}
+
+	ui->cbxAlign->clear();
+	ui->cbxAlign->addItem(tr("Left"), static_cast<int>(Qt::AlignLeft));
+	ui->cbxAlign->addItem(tr("Center"), static_cast<int>(Qt::AlignHCenter));
+	ui->cbxAlign->addItem(tr("Right"), static_cast<int>(Qt::AlignRight));
+
+	ui->cbxPaper->addItem(QStringLiteral("A4"), 210);
+	ui->cbxPaper->addItem(QStringLiteral("A5"), 148);
+	ui->cbxOrientation->addItem(tr("Na výšku"), false);
+	ui->cbxOrientation->addItem(tr("Na šířku"), true);
+	connect(ui->cbxPaper, qOverload<int>(&QComboBox::currentIndexChanged), this, &AwardDesignerDialog::onPageChanged);
+	connect(ui->cbxOrientation, qOverload<int>(&QComboBox::currentIndexChanged), this, &AwardDesignerDialog::onPageChanged);
+	connect(ui->btnBrowseBg, &QPushButton::clicked, this, &AwardDesignerDialog::onBrowseBgClicked);
+	connect(ui->btnClearBg, &QPushButton::clicked, this, [this]() {
+		m_scene->setBackground({}, {});
+		ui->edBgPath->clear();
+	});
+
+	connect(m_scene, &AwardDesignerScene::selectedItemChanged,
+		this, &AwardDesignerDialog::onSelectedItemChanged);
+
+	connect(ui->btnAddField, &QPushButton::clicked, this, &AwardDesignerDialog::onAddFieldClicked);
+	connect(ui->btnAddImage, &QPushButton::clicked, this, &AwardDesignerDialog::onAddImageClicked);
+	connect(ui->btnDelete, &QPushButton::clicked, this, &AwardDesignerDialog::onDeleteItemClicked);
+	connect(ui->btnBrowseImage, &QPushButton::clicked, this, &AwardDesignerDialog::onBrowseImageClicked);
+	connect(ui->btnColor, &QPushButton::clicked, this, &AwardDesignerDialog::onChooseColorClicked);
+	connect(ui->btnSave, &QPushButton::clicked, this, &AwardDesignerDialog::onSaveDesignClicked);
+	connect(ui->btnLoad, &QPushButton::clicked, this, &AwardDesignerDialog::onLoadDesignClicked);
+	connect(ui->btnNew, &QPushButton::clicked, this, &AwardDesignerDialog::onNewDesignClicked);
+
+	auto prop_changed = [this]() { onItemPropertyChanged(); };
+	connect(ui->spX, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spY, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spW, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->spH, qOverload<double>(&QDoubleSpinBox::valueChanged), this, prop_changed);
+	connect(ui->cbxFont, &QFontComboBox::currentFontChanged, this, prop_changed);
+	connect(ui->spFontSize, qOverload<int>(&QSpinBox::valueChanged), this, prop_changed);
+	connect(ui->chkBold, &QCheckBox::toggled, this, prop_changed);
+	connect(ui->chkItalic, &QCheckBox::toggled, this, prop_changed);
+	connect(ui->cbxAlign, qOverload<int>(&QComboBox::currentIndexChanged), this, prop_changed);
+	connect(ui->cbxItemField, qOverload<int>(&QComboBox::activated), this, [this](int index) {
+		const QString key = ui->cbxItemField->itemData(index).toString();
+		if (key.isEmpty()) {
+			return;
+		}
+		ui->edText->insertPlainText(QStringLiteral("$(") + key + QLatin1Char(')'));
+		ui->cbxItemField->setCurrentIndex(0);
+	});
+	connect(ui->edText, &QPlainTextEdit::textChanged, this, prop_changed);
+	connect(ui->chkScaleProportional, &QCheckBox::toggled, this, prop_changed);
+
+	connect(ui->btnFitView, &QPushButton::clicked, this, [this]() {
+		ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+	});
+	connect(ui->btnZoomIn, &QPushButton::clicked, this, [this]() {
+		ui->graphicsView->scale(1.25, 1.25);
+	});
+	connect(ui->btnZoomOut, &QPushButton::clicked, this, [this]() {
+		ui->graphicsView->scale(1.0 / 1.25, 1.0 / 1.25);
+	});
+
+	setPropsEnabled(false);
+
+	// Load default design on first open
+	setDesign(default_design);
+}
+
+AwardDesignerDialog::~AwardDesignerDialog()
+{
+	delete ui;
+}
+
+QString AwardDesignerDialog::relativeDesignFilePath(const QString &file_name) const
+{
+	if (file_name.trimmed().isEmpty())
+		return QString();
+	return m_relativeDesignFilesRoot + '/' + file_name.trimmed();
+}
+
+void AwardDesignerDialog::loadDesign(const QString &file_name)
+{
+	auto design = AwardDesigner::Design::loadFile(relativeDesignFilePath(file_name));
+	setDesign(design);
+	ui->edDesignName->setText(file_name);
+}
+
+void AwardDesignerDialog::setDesign(const AwardDesigner::Design &design)
+{
+	m_scene->loadDesign(design);
+	syncPageControls();
+	QTimer::singleShot(0, this, [this]() {
+		ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+	});
+}
+
+// Paper/orientation are derived from the page size, so nothing extra is persisted.
+void AwardDesignerDialog::syncPageControls()
+{
+	const QSignalBlocker b1(ui->cbxPaper), b2(ui->cbxOrientation);
+	const qreal shorter = qMin(m_scene->pageW(), m_scene->pageH());
+	ui->cbxPaper->setCurrentIndex(shorter < 180 ? 1 : 0);
+	ui->cbxOrientation->setCurrentIndex(m_scene->pageW() > m_scene->pageH() ? 1 : 0);
+	ui->edBgPath->setText(m_scene->backgroundPath());
+}
+
+void AwardDesignerDialog::onPageChanged()
+{
+	const bool a5 = ui->cbxPaper->currentIndex() == 1;
+	const qreal shorter = a5 ? 148 : 210;
+	const qreal longer = a5 ? 210 : 297;
+	if (ui->cbxOrientation->currentData().toBool()) {
+		m_scene->setPageSize(longer, shorter);
+	} else {
+		m_scene->setPageSize(shorter, longer);
+	}
+	ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+}
+
+void AwardDesignerDialog::onBrowseBgClicked()
+{
+	const QString path = QFileDialog::getOpenFileName(this, tr("Select a background image"), QString(),
+		tr("Images (*.png *.jpg *.jpeg *.svg *.bmp);;All files (*)"));
+	if (path.isEmpty()) {
+		return;
+	}
+	QFile f(path);
+	if (!f.open(QIODevice::ReadOnly)) {
+		QMessageBox::warning(this, tr("Background"), tr("Cannot read '%1'.").arg(path));
+		return;
+	}
+	m_scene->setBackground(path, f.readAll());
+	ui->edBgPath->setText(path);
+}
+
+AwardDesigner::Design AwardDesignerDialog::currentDesign() const
+{
+	return m_scene->collectDesign();
+}
+
+QString AwardDesignerDialog::designName() const
+{
+	auto name = ui->edDesignName->text().trimmed();
+	if (name.isEmpty())
+		return QString();
+	if (!name.endsWith(".typ"))
+		name += ".typ";
+	return name;
+}
+
+void AwardDesignerDialog::onSelectedItemChanged(AwardSceneItem *item)
+{
+	m_selectedItem = item;
+	setPropsEnabled(item != nullptr);
+	if (item) {
+		populatePropsFromItem(item);
+	}
+}
+
+void AwardDesignerDialog::onAddFieldClicked()
+{
+	AwardDesigner::Item item;
+	item.kind = AwardDesigner::Item::Field;
+	item.w = 170;
+	item.h = 15;
+	int count = m_scene->collectDesign().items.count();
+	item.x = 20 + (count % 8) * 3;
+	item.y = 20 + (count % 8) * 3;
+	m_scene->addDesignItem(item);
+}
+
+void AwardDesignerDialog::onAddImageClicked()
+{
+	QString path = QFileDialog::getOpenFileName(this,
+		tr("Select an image"),
+		QString(),
+		tr("Images (*.png *.jpg *.jpeg *.svg *.bmp);;All files (*)"));
+
+	AwardDesigner::Item item;
+	item.kind = AwardDesigner::Item::Image;
+	item.imagePath = path; // may be empty — user can browse again in properties
+	item.w = 80;
+	item.h = 50;
+	int count = m_scene->collectDesign().items.count();
+	item.x = 20 + (count % 8) * 3;
+	item.y = 20 + (count % 8) * 3;
+	m_scene->addDesignItem(item);
+}
+
+void AwardDesignerDialog::onDeleteItemClicked()
+{
+	m_scene->deleteSelected();
+}
+
+void AwardDesignerDialog::onBrowseImageClicked()
+{
+	QString path = QFileDialog::getOpenFileName(this,
+		tr("Select an image"),
+		QString(),
+		tr("Images (*.png *.jpg *.jpeg *.svg *.bmp);;All files (*)"));
+	if (!path.isEmpty()) {
+		ui->edImagePath->setText(path);
+		if (!m_updatingProps) {
+			applyPropsToItem();
+		}
+	}
+}
+
+void AwardDesignerDialog::onChooseColorClicked()
+{
+	QColor c = QColorDialog::getColor(QColor(m_colorHex), this, tr("Choose text color"));
+	if (c.isValid()) {
+		m_colorHex = c.name();
+		updateColorButton();
+		if (!m_updatingProps) {
+			applyPropsToItem();
+		}
+	}
+}
+
+void AwardDesignerDialog::onItemPropertyChanged()
+{
+	if (!m_updatingProps) {
+		applyPropsToItem();
+	}
+}
+
+void AwardDesignerDialog::onSaveDesignClicked()
+{
+	QString name = relativeDesignFilePath(designName());
+	if (name.isEmpty()) {
+		QMessageBox::warning(this, tr("Save design"), tr("Please enter a design name."));
+		ui->edDesignName->setFocus();
+		return;
+	}
+	AwardDesigner::Design d = m_scene->collectDesign();
+	if (d.saveToDb(name)) {
+		QMessageBox::information(this, tr("Save design"),
+			tr("Design '%1' was saved to the database.").arg(name));
+	} else {
+		QMessageBox::critical(this, tr("Save design"),
+			tr("Could not save design '%1' to the database.").arg(name));
+	}
+}
+
+void AwardDesignerDialog::onLoadDesignClicked()
+{
+	auto designs = AwardDesigner::Design::listAwards(m_relativeDesignFilesRoot);
+	if (designs.isEmpty()) {
+		QMessageBox::information(this, tr("Load design"),
+			tr("No award designs are saved in the database."));
+		return;
+	}
+	bool ok;
+	QString name = QInputDialog::getItem(this,
+		tr("Load design"), tr("Select a design:"), designs.keys(), 0, false, &ok);
+	if (!ok || name.isEmpty()) {
+		return;
+	}
+	AwardDesigner::Design d = AwardDesigner::Design::loadFile(designs.value(name));
+	if (d.isValid()) {
+		setDesign(d);
+	}
+}
+
+void AwardDesignerDialog::onNewDesignClicked()
+{
+	AwardDesigner::Design empty;
+	ui->edDesignName->clear();
+	setDesign(empty);
+}
+
+void AwardDesignerDialog::accept()
+{
+	QString name = relativeDesignFilePath(designName());
+	if (!name.isEmpty()) {
+		AwardDesigner::Design d = m_scene->collectDesign();
+		if (!d.saveToDb(name)) {
+			QMessageBox::critical(this, tr("Save design"),
+				tr("Could not save design '%1' to the database.").arg(name));
+			return;
+		}
+	}
+	QDialog::accept();
+}
+
+void AwardDesignerDialog::populatePropsFromItem(AwardSceneItem *item)
+{
+	m_updatingProps = true;
+	const AwardDesigner::Item &it = item->designItem();
+
+	updateItemKindVisibility(it.kind);
+
+	ui->spX->setValue(it.x);
+	ui->spY->setValue(it.y);
+	ui->spW->setValue(it.w);
+	ui->spH->setValue(it.h);
+
+	if (it.kind == AwardDesigner::Item::Field) {
+		ui->edText->setPlainText(it.text);
+
+		ui->cbxFont->setCurrentFont(QFont(it.fontFamily));
+		ui->spFontSize->setValue(it.fontSize);
+		ui->chkBold->setChecked(it.bold);
+		ui->chkItalic->setChecked(it.italic);
+		m_colorHex = it.color;
+		updateColorButton();
+		for (int i = 0; i < ui->cbxAlign->count(); ++i) {
+			if (ui->cbxAlign->itemData(i).toInt() == it.halign) {
+				ui->cbxAlign->setCurrentIndex(i);
+				break;
+			}
+		}
+	} else {
+		ui->edImagePath->setText(it.imagePath);
+		ui->chkScaleProportional->setChecked(it.scaleProportional);
+	}
+
+	m_updatingProps = false;
+}
+
+void AwardDesignerDialog::applyPropsToItem()
+{
+	if (!m_selectedItem) {
+		return;
+	}
+
+	AwardDesigner::Item &it = m_selectedItem->designItem();
+
+	it.x = ui->spX->value();
+	it.y = ui->spY->value();
+	it.w = ui->spW->value();
+	it.h = ui->spH->value();
+
+	if (it.kind == AwardDesigner::Item::Field) {
+		it.text = ui->edText->toPlainText();
+		it.fontFamily = ui->cbxFont->currentFont().family();
+		it.fontSize = ui->spFontSize->value();
+		it.bold = ui->chkBold->isChecked();
+		it.italic = ui->chkItalic->isChecked();
+		it.color = m_colorHex;
+		it.halign = ui->cbxAlign->currentData().toInt();
+	} else {
+		it.imagePath = ui->edImagePath->text();
+		it.scaleProportional = ui->chkScaleProportional->isChecked();
+	}
+
+	m_selectedItem->refreshFromItem();
+}
+
+void AwardDesignerDialog::updateColorButton()
+{
+	QPixmap pm(16, 16);
+	pm.fill(QColor(m_colorHex));
+	ui->btnColor->setIcon(QIcon(pm));
+	ui->btnColor->setText(QStringLiteral("  ") + m_colorHex);
+}
+
+void AwardDesignerDialog::setPropsEnabled(bool enabled)
+{
+	ui->grpProperties->setEnabled(enabled);
+}
+
+void AwardDesignerDialog::updateItemKindVisibility(AwardDesigner::Item::Kind kind)
+{
+	bool is_field = (kind == AwardDesigner::Item::Field);
+	ui->frameFieldContent->setVisible(is_field);
+	ui->frameImageContent->setVisible(!is_field);
+	ui->frameTextStyle->setVisible(is_field);
+}
+
+void AwardDesignerDialog::showEvent(QShowEvent *event)
+{
+	QDialog::showEvent(event);
+	QTimer::singleShot(0, this, [this]() {
+		ui->graphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+	});
+}
+
+bool AwardDesignerDialog::eventFilter(QObject *obj, QEvent *event)
+{
+	if (obj == ui->graphicsView && event->type() == QEvent::Wheel) {
+		auto *we = static_cast<QWheelEvent *>(event);
+		if (we->modifiers() & Qt::ControlModifier) {
+			const double factor = we->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
+			ui->graphicsView->scale(factor, factor);
+			return true;
+		}
+	}
+	return QDialog::eventFilter(obj, event);
+}

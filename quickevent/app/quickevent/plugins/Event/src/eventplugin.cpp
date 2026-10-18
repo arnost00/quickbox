@@ -15,6 +15,7 @@
 #include "services/emmaclient.h"
 #include "services/qx/qxeventservice.h"
 #include "services/punchingtest/punchingtestservice.h"
+#include "services/radiosender/radiosenderservice.h"
 
 #include <plugins/Core/src/widgets/settingsdialog.h>
 #include <plugins/Event/src/services/oresultsclient.h>
@@ -27,6 +28,8 @@
 #include <qf/gui/framework/dockwidget.h>
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/framework/application.h>
+#include <qf/gui/framework/plugin.h>
+#include <qf/gui/framework/reportfilecache.h>
 #include <qf/gui/dialogs/dialog.h>
 #include <qf/gui/dialogs/messagebox.h>
 #include <qf/gui/dialogs/filedialog.h>
@@ -64,6 +67,8 @@
 #include <QJsonDocument>
 #include <QTimer>
 #include <QRandomGenerator>
+#include <QCryptographicHash>
+#include <QFileInfo>
 
 #include <regex>
 
@@ -126,6 +131,20 @@ QString eventNameToFileName(const QString &event_name)
 {
 	QString ret = singleFileStorageDir() + '/' + event_name + QBE_EXT;
 	return ret;
+}
+
+QString reportCacheId(const QString &event_name, EventPlugin::ConnectionType connection_type)
+{
+	if(connection_type == EventPlugin::ConnectionType::SingleFile) {
+		// events with the same name can exist in different directories
+		QString path = eventNameToFileName(event_name);
+#ifdef Q_OS_WIN
+		path = path.toLower();
+#endif
+		const auto hash = QCryptographicHash::hash(path.toUtf8(), QCryptographicHash::Sha1).toHex().left(8);
+		return event_name + '-' + QString::fromLatin1(hash);
+	}
+	return event_name;
 }
 
 QString fileNameToEventName(const QString &file_name)
@@ -266,24 +285,15 @@ int EventPlugin::stageIdForRun(int run_id) const
 
 int EventPlugin::stageStartMsec(int stage_id) const
 {
-	QTime start_time = stageStartTime(stage_id);
+	auto dt = stageStartDateTime(stage_id);
+	auto start_time = dt.time();
 	int ret = start_time.msecsSinceStartOfDay();
 	return ret;
 }
 
-QDate EventPlugin::stageStartDate(int stage_id) const
-{
-	return stageStartDateTime(stage_id).date();
-}
-
-QTime EventPlugin::stageStartTime(int stage_id) const
-{
-	return stageStartDateTime(stage_id).time();
-}
-
 QDateTime EventPlugin::stageStartDateTime(int stage_id) const
 {
-	return appDbConfig().stageConfig(stage_id).startDateTime;
+	return appDbConfig().stageConfig(stage_id).startDateTime.toLocalTime();
 }
 
 int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id) const
@@ -292,7 +302,7 @@ int EventPlugin::msecToStageStartAM(int si_am_time_sec, int msec, int stage_id) 
 		return quickevent::core::og::TimeMs::UNREAL_TIME_MSEC;
 	if(stage_id == 0)
 		stage_id = currentStageId();
-	int stage_start_msec = stageStartMsec(stage_id);
+	int stage_start_msec = stageStartDateTime(stage_id).time().msecsSinceStartOfDay();
 	int time_msec = quickevent::core::og::TimeMs::msecIntervalAM(stage_start_msec, (si_am_time_sec * 1000) + msec);
 	return time_msec;
 }
@@ -398,6 +408,9 @@ void EventPlugin::onInstalled()
 
 	auto shvapi_client = new services::qx::QxEventService(this);
 	services::Service::addService(shvapi_client);
+
+	auto *radio_sender = new services::RadioSenderService(this);
+	services::Service::addService(radio_sender);
 
 	auto *punching_test = new services::PunchingTestService(this);
 	services::Service::addService(punching_test);
@@ -952,12 +965,12 @@ bool EventPlugin::createEvent(const QString &event_name, const EventConfig &even
 		qfd::MessageBox::showError(fwk, tr("Cannot create event, database is not open: %1").arg(conn.lastError().text()));
 	}
 	if(ok) {
-	    AppDbConfig cfg;
+		AppDbConfig cfg;
 		cfg.setEventConfig(new_params.eventConfig);
 		for(int i=0; i<stage_count; i++) {
-		    StageConfig stcfg;
-		    stcfg.startDateTime = new_params.stageStarts.value(i);
-		    cfg.setStageConfig(i+1, stcfg);
+			StageConfig stcfg;
+			stcfg.startDateTime = new_params.stageStarts.value(i);
+			cfg.setStageConfig(i+1, stcfg);
 		}
 		ok = openEvent(event_id);
 	}
@@ -998,6 +1011,7 @@ bool EventPlugin::closeEvent()
 {
 	qfLogFuncFrame();
 	m_classNameCache.clear();
+	qf::gui::framework::Plugin::reportFileCache()->closeEventCache();
 	setEventDbName(QString());
 	setEventOpen(false);
 	return true;
@@ -1126,6 +1140,7 @@ bool EventPlugin::openEvent(const QString &_event_name)
 	if(ok) {
 		connection_settings.setEventName(event_name);
 		setEventDbName(event_name);
+		qf::gui::framework::Plugin::reportFileCache()->openEventCache(reportCacheId(event_name, connection_type));
 		//emit reloadDataRequest();
 	}
 

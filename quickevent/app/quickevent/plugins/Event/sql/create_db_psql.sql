@@ -130,6 +130,8 @@ CREATE TABLE {{eventId}}.runs (
 	finishTimeMs integer,
 	penaltyTimeMs integer,
 	timeMs integer,
+	startGateTime timestamp with time zone,
+	finishGateTime timestamp with time zone,
 	isRunning boolean NOT NULL DEFAULT true,
 	disqualified boolean GENERATED ALWAYS AS (disqualifiedByOrganizer OR  misPunch OR  notStart OR  notFinish OR  badCheck OR  overTime OR notCompeting) STORED,
 	disqualifiedByOrganizer boolean NOT NULL DEFAULT false,
@@ -152,6 +154,8 @@ COMMENT ON COLUMN {{eventId}}.runs.startTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.finishTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.penaltyTimeMs IS 'in miliseconds';
 COMMENT ON COLUMN {{eventId}}.runs.timeMs IS 'in miliseconds';
+COMMENT ON COLUMN {{eventId}}.runs.startGateTime IS 'DateTime when competitor crossed start photocell';
+COMMENT ON COLUMN {{eventId}}.runs.finishGateTime IS 'DateTime when competitor crossed finish photocell';
 COMMENT ON COLUMN {{eventId}}.runs.isRunning IS 'Competitor is running in this stage';
 COMMENT ON COLUMN {{eventId}}.runs.disqualifiedByOrganizer IS 'Competitor is disqualified by organizer for breaking rules, etc.';
 COMMENT ON COLUMN {{eventId}}.runs.notCompeting IS 'Competitor does run in this stage but not competing';
@@ -295,10 +299,19 @@ CREATE INDEX qxchanges_ix1 ON {{eventId}}.qxchanges (stage_id, status);
 CREATE UNIQUE INDEX qxchanges_unique2 ON {{eventId}}.qxchanges (stage_id, foreign_id) WHERE status = 'Pending' AND data_type = 'LateEntry' AND foreign_table='runs' AND foreign_id IS NOT NULL;
 COMMENT ON COLUMN {{eventId}}.qxchanges.orig_data IS 'Store data overriden by change here to enable change rollback.';
 ;
+-- create table: {{eventId}}.reports;
+CREATE TABLE {{eventId}}.reports (
+	id serial PRIMARY KEY,
+	path character varying,
+	data BYTEA,
+	hash character varying,
+	CONSTRAINT reports_unique0 UNIQUE (path)
+);
+;
 ------------------------------------;
 -- insert initial data;
 ------------------------------------;
 ;
 -- insert into table: {{eventId}}.config;
-INSERT INTO {{eventId}}.config (ckey, cname, cvalue, ctype) VALUES 
-('db.version', 'Data version', '30600', 'int');
+INSERT INTO {{eventId}}.config (ckey, cname, cvalue, ctype) VALUES
+('db.version', 'Data version', '30700', 'int');

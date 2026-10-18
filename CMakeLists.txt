@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(CTest)
 set(CMAKE_SHARED_LIBRARY_PREFIX "") # we don't want CMake to prepend "lib" to our libraries, we prefer adding that ourselves
@@ -40,7 +41,7 @@ if (QF_WITH_LIBSHV)
 endif()
 
 set(USE_QT6 ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network Bluetooth)
 set(Qt_FOUND ${Qt6_FOUND})
 
 if(Qt_FOUND)
@@ -55,6 +56,7 @@ if(Qt_FOUND)
 	# variable instead of hard-coding a path back to the application.
 	set(QE_TRANSLATIONS_OUTPUT_DIR "${CMAKE_BINARY_DIR}/quickevent/app/quickevent/translations"
 		CACHE INTERNAL "Build-tree output directory for .qm translation files")
+	file(MAKE_DIRECTORY "${QE_TRANSLATIONS_OUTPUT_DIR}")
 
 	add_subdirectory(libqf)
 	if(QF_LIB_ONLY)

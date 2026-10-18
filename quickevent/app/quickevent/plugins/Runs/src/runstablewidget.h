@@ -23,11 +23,13 @@ public:
 	~RunsTableWidget() Q_DECL_OVERRIDE;
 
 	void clear();
-	void reload(int stage_id, int class_id = 0, bool show_offrace = false, const QString &sort_column = QString(), int select_competitor_id = 0);
+	void reload(int stage_id, int class_id = 0, bool show_offrace = false, const QString &sort_column = QString(), int select_competitor_id = 0, bool only_on_track = false);
 	void reload();
 
 	RunsTableModel* runsModel() {return m_runsModel;}
 	qf::gui::TableView* tableView();
+	void setColumnsHidden(const QStringList &hidden_field_names);
+	void setColumnsOrder(const QStringList &ordered_field_names);
 
 	Q_SIGNAL void editCompetitorRequest(int competitor_id, int mode);
 private:
@@ -43,4 +45,3 @@ private:
 	RunsTableItemDelegate *m_runsTableItemDelegate;
 	CourseItemDelegate *m_courseItemDelegate = nullptr;
 };
-
