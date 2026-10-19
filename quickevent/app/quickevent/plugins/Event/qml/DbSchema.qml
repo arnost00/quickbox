@@ -498,10 +498,12 @@ Schema {
 					notNull: true
 					defaultValue: 'CURRENT_TIMESTAMP'
 				},
+				Field { name: 'source'; type: String { } },
+				Field { name: 'change_id'; type: Int { } },
 				Field { name: 'lock_number'; type: Int { } }
 			]
 			indexes: [
-				Index {fields: ['stage_id', 'data_type', 'foreign_id']; unique: false },
+				Index {fields: ['stage_id', 'data_type', 'foreign_table', 'foreign_id']; unique: false },
 				Index {fields: ['stage_id', 'status']; unique: false },
 				Index {fields: ['stage_id', 'foreign_id']
 					// The WHERE clause means the index only contains rows that satisfy where condition

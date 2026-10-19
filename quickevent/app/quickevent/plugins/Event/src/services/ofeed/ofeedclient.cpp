@@ -1835,17 +1835,18 @@ void OFeedClient::storeChange(const QJsonObject &change)
 
 	auto *app = qf::gui::framework::Application::instance();
 	QVariantMap rec {
-		{"dataType", change.value("type").toString()},
+		{"data_type", change.value("type").toString()},
 		{"data", new_value},
-		{"dataId", runs_id},
-		{"origData", previous_value},
+		{"foreign_table", "runs"},
+		{"foreign_id", runs_id},
+		{"orig_data", previous_value},
 		{"source", "OFeed"},
-		{"userId", competitor_id},
-		{"stageId", current_stage},
-		{"changeId", change_id},
+		{"user_id", competitor_id},
+		{"stage_id", current_stage},
+		{"change_id", change_id},
 		{"created", created},
 		{"status", "Accepted"},
-		{"statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value},
+		{"status_message", firstname + " " + lastname + ": " + previous_value + " -> " + new_value},
 	};
 	if (auto id = app->qxSql()->createRecord("qxchanges", rec, this); id > 0) {
 		qf::core::sql::QxRecChng recchng;

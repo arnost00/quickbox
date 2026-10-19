@@ -292,9 +292,11 @@ CREATE TABLE {{eventId}}.qxchanges (
 	status character varying,
 	status_message character varying,
 	created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	source character varying,
+	change_id integer,
 	lock_number integer
 );
-CREATE INDEX qxchanges_ix0 ON {{eventId}}.qxchanges (stage_id, data_type, foreign_id);
+CREATE INDEX qxchanges_ix0 ON {{eventId}}.qxchanges (stage_id, data_type, foreign_table, foreign_id);
 CREATE INDEX qxchanges_ix1 ON {{eventId}}.qxchanges (stage_id, status);
 CREATE UNIQUE INDEX qxchanges_unique2 ON {{eventId}}.qxchanges (stage_id, foreign_id) WHERE status = 'Pending' AND data_type = 'LateEntry' AND foreign_table='runs' AND foreign_id IS NOT NULL;
 COMMENT ON COLUMN {{eventId}}.qxchanges.orig_data IS 'Store data overriden by change here to enable change rollback.';
@@ -303,8 +305,8 @@ COMMENT ON COLUMN {{eventId}}.qxchanges.orig_data IS 'Store data overriden by ch
 CREATE TABLE {{eventId}}.reports (
 	id serial PRIMARY KEY,
 	path character varying,
-	data BYTEA,
 	hash character varying,
+	data BYTEA,
 	CONSTRAINT reports_unique0 UNIQUE (path)
 );
 ;
@@ -313,5 +315,5 @@ CREATE TABLE {{eventId}}.reports (
 ------------------------------------;
 ;
 -- insert into table: {{eventId}}.config;
-INSERT INTO {{eventId}}.config (ckey, cname, cvalue, ctype) VALUES
-('db.version', 'Data version', '30700', 'int');
+INSERT INTO {{eventId}}.config (ckey, cname, cvalue, ctype) VALUES 
+('db.version', 'Data version', '30800', 'int');

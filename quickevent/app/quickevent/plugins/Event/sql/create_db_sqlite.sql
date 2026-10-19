@@ -321,9 +321,11 @@ CREATE TABLE qxchanges (
 	status character varying,
 	status_message character varying,
 	created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	source character varying,
+	change_id integer,
 	lock_number integer
 );
-CREATE INDEX qxchanges_ix0 ON qxchanges (stage_id, data_type, foreign_id);
+CREATE INDEX qxchanges_ix0 ON qxchanges (stage_id, data_type, foreign_table, foreign_id);
 CREATE INDEX qxchanges_ix1 ON qxchanges (stage_id, status);
 CREATE UNIQUE INDEX qxchanges_unique2 ON qxchanges (stage_id, foreign_id) WHERE status = 'Pending' AND data_type = 'LateEntry' AND foreign_table='runs' AND foreign_id IS NOT NULL;
 -- comments not suported for driver: SQLITE
@@ -333,8 +335,8 @@ CREATE UNIQUE INDEX qxchanges_unique2 ON qxchanges (stage_id, foreign_id) WHERE 
 CREATE TABLE reports (
 	id integer PRIMARY KEY,
 	path character varying,
-	data BLOB,
 	hash character varying,
+	data BLOB,
 	CONSTRAINT reports_unique0 UNIQUE (path)
 );
 ;
@@ -343,5 +345,5 @@ CREATE TABLE reports (
 ------------------------------------;
 ;
 -- insert into table: config;
-INSERT INTO config (ckey, cname, cvalue, ctype) VALUES
-('db.version', 'Data version', '30700', 'int');
+INSERT INTO config (ckey, cname, cvalue, ctype) VALUES 
+('db.version', 'Data version', '30800', 'int');
