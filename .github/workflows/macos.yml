@@ -31,7 +31,7 @@ jobs:
           cache: true
           version: 6.11.2
           install-deps: false
-          modules: qtserialport qtmultimedia qtconnectivity
+          modules: qtserialport qtmultimedia qtconnectivity qtwebsockets qtnetworkauth qttasktree
 
       - name: Get Git SHA
         run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV

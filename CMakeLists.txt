@@ -36,12 +36,21 @@ endif (WIN32)
 if (NOT TARGET libnecrolog)
 	add_subdirectory(3rdparty/necrolog)
 endif()
+
+set(QF_QT_COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network Bluetooth)
+
 if (QF_WITH_LIBSHV)
+	set(LIBSHV_WITH_WEBSOCKETS ON)
+	set(LIBSHV_WITH_CLI_EXAMPLES OFF)
+	set(LIBSHV_WITH_GUI_EXAMPLES OFF)
+	set(LIBSHV_WITH_LDAP OFF)
+	set(BUILD_SHV_UTILS OFF)
+	set(QF_QT_COMPONENTS ${QF_QT_COMPONENTS} WebSockets NetworkAuth)
 	add_subdirectory(3rdparty/libshv)
 endif()
 
 set(USE_QT6 ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Sql Qml Xml LinguistTools PrintSupport Svg SerialPort Multimedia Network Bluetooth)
+find_package(Qt6 REQUIRED COMPONENTS ${QF_QT_COMPONENTS})
 set(Qt_FOUND ${Qt6_FOUND})
 
 if(Qt_FOUND)
