@@ -1239,7 +1239,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	// Send request
 	QNetworkReply *reply = m_networkManager->put(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=, this]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, using_external_id, competitor_or_external_id]()
 			{
 				if(reply->error()) {
 					qfError() << serviceName().toStdString() + " [competitor update]: " << reply->errorString()
@@ -1293,7 +1293,7 @@ void OFeedClient::sendCompetitorAdded(QString json_body, int run_id)
 	// Send request
 	QNetworkReply *reply = m_networkManager->post(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=, this]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, run_id]()
 			{
 				m_createsInFlight.remove(run_id);
 				if(reply->error()) {

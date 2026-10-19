@@ -1547,8 +1547,7 @@ void RunsPlugin::computeStageTime(int run_id)
 			FLD_FINISH_TIME_MS,
 			FLD_START_GATE_TIME,
 			FLD_FINISH_GATE_TIME,
-			FLD_PENALTY_TIME_MS,
-			FLD_TIME_MS
+			FLD_PENALTY_TIME_MS
 		});
 	if(!run) {
 		qfWarning() << Q_FUNC_INFO << "run not found, run_id:" << run_id;
@@ -1556,7 +1555,6 @@ void RunsPlugin::computeStageTime(int run_id)
 	}
 	const QVariant start_ms_v = run->value(FLD_START_TIME_MS);
 	const QVariant finish_ms_v = run->value(FLD_FINISH_TIME_MS);
-	const QVariant orig_time_ms_v = run->value(FLD_TIME_MS);
 	QVariant time_ms_v;
 	if(start_ms_v.isValid() && finish_ms_v.isValid()) {
 		const int stage_id = run->value(FLD_STAGE_ID).toInt();

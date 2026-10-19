@@ -48,11 +48,13 @@ void RadioSenderService::run()
 void RadioSenderService::stop()
 {
 	m_server->close();
-	for (QTcpSocket *socket : m_clients.keys()) {
+	// disconnectFromHost() may emit disconnected() synchronously, which removes the socket from m_clients
+	const auto clients = std::exchange(m_clients, {});
+	for (auto it = clients.keyBegin(); it != clients.keyEnd(); ++it) {
+		QTcpSocket *socket = *it;
 		socket->disconnectFromHost();
 		socket->deleteLater();
 	}
-	m_clients.clear();
 	Super::stop();
 }
 
