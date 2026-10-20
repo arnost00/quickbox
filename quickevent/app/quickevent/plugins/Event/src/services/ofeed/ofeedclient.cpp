@@ -1848,12 +1848,18 @@ void OFeedClient::storeChange(const QJsonObject &change)
 		{"status", "Accepted"},
 		{"status_message", firstname + " " + lastname + ": " + previous_value + " -> " + new_value},
 	};
-	if (auto id = app->qxSql()->createRecord("qxchanges", rec, this); id > 0) {
-		qf::core::sql::QxRecChng recchng;
-		recchng.id = id;
-		recchng.op = qf::core::sql::RecOp::Insert;
-		recchng.record = rec;
-		getPlugin<EventPlugin>()->emitDbEvent(EventPlugin::DBEVENT_QX_RECCHNG, recchng.toVariantMap(), true);
+	try
+	{
+		// createRecord emits the record change itself
+		app->qxSql()->createRecord("qxchanges", rec, this);
+	}
+	catch (const std::exception &e)
+	{
+		qCritical() << "Exception occurred while storing the change:" << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception occurred while storing the change.";
 	}
 }
 
