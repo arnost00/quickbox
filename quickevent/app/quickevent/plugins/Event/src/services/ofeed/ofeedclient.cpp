@@ -60,6 +60,8 @@ namespace Event::services {
 		const QString k_office_changelog_origin = QStringLiteral("OFFICE");
 		/// window in which the record changes are collected before they are sent to OFeed
 		const int k_run_change_flush_msec = 100;
+		/// failed changelog entry is retried this many times, then it is left unprocessed in OFeed
+		const int k_max_change_attempts = 10;
 
 		QString normalized_base_host_url(QString host_url)
 		{
@@ -1559,6 +1561,9 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 			latest = change_created_at;
 		if (change["processed"].toBool())
 			continue;
+		const int protocol_id = change["id"].toInt();
+		if (m_changeFailures.value(protocol_id) >= k_max_change_attempts)
+			continue; // given up already, it only stays in the changelog
 
 		// Extract values
 		QString type = change["type"].toString();
@@ -1590,10 +1595,20 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		{
 			processNoteChange(runs_id, new_value);
 		}
+		else if (type == "start_time_change")
+		{
+			if (!processStartTimeChange(runs_id, competitor)) {
+				// retried by the next "since"
+				if (retryChange(protocol_id) && change_created_at.isValid() && !first_failed.isValid())
+					first_failed = change_created_at;
+				continue;
+			}
+			m_changeFailures.remove(protocol_id);
+		}
 		else if (type == "competitor_create")
 		{
 			// marked as processed in the async callback, only after the runner is stored
-			if (!processNewRunner(change) && change_created_at.isValid() && !first_failed.isValid())
+			if (!processNewRunner(change) && retryChange(protocol_id) && change_created_at.isValid() && !first_failed.isValid())
 				first_failed = change_created_at;
 			storeChange(change);
 			continue;
@@ -1739,6 +1754,48 @@ void OFeedClient::processCorridorTimeUpdate(int runs_id, const QDateTime &create
 	}
 }
 
+/// @param start_time ISO date time from OFeed, empty clears the start time
+/// @return false when the start time is not valid and nothing was changed
+bool OFeedClient::setRunStartTime(int run_id, const QString &start_time)
+{
+	QVariant start_time_ms; // NULL
+	if (!start_time.isEmpty()) {
+		const QDateTime dt = QDateTime::fromString(start_time, Qt::ISODate);
+		if (!dt.isValid()) {
+			qfWarning() << tr("Start time of the run %1 is not valid, not set: %2").arg(run_id).arg(start_time);
+			return false;
+		}
+		const int stage_id = getPlugin<EventPlugin>()->stageIdForRun(run_id);
+		start_time_ms = static_cast<int>(getPlugin<EventPlugin>()->stageStartDateTime(stage_id).msecsTo(dt));
+	}
+	// source == this, so the change is not sent back to OFeed
+	qf::gui::framework::Application::instance()->updateDbRecord("runs", run_id, QVariantMap{{"startTimeMs", start_time_ms}}, this);
+	return true;
+}
+
+/// start time of the competitor in OFeed is taken as is, the changelog newValue is a JS date string
+/// @return false when the change was not applied (the changelog entry is left unprocessed and retried)
+bool OFeedClient::processStartTimeChange(int runs_id, const QJsonObject &competitor)
+{
+	if (getPlugin<EventPlugin>()->stageIdForRun(runs_id) != getPlugin<EventPlugin>()->currentStageId()) {
+		qfWarning() << tr("Start time change skipped, run %1 is not in the current stage").arg(runs_id);
+		return false;
+	}
+	return setRunStartTime(runs_id, competitor.value("startTime").toString());
+}
+
+/// counts a failure of the changelog entry
+/// @return true when the entry should be retried by the next "since", false when the limit is reached
+bool OFeedClient::retryChange(int protocol_id)
+{
+	const int failures = ++m_changeFailures[protocol_id];
+	if (failures >= k_max_change_attempts) {
+		qfError() << tr("Changelog entry %1 failed %2 times, giving up, it stays unprocessed in OFeed").arg(protocol_id).arg(failures);
+		return false;
+	}
+	return true;
+}
+
 /// @param change competitor_create changelog entry with the competitor details
 /// @return false when the runner could not be stored (the entry is then retried by the next "since")
 bool OFeedClient::processNewRunner(const QJsonObject &change)
@@ -1800,15 +1857,7 @@ bool OFeedClient::processNewRunner(const QJsonObject &change)
 		m_runsInsertedFromOFeed.insert(run_id);
 
 		// start time matters in classes with a start list; source == this, so it is not sent back
-		const QString start_time_str = competitor.value("startTime").toString();
-		const QDateTime start_time = QDateTime::fromString(start_time_str, Qt::ISODate);
-		if (!start_time_str.isEmpty() && !start_time.isValid())
-			qfWarning() << tr("Start time of the new runner (OFeed id) %1 is not valid, not set: %2").arg(ofeed_competitor_id).arg(start_time_str);
-		if (start_time.isValid()) {
-			const QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(current_stage);
-			qf::gui::framework::Application::instance()->updateDbRecord(
-				"runs", run_id, QVariantMap{{"startTimeMs", static_cast<int>(stage_start.msecsTo(start_time))}}, this);
-		}
+		setRunStartTime(run_id, competitor.value("startTime").toString());
 	}
 
 	// Update externalId at OFeed
@@ -1818,12 +1867,13 @@ bool OFeedClient::processNewRunner(const QJsonObject &change)
 	// mark as processed only when OFeed has the externalId, otherwise later updates from QE would create a duplicate
 	sendCompetitorUpdate(json_body, ofeed_competitor_id, false, [this, protocol_id, origin, created_at](bool ok) {
 		if (ok) {
+			m_changeFailures.remove(protocol_id);
 			markChangelogEntryAsProcessed(protocol_id);
 			return;
 		}
 		// "since" was moved already, go back so that the entry is loaded again and only this PUT is repeated
-		qfError() << tr("Failed to set externalId at OFeed, changelog entry %1 will be retried").arg(protocol_id);
-		if (created_at.isValid() && lastChangelogCall(origin) > created_at)
+		qfError() << tr("Failed to set externalId at OFeed, changelog entry %1").arg(protocol_id);
+		if (retryChange(protocol_id) && created_at.isValid() && lastChangelogCall(origin) > created_at)
 			setLastChangelogCall(origin, created_at);
 	});
 	return true;
