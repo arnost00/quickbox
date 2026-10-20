@@ -111,7 +111,10 @@ void AppDbConfig::load()
 	{
 		auto stages = config.value(STAGE).toMap();
 		Query stages_q(conn);
-		stages_q.exec("SELECT * FROM stages ORDER BY id", !qf::core::Exception::Throw);
+		// the stages table exists in events created before the stages config moved to the config table
+		if(conn.tableExists("stages")) {
+			stages_q.exec("SELECT * FROM stages ORDER BY id", !qf::core::Exception::Throw);
+		}
 		while(stages_q.next()) {
 			const auto stage_id = stages_q.value("id").toString();
 			if(stages.contains(stage_id))
