@@ -666,7 +666,8 @@ void EventPlugin::onRegistrationsDockVisibleChanged(bool on)
 void EventPlugin::repairStageStarts(const qf::core::sql::Connection &from_conn, const qf::core::sql::Connection &to_conn)
 {
 	qfs::Query to_q(to_conn);
-	to_q.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, :type)");
+	// keys already present in the copied config table win
+	to_q.prepare("INSERT INTO config (ckey, cvalue, ctype) VALUES (:key, :value, :type) ON CONFLICT (ckey) DO NOTHING");
 
 	qfs::Query from_q(from_conn);
 	from_q.exec("SELECT * FROM stages ORDER BY id", !qf::core::Exception::Throw);
@@ -680,18 +681,23 @@ void EventPlugin::repairStageStarts(const qf::core::sql::Connection &from_conn, 
 		stage_config.drawingConfig = DrawingConfig::fromString(from_q.value("drawingConfig").toString());
 		stage_config.useAllMaps = from_q.value("useAllMaps").toBool();
 		auto make_key = [stage_id](const QString& key) {return QStringLiteral("stage.%1.%2").arg(stage_id).arg(key);};
+		auto exec_insert = [&to_q]() {
+			if(!to_q.exec()) {
+				qfError() << "Cannot store stage config:" << to_q.lastError().text();
+			}
+		};
 		to_q.bindValue(":key", make_key("startDateTime"));
 		to_q.bindValue(":value", stage_config.startDateTime);
 		to_q.bindValue(":type", "QDateTime");
-		to_q.exec();
+		exec_insert();
 		to_q.bindValue(":key", make_key("drawingConfig"));
 		to_q.bindValue(":value", qf::core::Utils::qvariantToJson(stage_config.drawingConfig.toVariantMap()));
 		to_q.bindValue(":type", "QString");
-		to_q.exec();
+		exec_insert();
 		to_q.bindValue(":key", make_key("useAllMaps"));
 		to_q.bindValue(":value", stage_config.useAllMaps);
 		to_q.bindValue(":type", "bool");
-		to_q.exec();
+		exec_insert();
 	}
 }
 
@@ -1199,6 +1205,14 @@ QString copy_sql_table(const QString &table_name, const QSqlRecord &dest_rec, qf
 			rec.append(dest_rec.field("isRunning"));
 		}
 	}
+	// qxchanges.data_id (always runs.id) was replaced by foreign_table + foreign_id
+	const bool is_import_qxchanges_data_id = table_name == QLatin1String("qxchanges")
+			&& src_rec.contains("data_id") && !src_rec.contains("foreign_id")
+			&& dest_rec.contains("foreign_id") && dest_rec.contains("foreign_table");
+	if(is_import_qxchanges_data_id) {
+		rec.append(dest_rec.field("foreign_id"));
+		rec.append(dest_rec.field("foreign_table"));
+	}
 	auto *sqldrv = to_conn.driver();
 	QString qs = sqldrv->sqlStatement(QSqlDriver::InsertStatement, table_name, rec, true);
 	qfDebug() << qs;
@@ -1229,6 +1243,13 @@ QString copy_sql_table(const QString &table_name, const QSqlRecord &dest_rec, qf
 					// isRunning cannot be NULL, convert NULL to false during import
 					v = from_q.value(fld_name).toBool();
 				}
+			}
+			else if(is_import_qxchanges_data_id && fld_name == QLatin1String("foreign_id")) {
+				v = from_q.value(QStringLiteral("data_id"));
+				v.convert(rec.field(i).metaType());
+			}
+			else if(is_import_qxchanges_data_id && fld_name == QLatin1String("foreign_table")) {
+				v = from_q.value(QStringLiteral("data_id")).isNull()? QVariant(QMetaType(QMetaType::QString)): QVariant(QStringLiteral("runs"));
 			}
 			else {
 				v = from_q.value(fld_name);
