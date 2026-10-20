@@ -170,12 +170,12 @@ private:
 	void getChangesByOrigin(const QString &origin, std::function<void()> on_done = nullptr);
 	QDateTime processCompetitorsChanges(QJsonArray data_array);
 	void markChangelogEntryAsProcessed(int protocolId);
-	void processCardChange(int runs_id, const QString &new_value);
+	void processCardChange(int runs_id, const QString &new_value, bool office);
 	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
 	void processCorridorTimeUpdate(int runs_id, const QDateTime &created_at);
 	bool processNewRunner(const QJsonObject &change);
-	bool processStartTimeChange(int runs_id, const QJsonObject &competitor);
+	bool processCompetitorChange(const QString &type, int runs_id, const QJsonObject &competitor);
 	bool setRunStartTime(int run_id, const QString &start_time);
 	bool retryChange(int protocol_id);
 	void storeChange(const QJsonObject &change);

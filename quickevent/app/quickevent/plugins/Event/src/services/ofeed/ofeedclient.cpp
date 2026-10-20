@@ -1578,14 +1578,14 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		int runs_id = external_id_str.toInt();
 		qfDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
 
-		bool is_dns = type == QLatin1String("status_change") && new_value == QLatin1String("DidNotStart");
+		bool is_dns = type == QLatin1String("status_change") && (new_value == QLatin1String("DidNotStart") || new_value == QLatin1String("Cancelled"));
 		if (origin == k_start_changelog_origin && created_at.isValid() && !is_dns)
 			processCorridorTimeUpdate(runs_id, created_at);
 
 		// Handle each type of change
 		if (type == "si_card_change")
 		{
-			processCardChange(runs_id, new_value);
+			processCardChange(runs_id, new_value, origin == k_office_changelog_origin);
 		}
 		else if (type == "status_change")
 		{
@@ -1595,9 +1595,9 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		{
 			processNoteChange(runs_id, new_value);
 		}
-		else if (type == "start_time_change")
+		else if (type == "start_time_change" || type == "firstname_change" || type == "lastname_change" || type == "class_change")
 		{
-			if (!processStartTimeChange(runs_id, competitor)) {
+			if (!processCompetitorChange(type, runs_id, competitor)) {
 				// retried by the next "since"
 				if (retryChange(protocol_id) && change_created_at.isValid() && !first_failed.isValid())
 					first_failed = change_created_at;
@@ -1656,8 +1656,26 @@ void OFeedClient::markChangelogEntryAsProcessed(int protocolId)
 	}, true);
 }
 
-void OFeedClient::processCardChange(int runs_id, const QString &new_value)
+void OFeedClient::processCardChange(int runs_id, const QString &new_value, bool office)
 {
+	if (office) {
+		// card changed by the office is a change of the competitor card, not just of the run at the start
+		const int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
+		if (competitor_id > 0) {
+			qf::gui::framework::Application::instance()->updateDbRecord("competitors", competitor_id, QVariantMap{{"siId", new_value.toInt()}}, this);
+			try {
+				qf::core::sql::Query q;
+				q.prepare("UPDATE runs SET siId=:siId WHERE competitorId=:competitorId", qf::core::Exception::Throw);
+				q.bindValue(":competitorId", competitor_id);
+				q.bindValue(":siId", new_value.toInt());
+				q.exec(qf::core::Exception::Throw);
+			}
+			catch (const std::exception &e) {
+				qfError() << tr("Exception occurred while executing query: ") << e.what();
+			}
+			return;
+		}
+	}
 	qf::core::sql::Query q;
 	try
 	{
@@ -1681,7 +1699,8 @@ void OFeedClient::processCardChange(int runs_id, const QString &new_value)
 
 void OFeedClient::processStatusChange(int runs_id, const QString &new_value)
 {
-	bool notStart = new_value == "DidNotStart" ? true : false;
+	// entry cancellation comes as status Cancelled, the runner stays in QE but does not start
+	bool notStart = new_value == "DidNotStart" || new_value == "Cancelled";
 
 	qf::core::sql::Query q;
 	try
@@ -1773,15 +1792,50 @@ bool OFeedClient::setRunStartTime(int run_id, const QString &start_time)
 	return true;
 }
 
-/// start time of the competitor in OFeed is taken as is, the changelog newValue is a JS date string
+/// Changes of the competitor data made at OFeed. The current values of the competitor are used (not the
+/// changelog newValue, which is a text of the value, class change has the OFeed class id there).
 /// @return false when the change was not applied (the changelog entry is left unprocessed and retried)
-bool OFeedClient::processStartTimeChange(int runs_id, const QJsonObject &competitor)
+bool OFeedClient::processCompetitorChange(const QString &type, int runs_id, const QJsonObject &competitor)
 {
-	if (getPlugin<EventPlugin>()->stageIdForRun(runs_id) != getPlugin<EventPlugin>()->currentStageId()) {
-		qfWarning() << tr("Start time change skipped, run %1 is not in the current stage").arg(runs_id);
+	auto *event_plugin = getPlugin<EventPlugin>();
+	if (event_plugin->stageIdForRun(runs_id) != event_plugin->currentStageId()) {
+		qfWarning() << tr("Change %1 skipped, run %2 is not in the current stage").arg(type).arg(runs_id);
 		return false;
 	}
-	return setRunStartTime(runs_id, competitor.value("startTime").toString());
+	if (type == QLatin1String("start_time_change"))
+		return setRunStartTime(runs_id, competitor.value("startTime").toString());
+
+	const int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
+	if (competitor_id <= 0) {
+		qfWarning() << tr("Change %1 skipped, competitor of the run %2 not found").arg(type).arg(runs_id);
+		return false;
+	}
+	QVariantMap record;
+	if (type == QLatin1String("firstname_change")) {
+		record["firstName"] = competitor.value("firstname").toString();
+	}
+	else if (type == QLatin1String("lastname_change")) {
+		record["lastName"] = competitor.value("lastname").toString();
+	}
+	else if (type == QLatin1String("class_change")) {
+		const int class_id = competitor.value("class").toObject().value("externalId").toString().toInt();
+		try {
+			qf::core::sql::Query q;
+			q.prepare("SELECT id FROM classes WHERE id=:classId", qf::core::Exception::Throw);
+			q.bindValue(":classId", class_id);
+			if (!q.exec(qf::core::Exception::Throw) || !q.next()) {
+				qfWarning() << tr("Class change skipped, class %1 does not exist in QE").arg(class_id);
+				return false;
+			}
+		}
+		catch (const std::exception &e) {
+			qfError() << tr("Exception occurred while executing query: ") << e.what();
+			return false;
+		}
+		record["classId"] = class_id;
+	}
+	// source == this, so the change is not sent back to OFeed
+	return qf::gui::framework::Application::instance()->updateDbRecord("competitors", competitor_id, record, this);
 }
 
 /// counts a failure of the changelog entry
