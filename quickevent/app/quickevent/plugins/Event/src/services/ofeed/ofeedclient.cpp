@@ -1205,7 +1205,8 @@ void OFeedClient::sendFile(QString name, QString request_path, QString file, std
 /// @param json_body body with the competitors data
 /// @param competitor_or_external_id ofeed competitor id or external id (for QE runs.id)
 /// @param using_external_id indicator which id is used - competitor (internal OFeed) or external (QE id from runs table)
-void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_external_id, bool using_external_id = true)
+/// @param on_done called with true when OFeed accepted the update
+void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_external_id, bool using_external_id = true, std::function<void(bool)> on_done = nullptr)
 {
 	qfInfo() << serviceName().toStdString() + " [sendCompetitorUpdate] id:" << competitor_or_external_id
 			 << "useExternalId:" << using_external_id
@@ -1240,6 +1241,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 
 	connect(reply, &QNetworkReply::finished, this, [=, this]()
 			{
+				bool ok = false;
 				if(reply->error()) {
 					qfError() << serviceName().toStdString() + " [competitor update]: " << reply->errorString()
 							  << "HTTP status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
@@ -1255,6 +1257,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 					QJsonObject json_object = json_response.object();
 
 					if (json_object.contains("error") && !json_object["error"].toBool()) {
+						ok = true;
 						QJsonObject results_object = json_object["results"].toObject();
 						QJsonObject data_object = results_object["data"].toObject();
 
@@ -1268,7 +1271,9 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 						qfError() << serviceName().toStdString() + " [competitor details update] Unexpected response: " << response;
 					}
 				}
-				reply->deleteLater(); });
+				reply->deleteLater();
+				if (on_done)
+					on_done(ok); });
 }
 
 void OFeedClient::sendCompetitorAdded(QString json_body, int run_id)
@@ -1458,6 +1463,7 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 		query ChangelogByEvent($eventId: String!, $origin: String, $since: DateTime) {
 			changelogByEvent(eventId: $eventId, origin: $origin, since: $since) {
 				id
+				processed
 				type
 				previousValue
 				newValue
@@ -1501,11 +1507,11 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 					}
 					else {
 						// Process the data
-						processCompetitorsChanges(changelog_array);
+						const QDateTime next_since = processCompetitorsChanges(changelog_array);
 
-						// Update last changelog call with the adjusted execution time
-						QDateTime request_execution_time = QDateTime::currentDateTimeUtc();
-						setLastChangelogCall(origin, request_execution_time);
+						// "since" is inclusive and comes from the server time, so no clock skew and no gap
+						if (next_since.isValid())
+							setLastChangelogCall(origin, next_since);
 					}
 				}
 			}
@@ -1523,12 +1529,16 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 	}
 }
 
-void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
+/// @return value for the next "since": createdAt of the first change that failed (to retry it),
+/// otherwise createdAt of the latest change; invalid when there is nothing to move to
+QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 {
 	if (data_array.isEmpty())
 	{
-		return;
+		return {};
 	}
+	QDateTime first_failed;
+	QDateTime latest;
 
 	// Prevent back-sending of changes that originate from OFeed. The flag must
 	// stay true until all DB events queued by the SQL updates below are processed,
@@ -1544,6 +1554,11 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		}
 
 		QJsonObject change = value.toObject();
+		const QDateTime change_created_at = QDateTime::fromString(change["createdAt"].toString(), Qt::ISODate);
+		if (change_created_at.isValid() && (!latest.isValid() || change_created_at > latest))
+			latest = change_created_at;
+		if (change["processed"].toBool())
+			continue;
 
 		// Extract values
 		QString type = change["type"].toString();
@@ -1578,7 +1593,8 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		else if (type == "competitor_create")
 		{
 			// marked as processed in the async callback, only after the runner is stored
-			processNewRunner(competitor, change["id"].toInt());
+			if (!processNewRunner(change) && change_created_at.isValid() && !first_failed.isValid())
+				first_failed = change_created_at;
 			storeChange(change);
 			continue;
 		}
@@ -1596,6 +1612,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 	QTimer::singleShot(0, this, [this]() {
 		m_processingOFeedChanges = false;
 	});
+	return first_failed.isValid() ? first_failed : latest;
 }
 
 void OFeedClient::markChangelogEntryAsProcessed(int protocolId)
@@ -1722,59 +1739,91 @@ void OFeedClient::processCorridorTimeUpdate(int runs_id, const QDateTime &create
 	}
 }
 
-void OFeedClient::processNewRunner(const QJsonObject &competitor, int protocol_id)
+/// @param change competitor_create changelog entry with the competitor details
+/// @return false when the runner could not be stored (the entry is then retried by the next "since")
+bool OFeedClient::processNewRunner(const QJsonObject &change)
 {
+	const QJsonObject competitor = change.value("competitor").toObject();
+	const int protocol_id = change.value("id").toInt();
 	const int ofeed_competitor_id = competitor.value("id").toInt();
+	const QString registration = competitor.value("registration").toString();
+	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
-	// Create the competitor in QE
-	Competitors::CompetitorDocument doc;
-	doc.loadForInsert();
-	doc.setValue("firstName", competitor.value("firstname").toString());
-	doc.setValue("lastName", competitor.value("lastname").toString());
-	doc.setValue("registration", competitor.value("registration").toString());
-	doc.setValue("classid", competitor.value("class").toObject().value("externalId").toString());
-	doc.setSiid(competitor.value("card").toInt());
-	doc.setValue("note", competitor.value("note").toString());
 
-	// Save emits db event
-	try {
-		doc.save();
+	// the runner may be stored already, when the externalId could not be sent to OFeed the last time
+	int run_id = 0;
+	if (!registration.isEmpty()) {
+		try {
+			qf::core::sql::Query q;
+			q.prepare("SELECT runs.id FROM runs JOIN competitors ON competitors.id = runs.competitorId "
+					  "WHERE competitors.registration = :registration AND runs.stageId = :stageId",
+					  qf::core::Exception::Throw);
+			q.bindValue(":registration", registration);
+			q.bindValue(":stageId", current_stage);
+			if (q.exec(qf::core::Exception::Throw) && q.next())
+				run_id = q.value(0).toInt();
+		}
+		catch (const std::exception &e) {
+			// creating the runner without knowing whether it exists could duplicate it
+			qfError() << tr("Lookup of the existing runner failed: ") << e.what();
+			return false;
+		}
 	}
-	catch (const std::exception &e) {
-		// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
-		qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
-		return;
+
+	if (run_id > 0) {
+		qfInfo() << tr("Runner (OFeed id) %1 exists in QE already (run id %2), only the externalId is sent").arg(ofeed_competitor_id).arg(run_id);
 	}
+	else {
+		// Create the competitor in QE
+		Competitors::CompetitorDocument doc;
+		doc.loadForInsert();
+		doc.setValue("firstName", competitor.value("firstname").toString());
+		doc.setValue("lastName", competitor.value("lastname").toString());
+		doc.setValue("registration", registration);
+		doc.setValue("classid", competitor.value("class").toObject().value("externalId").toString());
+		doc.setSiid(competitor.value("card").toInt());
+		doc.setValue("note", competitor.value("note").toString());
 
-	// auto competitor_id = doc.value("competitors.id");
+		// Save emits db event
+		try {
+			doc.save();
+		}
+		catch (const std::exception &e) {
+			// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
+			qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
+			return false;
+		}
 
-	// Get runs.id for current stage
-	int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	int run_id = doc.runsIds().value(current_stage - 1);
-	// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
-	m_runsInsertedFromOFeed.insert(run_id);
+		// Get runs.id for current stage
+		run_id = doc.runsIds().value(current_stage - 1);
+		// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
+		m_runsInsertedFromOFeed.insert(run_id);
 
-	// start time matters in classes with a start list; source == this, so it is not sent back
-	const QDateTime start_time = QDateTime::fromString(competitor.value("startTime").toString(), Qt::ISODate);
-	if (start_time.isValid()) {
-		const QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(current_stage);
-		qf::gui::framework::Application::instance()->updateDbRecord(
-			"runs", run_id, QVariantMap{{"startTimeMs", static_cast<int>(stage_start.msecsTo(start_time))}}, this);
+		// start time matters in classes with a start list; source == this, so it is not sent back
+		const QDateTime start_time = QDateTime::fromString(competitor.value("startTime").toString(), Qt::ISODate);
+		if (start_time.isValid()) {
+			const QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(current_stage);
+			qf::gui::framework::Application::instance()->updateDbRecord(
+				"runs", run_id, QVariantMap{{"startTimeMs", static_cast<int>(stage_start.msecsTo(start_time))}}, this);
+		}
 	}
 
 	// Update externalId at OFeed
-	std::stringstream json_payload;
-	json_payload << "{"
-	<< R"("origin":"IT",)"
-	<< R"("externalId":")" << run_id << R"(")"
-	<< "}";
-
-	std::string json_str = json_payload.str();
-
-	// Convert std::string to QString
-	QString json_body = QString::fromStdString(json_str);
-	sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
-	markChangelogEntryAsProcessed(protocol_id);
+	const QString json_body = QStringLiteral(R"({"origin":"IT","externalId":"%1"})").arg(run_id);
+	const QString origin = change.value("origin").toString();
+	const QDateTime created_at = QDateTime::fromString(change.value("createdAt").toString(), Qt::ISODate);
+	// mark as processed only when OFeed has the externalId, otherwise later updates from QE would create a duplicate
+	sendCompetitorUpdate(json_body, ofeed_competitor_id, false, [this, protocol_id, origin, created_at](bool ok) {
+		if (ok) {
+			markChangelogEntryAsProcessed(protocol_id);
+			return;
+		}
+		// "since" was moved already, go back so that the entry is loaded again and only this PUT is repeated
+		qfError() << tr("Failed to set externalId at OFeed, changelog entry %1 will be retried").arg(protocol_id);
+		if (created_at.isValid() && lastChangelogCall(origin) > created_at)
+			setLastChangelogCall(origin, created_at);
+	});
+	return true;
 }
 
 void OFeedClient::storeChange(const QJsonObject &change)
