@@ -128,24 +128,10 @@ QxLateEntriesWidget::QxLateEntriesWidget(QWidget *parent) :
 
 	ui->tableView->setColumnHidden(col_stage_id, true);
 
-	showMessage(tr("QxEvent service is disabled"), true);
-	setEnabled(false);
+	showMessage({});
 
 	auto *svc = qxEventService();
-	connect(svc, &Service::statusChanged, this, [this](Service::Status new_status){
-		switch (new_status) {
-		case Service::Status::Unknown:
-		case Service::Status::Stopped:
-			showMessage(tr("QxEvent service is disabled"), true);
-			setEnabled(false);
-			break;
-			case Service::Status::Running:
-			showMessage({});
-			setEnabled(true);
-			reload();
-			break;
-		}
-	});
+	connect(svc, &Service::statusChanged, this, &QxLateEntriesWidget::reload);
 
 	{
 		auto *lst = ui->lstType;
@@ -185,7 +171,7 @@ QxLateEntriesWidget::~QxLateEntriesWidget()
 
 void QxLateEntriesWidget::onVisibleChanged(bool is_visible)
 {
-	if (is_visible && isEnabled()) {
+	if (is_visible) {
 		reload();
 	}
 }
@@ -222,9 +208,6 @@ void QxLateEntriesWidget::showMessage(const QString &msg, bool is_error)
 
 void QxLateEntriesWidget::reload()
 {
-	if(!isEnabled()) {
-		return;
-	}
 	auto event_plugin = getPlugin<EventPlugin>();
 	if(!getPlugin<EventPlugin>()->isEventOpen()) {
 		return;
