@@ -439,7 +439,7 @@ void OFeedClient::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *
 				return;
 			}
 			if (m_runsInsertedFromOFeed.remove(run_id)) {
-				qfWarning() << serviceName().toStdString() + " [new competitor]: added from OFeed, no need to send back as a new competitor from QE (already exists in OFeed)";
+				qfInfo() << serviceName().toStdString() + " [new competitor]: added from OFeed, no need to send back as a new competitor from QE (already exists in OFeed)";
 				return;
 			}
 			qfInfo() << serviceName().toStdString() + " rec chng competitor ADDED, run id: " << run_id;
@@ -1162,7 +1162,7 @@ void OFeedClient::sendFile(QString name, QString request_path, QString file, std
 		validate_xml_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="validateXml")"));
 		validate_xml_part.setBody(QByteArray(xmlValidation ? "true" : "false"));
 		multi_part->append(validate_xml_part);
-		qDebug() << "Upload without IOF XML validation, validateXml: " + QString(xmlValidation ? "true" : "false");
+		qfDebug() << "Upload without IOF XML validation, validateXml: " + QString(xmlValidation ? "true" : "false");
 	}
 
 	// Add xml content with fake filename that must be present
@@ -1208,7 +1208,7 @@ void OFeedClient::sendFile(QString name, QString request_path, QString file, std
 /// @param on_done called with true when OFeed accepted the update
 void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_external_id, bool using_external_id = true, std::function<void(bool)> on_done = nullptr)
 {
-	qfInfo() << serviceName().toStdString() + " [sendCompetitorUpdate] id:" << competitor_or_external_id
+	qfDebug() << serviceName().toStdString() + " [sendCompetitorUpdate] id:" << competitor_or_external_id
 			 << "useExternalId:" << using_external_id
 			 << "body:" << json_body;
 
@@ -1571,7 +1571,7 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		auto competitor = change.value("competitor").toObject();
 		QString external_id_str = competitor["externalId"].toString();
 		int runs_id = external_id_str.toInt();
-		qfInfo() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
+		qfDebug() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
 
 		bool is_dns = type == QLatin1String("status_change") && new_value == QLatin1String("DidNotStart");
 		if (origin == k_start_changelog_origin && created_at.isValid() && !is_dns)
@@ -1600,7 +1600,7 @@ QDateTime OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		}
 		else
 		{
-			qfWarning() << "Unsupported change type: " << type.toStdString();
+			qfInfo() << "Unsupported change type: " << type.toStdString();
 			continue;
 		}
 
@@ -1748,7 +1748,7 @@ bool OFeedClient::processNewRunner(const QJsonObject &change)
 	const int ofeed_competitor_id = competitor.value("id").toInt();
 	const QString registration = competitor.value("registration").toString();
 	const int current_stage = getPlugin<EventPlugin>()->currentStageId();
-	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
+	qfDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
 
 	// the runner may be stored already, when the externalId could not be sent to OFeed the last time
 	int run_id = 0;
@@ -1800,7 +1800,10 @@ bool OFeedClient::processNewRunner(const QJsonObject &change)
 		m_runsInsertedFromOFeed.insert(run_id);
 
 		// start time matters in classes with a start list; source == this, so it is not sent back
-		const QDateTime start_time = QDateTime::fromString(competitor.value("startTime").toString(), Qt::ISODate);
+		const QString start_time_str = competitor.value("startTime").toString();
+		const QDateTime start_time = QDateTime::fromString(start_time_str, Qt::ISODate);
+		if (!start_time_str.isEmpty() && !start_time.isValid())
+			qfWarning() << tr("Start time of the new runner (OFeed id) %1 is not valid, not set: %2").arg(ofeed_competitor_id).arg(start_time_str);
 		if (start_time.isValid()) {
 			const QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(current_stage);
 			qf::gui::framework::Application::instance()->updateDbRecord(
@@ -2239,7 +2242,7 @@ void OFeedClient::onRunChanged(int run_id, const QVariantMap &run_fields, const 
 		if (json_str.back() == ',')
 			json_str.pop_back();
 		json_str += "}";
-		qfInfo() << serviceName().toStdString() + " [onRunChanged/run] run_id:" << run_id;
+		qfDebug() << serviceName().toStdString() + " [onRunChanged/run] run_id:" << run_id;
 		sendCompetitorUpdate(QString::fromStdString(json_str), run_id);
 	}
 
@@ -2261,7 +2264,7 @@ void OFeedClient::onRunChanged(int run_id, const QVariantMap &run_fields, const 
 			spayload << R"({"origin":"IT","useExternalId":true,)"
 					 << R"("startTime":")" << datetime_to_string(stage_start_date_time.addMSecs(start_time_ms)).toStdString() << R"(")"
 					 << "}";
-			qfInfo() << serviceName().toStdString() + " [onRunChanged/startTime] run_id:" << run_id;
+			qfDebug() << serviceName().toStdString() + " [onRunChanged/startTime] run_id:" << run_id;
 			sendCompetitorUpdate(QString::fromStdString(spayload.str()), run_id);
 		}
 	}
@@ -2334,7 +2337,7 @@ void OFeedClient::onRunChanged(int run_id, const QVariantMap &run_fields, const 
 				std::string cs = cpayload.str();
 				if (cs.back() == ',') cs.pop_back();
 				cs += "}";
-				qfInfo() << serviceName().toStdString() + " [onRunChanged/competitor] run_id:" << run_id;
+				qfDebug() << serviceName().toStdString() + " [onRunChanged/competitor] run_id:" << run_id;
 				sendCompetitorUpdate(QString::fromStdString(cs), run_id);
 			}
 		}
