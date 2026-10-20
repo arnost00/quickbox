@@ -494,11 +494,112 @@ void OFeedClient::queueRunChange(int run_id, const QString &table, const QVarian
 	}
 }
 
+/// One-time upload of the rental cards table (lentcards) to OFeed, "ignored" cards are uploaded as not active
+/// @param callback success, number of the cards stored by OFeed, error message
+void OFeedClient::uploadRentalCards(std::function<void(bool success, int count, const QString &error)> callback)
+{
+	QByteArray csv = "cardNumber,active\n";
+	int count = 0;
+	try {
+		qf::core::sql::Query q;
+		q.exec("SELECT siId, ignored FROM lentcards ORDER BY siId", qf::core::Exception::Throw);
+		while (q.next()) {
+			csv += QByteArray::number(q.value(0).toInt()) + (q.value(1).toBool()? ",false\n": ",true\n");
+			++count;
+		}
+	}
+	catch (const std::exception &e) {
+		callback(false, 0, tr("Reading of the rental cards failed: %1").arg(QString::fromUtf8(e.what())));
+		return;
+	}
+	if (count == 0) {
+		callback(true, 0, QString());
+		return;
+	}
+	// the limit of the OFeed import
+	if (csv.size() > 200000) {
+		callback(false, 0, tr("There are too many rental cards, OFeed accepts the file up to 200 kB."));
+		return;
+	}
+
+	auto *multi_part = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+	QHttpPart file_part;
+	file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/csv"));
+	file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(R"(form-data; name="file"; filename="rental-cards.csv")"));
+	file_part.setBody(csv);
+	multi_part->append(file_part);
+
+	QNetworkRequest request(QUrl(hostUrl() + "/rest/v1/events/" + eventId() + "/rental-cards/import"));
+	request.setRawHeader("Authorization", "Basic " + (eventId() + ":" + eventPassword()).toUtf8().toBase64());
+	QNetworkReply *reply = m_networkManager->post(request, multi_part);
+	multi_part->setParent(reply);
+
+	connect(reply, &QNetworkReply::finished, this, [reply, count, callback]() {
+		const QByteArray body = reply->readAll();
+		const QJsonObject json = QJsonDocument::fromJson(body).object();
+		if (reply->error()) {
+			QString msg = json.value("message").toString();
+			if (msg.isEmpty())
+				msg = reply->errorString();
+			qfError() << serviceName().toStdString() + " [rental cards import]: " << msg << "HTTP status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+			callback(false, 0, msg);
+		}
+		else {
+			const int imported = json.value("results").toObject().value("imported").toInt(count);
+			qfInfo() << serviceName().toStdString() + " [rental cards import]: uploaded" << imported << "cards";
+			callback(true, imported, QString());
+		}
+		reply->deleteLater();
+	});
+}
+
+/// OFeed marks the rental card as returned, only the cards of the rental cards table are known there
+void OFeedClient::sendRentalCardReturned(int run_id, bool returned)
+{
+	int card = 0;
+	try {
+		qf::core::sql::Query q;
+		q.prepare("SELECT runs.siId FROM runs JOIN lentcards ON lentcards.siId = runs.siId WHERE runs.id = :runId", qf::core::Exception::Throw);
+		q.bindValue(":runId", run_id);
+		if (q.exec(qf::core::Exception::Throw) && q.next())
+			card = q.value(0).toInt();
+	}
+	catch (const std::exception &e) {
+		qfError() << tr("Lookup of the rental card failed: ") << e.what();
+		return;
+	}
+	if (card <= 0)
+		return;
+
+	QNetworkRequest request(QUrl(hostUrl() + "/rest/v1/events/" + eventId() + "/rental-cards/" + QString::number(card) + "/returned"));
+	request.setRawHeader("Authorization", "Basic " + (eventId() + ":" + eventPassword()).toUtf8().toBase64());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	QNetworkReply *reply = m_networkManager->sendCustomRequest(request, "PATCH", returned? QByteArray(R"({"returned":true})"): QByteArray(R"({"returned":false})"));
+	connect(reply, &QNetworkReply::finished, this, [reply, card]() {
+		if (reply->error()) {
+			const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+			const QString msg = serviceName() + " [rental card returned]: card " + QString::number(card) + " " + reply->errorString() + " HTTP status: " + QString::number(status);
+			// 404 - the card was not uploaded to OFeed
+			if (status == 404)
+				qfInfo() << msg;
+			else
+				qfError() << msg;
+		}
+		else {
+			qfInfo() << serviceName().toStdString() + " [rental card returned]: card" << card << "updated";
+		}
+		reply->deleteLater();
+	});
+}
+
 void OFeedClient::flushRunChanges()
 {
 	const auto pending = m_pendingRunChanges;
 	m_pendingRunChanges.clear();
 	for (const auto &[run_id, chng] : pending.asKeyValueRange()) {
+		const QVariant card_returned = chng.runFields.value(QStringLiteral("cardreturned"));
+		if (card_returned.isValid())
+			sendRentalCardReturned(run_id, card_returned.toBool());
 		if (m_pendingNewRuns.contains(run_id)) {
 			// not in OFeed yet, the create request carries the current data of the run
 			createCompetitorOrDefer(run_id);

@@ -97,6 +97,7 @@ public:
 						const QString &eventId,
 						const QString &eventPassword,
 						std::function<void(bool success, const QString &message)> callback);
+	void uploadRentalCards(std::function<void(bool success, int count, const QString &error)> callback);
 	int credentialsValid() const { return m_credentialsValid; }
 	int credentialCheckRemainingMs() const;
 	int credentialCheckIntervalMs() const;
@@ -165,6 +166,7 @@ private:
 	void createCompetitorOrDefer(int run_id);
 	void queueRunChange(int run_id, const QString &table, const QVariantMap &fields);
 	void flushRunChanges();
+	void sendRentalCardReturned(int run_id, bool returned);
 	void onRunChanged(int run_id, const QVariantMap &run_fields, const QVariantMap &competitor_fields);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesByOrigin(const QString &origin, std::function<void()> on_done = nullptr);
