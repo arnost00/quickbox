@@ -132,6 +132,7 @@ QxLateEntriesWidget::QxLateEntriesWidget(QWidget *parent) :
 
 	auto *svc = qxEventService();
 	connect(svc, &Service::statusChanged, this, &QxLateEntriesWidget::reload);
+	connect(getPlugin<EventPlugin>(), &Event::EventPlugin::eventOpenChanged, this, &QxLateEntriesWidget::reload);
 
 	{
 		auto *lst = ui->lstType;
@@ -248,6 +249,10 @@ void QxLateEntriesWidget::applyQxChange(int sql_id)
 	}
 
 	auto qb = m_model->queryBuilder();
+	if (qb.isEmpty()) {
+		// the table has not been loaded yet (service is not running on this instance)
+		return;
+	}
 	qb.where(QStringLiteral("id=%1").arg(sql_id));
 	qf::core::sql::Query q;
 	q.execThrow(qb.toString());
@@ -311,6 +316,10 @@ void QxLateEntriesWidget::onTableDoubleClicked(const QModelIndex &ix)
 
 void QxLateEntriesWidget::onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source)
 {
+	if (m_model->queryBuilder().isEmpty()) {
+		// the table has not been loaded yet, it is loaded by reload()
+		return;
+	}
 	if (recchng.table == "qxchanges" && recchng.record.contains("status")) {
 		// status affect filter, cannot be solved by applyQxRecChng
 		m_model->reload();
