@@ -171,7 +171,7 @@ private:
 	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
 	void processCorridorTimeUpdate(int runs_id, const QDateTime &created_at);
-	void processNewRunner(int ofeed_competitor_id, int protocol_id);
+	void processNewRunner(const QJsonObject &competitor, int protocol_id);
 	void storeChange(const QJsonObject &change);
 	QByteArray zlibCompress(QByteArray data);
 };

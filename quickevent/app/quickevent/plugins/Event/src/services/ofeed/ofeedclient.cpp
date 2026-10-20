@@ -1453,9 +1453,10 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 		QDateTime last_changelog_call_value = lastChangelogCall(origin);
 		QDateTime initial_value = QDateTime::fromSecsSinceEpoch(0); // Unix epoch
 
-		QString graphQLquery = R"(
-		query ChangelogByEvent($eventId: String!, $origin: String) {
-			changelogByEvent(eventId: $eventId, origin: $origin) {
+		// competitor details are needed to create a new runner (competitor_create), so no extra request per runner
+		const QString graphQLquery = R"(
+		query ChangelogByEvent($eventId: String!, $origin: String, $since: DateTime) {
+			changelogByEvent(eventId: $eventId, origin: $origin, since: $since) {
 				id
 				type
 				previousValue
@@ -1466,6 +1467,13 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 					externalId
 					firstname
 					lastname
+					registration
+					card
+					note
+					startTime
+					class {
+						externalId
+					}
 				}
 				createdAt
 			}
@@ -1476,30 +1484,9 @@ void OFeedClient::getChangesByOrigin(const QString &origin, std::function<void()
 		variables["eventId"] = eventId();
 		variables["origin"] = origin;
 
-		// Check if last_changelog_call_value is valid/not default
+		// no "since" for the very first call
 		if (last_changelog_call_value != initial_value)
-		{
-			graphQLquery = R"(
-			query ChangelogByEvent($eventId: String!, $origin: String, $since: DateTime) {
-				changelogByEvent(eventId: $eventId, origin: $origin, since: $since) {
-					id
-					type
-					previousValue
-					newValue
-					origin
-					competitor {
-						id
-						externalId
-						firstname
-						lastname
-					}
-					createdAt
-				}
-			}
-			)";
-
 			variables["since"] = last_changelog_call_value.toString(Qt::ISODate);
-		}
 
 		sendGraphQLRequest(graphQLquery, variables, [this, origin, on_done](QJsonObject data)
 						   {
@@ -1567,7 +1554,6 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 
 		// Retrieve competitor and details
 		auto competitor = change.value("competitor").toObject();
-		int ofeed_competitor_id = competitor["id"].toInt();
 		QString external_id_str = competitor["externalId"].toString();
 		int runs_id = external_id_str.toInt();
 		qfInfo() << "Processing change for competitorId (OFeed externalId):" << runs_id << ", type:" << type << ", " << previous_value << " -> " << new_value;
@@ -1592,7 +1578,7 @@ void OFeedClient::processCompetitorsChanges(QJsonArray data_array)
 		else if (type == "competitor_create")
 		{
 			// marked as processed in the async callback, only after the runner is stored
-			processNewRunner(ofeed_competitor_id, change["id"].toInt());
+			processNewRunner(competitor, change["id"].toInt());
 			storeChange(change);
 			continue;
 		}
@@ -1736,79 +1722,59 @@ void OFeedClient::processCorridorTimeUpdate(int runs_id, const QDateTime &create
 	}
 }
 
-void OFeedClient::processNewRunner(int ofeed_competitor_id, int protocol_id)
+void OFeedClient::processNewRunner(const QJsonObject &competitor, int protocol_id)
 {
+	const int ofeed_competitor_id = competitor.value("id").toInt();
 	qDebug() << "Storing a new runner (OFeed id):" << ofeed_competitor_id;
-	QString graphQLquery = R"(
-	query CompetitorById($competitorByIdId: Int!) {
-			competitorById(id: $competitorByIdId) {
-				firstname
-				lastname
-				registration
-				card
-				note
-				class {
-					externalId
-				}
-			}
-		}
-		)";
+	// Create the competitor in QE
+	Competitors::CompetitorDocument doc;
+	doc.loadForInsert();
+	doc.setValue("firstName", competitor.value("firstname").toString());
+	doc.setValue("lastName", competitor.value("lastname").toString());
+	doc.setValue("registration", competitor.value("registration").toString());
+	doc.setValue("classid", competitor.value("class").toObject().value("externalId").toString());
+	doc.setSiid(competitor.value("card").toInt());
+	doc.setValue("note", competitor.value("note").toString());
 
-	QJsonObject variables;
-	variables["competitorByIdId"] = ofeed_competitor_id;
-	sendGraphQLRequest(graphQLquery, variables, [this, ofeed_competitor_id, protocol_id](QJsonObject data)
-	{
-		if (!data.isEmpty())
-		{
-			QJsonObject competitor_by_id = data.value("competitorById").toObject();
-			auto competitor_detail_class = competitor_by_id.value("class").toObject();
-			// Create the competitor in QE
-			Competitors::CompetitorDocument doc;
-			doc.loadForInsert();
-			doc.setValue("firstName", competitor_by_id.value("firstname").toString());
-			doc.setValue("lastName", competitor_by_id.value("lastname").toString());
-			doc.setValue("registration", competitor_by_id.value("registration").toString());
-			doc.setValue("classid", competitor_detail_class.value("externalId").toString());
-			doc.setSiid(competitor_by_id.value("card").toInt());
-			doc.setValue("note", competitor_by_id.value("note").toString());
+	// Save emits db event
+	try {
+		doc.save();
+	}
+	catch (const std::exception &e) {
+		// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
+		qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
+		return;
+	}
 
-			// Save emits db event
-			try {
-				doc.save();
-			}
-			catch (const std::exception &e) {
-				// e.g. class externalId from OFeed does not exist locally; leave the changelog entry unprocessed
-				qfError() << tr("Failed to store new runner (OFeed id): ") << ofeed_competitor_id << e.what();
-				return;
-			}
+	// auto competitor_id = doc.value("competitors.id");
 
-			// auto competitor_id = doc.value("competitors.id");
+	// Get runs.id for current stage
+	int current_stage = getPlugin<EventPlugin>()->currentStageId();
+	int run_id = doc.runsIds().value(current_stage - 1);
+	// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
+	m_runsInsertedFromOFeed.insert(run_id);
 
-			// Get runs.id for current stage
-			int current_stage = getPlugin<EventPlugin>()->currentStageId();
-			int run_id = doc.runsIds().value(current_stage - 1);
-			// the insert DB event is delivered later, mark the run so it is not sent back to OFeed
-			m_runsInsertedFromOFeed.insert(run_id);
+	// start time matters in classes with a start list; source == this, so it is not sent back
+	const QDateTime start_time = QDateTime::fromString(competitor.value("startTime").toString(), Qt::ISODate);
+	if (start_time.isValid()) {
+		const QDateTime stage_start = getPlugin<EventPlugin>()->stageStartDateTime(current_stage);
+		qf::gui::framework::Application::instance()->updateDbRecord(
+			"runs", run_id, QVariantMap{{"startTimeMs", static_cast<int>(stage_start.msecsTo(start_time))}}, this);
+	}
 
-			// Update externalId at OFeed
-			std::stringstream json_payload;
-			json_payload << "{"
-			<< R"("origin":"IT",)"
-			<< R"("externalId":")" << run_id << R"(")"
-			<< "}";
+	// Update externalId at OFeed
+	std::stringstream json_payload;
+	json_payload << "{"
+	<< R"("origin":"IT",)"
+	<< R"("externalId":")" << run_id << R"(")"
+	<< "}";
 
-			std::string json_str = json_payload.str();
+	std::string json_str = json_payload.str();
 
-			// Convert std::string to QString
-			QString json_body = QString::fromStdString(json_str);
-			sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
-			markChangelogEntryAsProcessed(protocol_id);
-		}
-		else
-		{
-			qfError() << tr("No data received or an error occurred.");
-		}
-	}, false);
+	// Convert std::string to QString
+	QString json_body = QString::fromStdString(json_str);
+	sendCompetitorUpdate(json_body, ofeed_competitor_id, false);
+	markChangelogEntryAsProcessed(protocol_id);
 }
 
 void OFeedClient::storeChange(const QJsonObject &change)
