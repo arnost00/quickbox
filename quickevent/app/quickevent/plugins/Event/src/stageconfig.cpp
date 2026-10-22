@@ -8,7 +8,7 @@ namespace Event {
 StartSlotConfig StartSlotConfig::fromVariantMap(const QVariantMap& map)
 {
     StartSlotConfig config;
-    config.startOffset = map.value("startOffset").toInt();
+    config.startOffset = map.value("startOffset", 0).toInt();
     config.ignoreClassClashCheck = map.value("ignoreClassClashCheck").toBool();
     return config;
 }
