@@ -32,6 +32,7 @@ private:
 	void onBtProcessChangesClicked();
 	void onBtPasteSetupLinkClicked();
 	void onBtTestConnectionClicked();
+	void onBtUploadRentalCardsClicked();
 	void onBtRefreshEventImageClicked();
 	void onBtOpenEventWebsiteClicked();
 	void updateTestConnectionState();

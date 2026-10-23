@@ -278,6 +278,7 @@ OFeedClientWidget::OFeedClientWidget(QWidget *parent)
 	});
 	connect(ui->btPasteSetupLink, &QPushButton::clicked, this, &OFeedClientWidget::onBtPasteSetupLinkClicked);
 	connect(ui->btTestConnection, &QPushButton::clicked, this, &OFeedClientWidget::onBtTestConnectionClicked);
+	connect(ui->btUploadRentalCards, &QPushButton::clicked, this, &OFeedClientWidget::onBtUploadRentalCardsClicked);
 	connect(ui->btRefreshEventImage, &QPushButton::clicked, this, &OFeedClientWidget::onBtRefreshEventImageClicked);
 	connect(ui->btOpenEventWebsite, &QToolButton::clicked, this, &OFeedClientWidget::onBtOpenEventWebsiteClicked);
 	const QIcon show_password_icon = qf::gui::Style::icon("eye");
@@ -432,6 +433,26 @@ void OFeedClientWidget::onBtPasteSetupLinkClicked()
 	ui->lbConnectionTestResult->setStyleSheet("color:#0a7a2f;");
 	ui->lbConnectionTestResult->setText(tr("Setup link parsed. Credentials were filled in."));
 	updateTestConnectionState();
+}
+
+void OFeedClientWidget::onBtUploadRentalCardsClicked()
+{
+	OFeedClient *svc = service();
+	if(!svc) {
+		return;
+	}
+	ui->btUploadRentalCards->setEnabled(false);
+	ui->lbRentalCardsResult->setStyleSheet("color:#666;");
+	ui->lbRentalCardsResult->setText(tr("Uploading..."));
+	QPointer<OFeedClientWidget> widget_guard(this);
+	svc->uploadRentalCards([widget_guard](bool success, int count, const QString &error) {
+		if(!widget_guard) {
+			return;
+		}
+		widget_guard->ui->btUploadRentalCards->setEnabled(true);
+		widget_guard->ui->lbRentalCardsResult->setStyleSheet(success ? "color:#0a7a2f;" : "color:#b00020;");
+		widget_guard->ui->lbRentalCardsResult->setText(success ? OFeedClientWidget::tr("Uploaded rental cards: %1").arg(count) : error);
+	});
 }
 
 void OFeedClientWidget::onBtTestConnectionClicked()
