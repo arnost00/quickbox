@@ -12,6 +12,7 @@
 
 #include <qf/core/sql/connection.h>
 #include <qf/core/sql/query.h>
+#include <qf/core/sql/qxsql.h>
 #include <qf/core/sql/qxrecchng.h>
 #include <qf/core/sql/transaction.h>
 
@@ -131,7 +132,7 @@ OFeedClient::OFeedClient(QObject *parent)
 	m_runChangeFlushTimer->setSingleShot(true);
 	connect(m_runChangeFlushTimer, &QTimer::timeout, this, &OFeedClient::flushRunChanges);
 	connect(this, &OFeedClient::settingsChanged, this, &OFeedClient::init, Qt::QueuedConnection);
-	connect(qf::gui::framework::Application::instance(), &qf::gui::framework::Application::qxRecChng,
+	connect(qf::gui::framework::Application::instance()->qxSql(), &qf::core::sql::QxSql::recChng,
 			this, &OFeedClient::onQxRecChng, Qt::QueuedConnection);
 }
 
@@ -1238,7 +1239,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	// Send request
 	QNetworkReply *reply = m_networkManager->put(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=, this]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, using_external_id, competitor_or_external_id]()
 			{
 				if(reply->error()) {
 					qfError() << serviceName().toStdString() + " [competitor update]: " << reply->errorString()
@@ -1292,7 +1293,7 @@ void OFeedClient::sendCompetitorAdded(QString json_body, int run_id)
 	// Send request
 	QNetworkReply *reply = m_networkManager->post(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [=, this]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, run_id]()
 			{
 				m_createsInFlight.remove(run_id);
 				if(reply->error()) {
@@ -1832,39 +1833,33 @@ void OFeedClient::storeChange(const QJsonObject &change)
 	int change_id = change["id"].toInt();
 	auto created = QDateTime::fromString(change["createdAt"].toString(), Qt::ISODate);
 
-	qf::core::sql::Query q;
+	auto *app = qf::gui::framework::Application::instance();
+	QVariantMap rec {
+		{"data_type", change.value("type").toString()},
+		{"data", new_value},
+		{"foreign_table", "runs"},
+		{"foreign_id", runs_id},
+		{"orig_data", previous_value},
+		{"source", "OFeed"},
+		{"user_id", competitor_id},
+		{"stage_id", current_stage},
+		{"change_id", change_id},
+		{"created", created},
+		{"status", "Accepted"},
+		{"status_message", firstname + " " + lastname + ": " + previous_value + " -> " + new_value},
+	};
 	try
 	{
-		q.prepare("INSERT INTO qxchanges (data_type, data, data_id, orig_data, source, user_id, stage_id, change_id, created, status, status_message)"
-				  " VALUES (:dataType, :data, :dataId, :origData, :source, :userId, :stageId, :changeId, :created, :status, :statusMessage)"
-				  " RETURNING id");
-		q.bindValue(":dataType", change["type"].toString());
-		q.bindValue(":data", new_value);
-		q.bindValue(":dataId", runs_id);
-		q.bindValue(":origData", previous_value);
-		q.bindValue(":source", "OFeed");
-		q.bindValue(":userId", competitor_id);
-		q.bindValue(":stageId", current_stage);
-		q.bindValue(":changeId", change_id);
-		q.bindValue(":created", created);
-		q.bindValue(":status", "Accepted");
-		q.bindValue(":statusMessage", firstname + " " + lastname + ": " + previous_value + " -> " + new_value);
-		if (!q.exec(qf::core::Exception::Throw))
-		{
-			qfError() << "Database query failed:" << q.lastError().text();
-		}
-		else if (q.next())
-		{
-			getPlugin<EventPlugin>()->emitDbEvent(EventPlugin::DBEVENT_QX_CHANGE_RECEIVED, q.value(0).toInt(), true);
-		}
+		// createRecord emits the record change itself
+		app->qxSql()->createRecord("qxchanges", rec, this);
 	}
 	catch (const std::exception &e)
 	{
-		qCritical() << "Exception occurred while executing query:" << e.what();
+		qCritical() << "Exception occurred while storing the change:" << e.what();
 	}
 	catch (...)
 	{
-		qCritical() << "Unknown exception occurred while executing query.";
+		qCritical() << "Unknown exception occurred while storing the change.";
 	}
 }
 
