@@ -8,9 +8,9 @@
 #include "cardflagsdialog.h"
 
 #include <plugins/Classes/src/courseitemdelegate.h>
-#include <plugins/Event/src/eventplugin.h>
 #include <plugins/CardReader/src/cardreaderplugin.h>
 #include <plugins/Receipts/src/receiptsplugin.h>
+#include <plugins/Event/src/eventplugin.h>
 
 #include <quickevent/core/si/siid.h>
 #include <quickevent/core/og/timems.h>
@@ -19,6 +19,8 @@
 #include <qf/gui/dialogs/messagebox.h>
 #include <qf/gui/framework/mainwindow.h>
 #include <qf/gui/framework/plugin.h>
+
+#include <qf/core/sql/qxrecchng.h>
 
 #include <qf/core/sql/query.h>
 #include <qf/core/sql/transaction.h>
