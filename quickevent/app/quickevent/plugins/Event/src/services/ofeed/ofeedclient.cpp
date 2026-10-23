@@ -1343,7 +1343,7 @@ void OFeedClient::sendCompetitorUpdate(QString json_body, int competitor_or_exte
 	// Send request
 	QNetworkReply *reply = m_networkManager->put(request, json_body.toUtf8());
 
-	connect(reply, &QNetworkReply::finished, this, [this, reply, using_external_id, competitor_or_external_id]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, using_external_id, competitor_or_external_id, on_done]()
 			{
 				bool ok = false;
 				if(reply->error()) {
@@ -1764,7 +1764,7 @@ void OFeedClient::processCardChange(int runs_id, const QString &new_value, bool 
 		// card changed by the office is a change of the competitor card, not just of the run at the start
 		const int competitor_id = getPlugin<RunsPlugin>()->competitorForRun(runs_id);
 		if (competitor_id > 0) {
-			qf::gui::framework::Application::instance()->updateDbRecord("competitors", competitor_id, QVariantMap{{"siId", new_value.toInt()}}, this);
+			qf::gui::framework::Application::instance()->qxSql()->updateRecord("competitors", competitor_id, QVariantMap{{"siId", new_value.toInt()}}, this);
 			try {
 				qf::core::sql::Query q;
 				q.prepare("UPDATE runs SET siId=:siId WHERE competitorId=:competitorId", qf::core::Exception::Throw);
@@ -1890,7 +1890,7 @@ bool OFeedClient::setRunStartTime(int run_id, const QString &start_time)
 		start_time_ms = static_cast<int>(getPlugin<EventPlugin>()->stageStartDateTime(stage_id).msecsTo(dt));
 	}
 	// source == this, so the change is not sent back to OFeed
-	qf::gui::framework::Application::instance()->updateDbRecord("runs", run_id, QVariantMap{{"startTimeMs", start_time_ms}}, this);
+	qf::gui::framework::Application::instance()->qxSql()->updateRecord("runs", run_id, QVariantMap{{"startTimeMs", start_time_ms}}, this);
 	return true;
 }
 
@@ -1937,7 +1937,7 @@ bool OFeedClient::processCompetitorChange(const QString &type, int runs_id, cons
 		record["classId"] = class_id;
 	}
 	// source == this, so the change is not sent back to OFeed
-	return qf::gui::framework::Application::instance()->updateDbRecord("competitors", competitor_id, record, this);
+	return qf::gui::framework::Application::instance()->qxSql()->updateRecord("competitors", competitor_id, record, this);
 }
 
 /// counts a failure of the changelog entry
