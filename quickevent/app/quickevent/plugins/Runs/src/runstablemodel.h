@@ -1,5 +1,4 @@
-#ifndef RUNSTABLEMODEL_H
-#define RUNSTABLEMODEL_H
+#pragma once
 
 #include <quickevent/gui/og/sqltablemodel.h>
 
@@ -74,4 +73,3 @@ private:
     int m_stageId = 1;
 };
 
-#endif // RUNSTABLEMODEL_H

@@ -51,6 +51,9 @@ using ::PartWidget;
 using qff::getPlugin;
 using Event::EventPlugin;
 using CardReader::CardReaderPlugin;
+using quickevent::core::og::quantizeTimeMsec;
+using quickevent::core::og::TimeMeasurementPrecision;
+using quickevent::core::og::TimeMs;
 
 namespace Receipts {
 
@@ -341,7 +344,8 @@ QVariantMap ReceiptsPlugin::readCardTablesData(int card_id)
 		for(const auto &v : read_card.punches()) {
 			quickevent::core::si::ReadPunch punch(v.toMap());
 			int punch_time_ms = punch.time() * 1000 + punch.msec();
-			int stp_time_ms = quickevent::core::og::TimeMs::msecIntervalAM(start_time_ms, punch_time_ms);
+			// printed in whole seconds, quantize so that printed laps sum up to printed split times
+			int stp_time_ms = quantizeTimeMsec(TimeMs::msecIntervalAM(start_time_ms, punch_time_ms), TimeMeasurementPrecision::Second);
 			int ix = tt.appendRow();
 			qf::core::utils::TreeTableRow tt_row = tt.row(ix);
 			++position;
@@ -360,7 +364,8 @@ QVariantMap ReceiptsPlugin::readCardTablesData(int card_id)
 			//ttr.setValue("position", position);
 			//ttr.setValue("code", code);
 			int punch_time_ms = read_card.finishTime() * 1000 + read_card.finishTimeMs();
-			int stp_time_ms = quickevent::core::og::TimeMs::msecIntervalAM(start_time_ms, punch_time_ms);
+			// printed in whole seconds, quantize so that printed laps sum up to printed split times
+			int stp_time_ms = quantizeTimeMsec(TimeMs::msecIntervalAM(start_time_ms, punch_time_ms), TimeMeasurementPrecision::Second);
 			qf::core::utils::TreeTableRow tt_row = tt.row(ix);
 			tt_row.setValue(QStringLiteral("punchTimeMs"), punch_time_ms);
 			tt_row.setValue(QStringLiteral("stpTimeMs"), stp_time_ms);
@@ -620,6 +625,7 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 		}
 		tt.setValue("isOk", checked_card.isOk());
 		int position = 0;
+		int prev_stp_time_ms = 0;
 		for(const auto &v : checked_card.punches()) {
 			quickevent::core::si::CheckedPunch punch(v.toMap());
 			int ix = tt.appendRow();
@@ -631,9 +637,12 @@ QVariantMap ReceiptsPlugin::receiptTablesData(int card_id)
 			tt_row.setValue("stpTimeMs", punch.stpTimeMs());
 			tt_row.setValue("standLap", lap_stand[position]);
 			tt_row.setValue("standCummulative", lap_stand_cummulative[position]);
-			int lap = punch.lapTimeMs();
+			// receipt is printed in whole seconds, compute lap and loss in whole seconds too, so that printed laps sum up to printed split times
+			int stp_time_ms = quantizeTimeMsec(punch.stpTimeMs(), TimeMeasurementPrecision::Second);
+			int lap = (punch.lapTimeMs() > 0)? stp_time_ms - prev_stp_time_ms: punch.lapTimeMs();
+			prev_stp_time_ms = stp_time_ms;
 			tt_row.setValue("lapTimeMs", lap);
-			int best_lap = best_laps.value(position);
+			int best_lap = quantizeTimeMsec(best_laps.value(position), TimeMeasurementPrecision::Second);
 			if(lap > 0 && best_lap > 0) {
 				int loss = lap - best_lap;
 				tt_row.setValue("lossMs", loss);
