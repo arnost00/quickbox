@@ -55,6 +55,11 @@ QxClientService::QxClientService(QObject *parent)
 	connect(event_plugin, &Event::EventPlugin::dbEventNotify, this, &QxClientService::onDbEventNotify, Qt::QueuedConnection);
 }
 
+QString QxClientService::serviceDescription() const
+{
+	return tr("Electronic late entries.\nhttps://qxqx.org");
+}
+
 QString QxClientService::serviceDisplayName() const
 {
 	return tr("QE Exchange");
