@@ -4312,13 +4312,6 @@ Do not run it in a live race!</source>
         <source>Event ID is not loaded, service is not probably running.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="plugins/Event/src/services/qx/qxclientservice.cpp" line="60"/>
-        <source>Electronic late entries.
-https://qxqx.org</source>
-        <translation>Електронні пізні заявки.
-https://qxqx.org</translation>
-    </message>
 </context>
 <context>
     <name>Event::services::qx::QxClientServiceWidget</name>
@@ -4436,6 +4429,16 @@ https://qxqx.org</translation>
         <location filename="plugins/Event/src/services/qx/qxclientservicewidget.cpp" line="178"/>
         <source>Runs exported Ok</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::qx::QxEventService</name>
+    <message>
+        <location filename="plugins/Event/src/services/qx/qxeventservice.cpp" line="62"/>
+        <source>Electronic late entries.
+https://qxqx.org</source>
+        <translation>Електронні пізні заявки.
+https://qxqx.org</translation>
     </message>
 </context>
 <context>

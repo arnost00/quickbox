@@ -63,10 +63,16 @@ void ServiceWidget::setStatus(Service::Status st)
 	}
 }
 
-void ServiceWidget::setServiceId(const QString &id, const QString &display_name)
+void ServiceWidget::setService(Service *service)
 {
-	m_serviceId = id;
-	ui->lblServiceName->setText(display_name.isEmpty()? id: display_name);
+	m_serviceId = service->serviceId();
+	ui->lblServiceName->setText(service->serviceDisplayName());
+	setStatus(service->status());
+	connect(service, &Service::statusChanged, this, &ServiceWidget::setStatus);
+	setMessage(service->statusMessage());
+	connect(service, &Service::statusMessageChanged, this, &ServiceWidget::setMessage);
+	connect(this, &ServiceWidget::setRunningRequest, service, &Service::setRunning);
+	setDescription(service->serviceDescription());
 }
 
 QString ServiceWidget::serviceId() const
@@ -83,8 +89,7 @@ void ServiceWidget::setDescription(const QString &d)
 {
 	ui->btHelp->setVisible(!d.isEmpty());
 	// rich text, so that long lines are wrapped
-	ui->btHelp->setToolTip("<p>" + d.toHtmlEscaped().replace('
-', "<br>") + "</p>");
+	ui->btHelp->setToolTip("<p>" + d.toHtmlEscaped().replace('\n', "<br>") + "</p>");
 }
 
 void ServiceWidget::setServiceVisible(bool on)

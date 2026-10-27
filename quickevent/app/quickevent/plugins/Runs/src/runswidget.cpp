@@ -29,6 +29,7 @@
 #include <qf/core/sql/dbenum.h>
 #include <qf/core/sql/connection.h>
 #include <qf/core/sql/query.h>
+#include <qf/core/sql/qxsql.h>
 #include <qf/core/sql/transaction.h>
 #include <qf/core/assert.h>
 
@@ -383,6 +384,7 @@ void RunsWidget::settleDownInPartWidget(::PartWidget *part_widget)
 		m_cbxClasses->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 		m_cbxClasses->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 15);
 		m_cbxClasses->setMaxVisibleItems(100);
+		m_cbxClasses->setMultiColumnPopup(true);
 		m_cbxClasses->setReferencedTable("classes");
 		m_cbxClasses->setReferencedField("id");
 		m_cbxClasses->setReferencedCaptionField("name");
@@ -1121,15 +1123,14 @@ void RunsWidget::editCompetitors(int mode)
 					plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_COUNTS_CHANGED);
 					for (int run_id : deleted_run_ids) {
 						plugin->emitDbEvent(Event::EventPlugin::DBEVENT_RUN_CHANGED, QVariantList {run_id, {}});
-						app->emitDbRecDeleted(QStringLiteral("runs"), run_id, this);
+						app->qxSql()->emitRecDeleted(QStringLiteral("runs"), run_id, this);
 					}
 					for (int run_id : deleted_ids) {
 						if (run_id > 0)
 						{
 							plugin->emitDbEvent(Event::EventPlugin::DBEVENT_COMPETITOR_DELETED, run_id);
 						}
-                    }
-
+					}
 					tv->reload();
 				}
 				else {
@@ -1267,6 +1268,18 @@ void RunsWidget::editCompetitor_helper(const QVariant &id, int mode, int siid)
 			this->editCompetitor(QVariant(), qf::gui::model::DataDocument::ModeInsert);
 		});
 	}
+}
+
+void RunsWidget::showEditCompetitorDialog(int competitor_id, QWidget *parent)
+{
+	auto *w = new CompetitorWidget();
+	w->setWindowTitle(tr("Edit Competitor"));
+	qfd::Dialog dlg(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, parent);
+	dlg.setDefaultButton(QDialogButtonBox::Ok);
+
+	dlg.setCentralWidget(w);
+	w->load(competitor_id, qf::gui::model::DataDocument::ModeEdit);
+	dlg.exec();
 }
 
 void RunsWidget::updateClassComboBox()

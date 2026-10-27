@@ -1964,6 +1964,16 @@ Zvažte nastavení intervalu pro všechny kategorie.</translation>
         <translation>Zaměnit jména</translation>
     </message>
     <message>
+        <location filename="plugins/Competitors/src/competitorwidget.ui" line="119"/>
+        <source>Switch cards</source>
+        <translation>Prohodit čipy</translation>
+    </message>
+    <message>
+        <location filename="plugins/Competitors/src/competitorwidget.cpp" line="568"/>
+        <source>Switch cards with runner</source>
+        <translation>Prohodit čipy se závodníkem</translation>
+    </message>
+    <message>
         <source>Start times</source>
         <translation type="vanished">Startovní časy</translation>
     </message>
@@ -4589,13 +4599,6 @@ Slouží pro testování zpracování výsledků bez fyzických SI čipů.</tran
         <source>Event ID is not loaded, service is not probably running.</source>
         <translation>Event ID není načteno, služba pravděpodobně neběží.</translation>
     </message>
-    <message>
-        <location filename="plugins/Event/src/services/qx/qxclientservice.cpp" line="60"/>
-        <source>Electronic late entries.
-https://qxqx.org</source>
-        <translation>Elektronické dohlášky.
-https://qxqx.org</translation>
-    </message>
 </context>
 <context>
     <name>Event::services::qx::QxClientServiceWidget</name>
@@ -4714,6 +4717,16 @@ https://qxqx.org</translation>
         <location filename="plugins/Event/src/services/qx/qxclientservicewidget.cpp" line="178"/>
         <source>Runs exported Ok</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::qx::QxEventService</name>
+    <message>
+        <location filename="plugins/Event/src/services/qx/qxeventservice.cpp" line="62"/>
+        <source>Electronic late entries.
+https://qxqx.org</source>
+        <translation>Elektronické dohlášky.
+https://qxqx.org</translation>
     </message>
 </context>
 <context>

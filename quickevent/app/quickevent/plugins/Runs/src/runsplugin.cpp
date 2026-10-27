@@ -13,7 +13,7 @@
 #include "../../Core/src/coreplugin.h"
 #include "../../Core/src/widgets/settingsdialog.h"
 #include "../../Event/src/eventplugin.h"
-#include "../../Event/src/services/qx/qxlateregistrationswidget.h"
+#include "../../Event/src/services/qx/qxlateentrieswidget.h"
 
 #include <awarddesigner/awarddesign.h>
 #include <awarddesigner/awardtypstrenderer.h>
@@ -37,6 +37,7 @@
 #include <qf/core/log.h>
 #include <qf/core/assert.h>
 #include <qf/core/sql/query.h>
+#include <qf/core/sql/qxsql.h>
 #include <qf/core/sql/querybuilder.h>
 #include <qf/core/utils/htmlutils.h>
 #include <qf/core/utils/table.h>
@@ -121,6 +122,22 @@ void RunsPlugin::clearRunnersTableCache()
 	m_runnersTableCacheStageId = 0;
 }
 
+void RunsPlugin::setCompetitorRunsSiId(int competitor_id, int stage_id, int si_id, bool use_in_next_stages, QObject *source)
+{
+	qfs::Query q;
+	q.execThrow("SELECT id FROM runs WHERE competitorId=" QF_IARG(competitor_id)
+				" AND stageId>=" QF_IARG(stage_id)
+				" ORDER BY stageId");
+	auto *app = qf::gui::framework::Application::instance();
+	QVariantMap rec { {"siId", si_id > 0? QVariant(si_id): QVariant()}, };
+	int n = 0;
+	while (q.next()) {
+		if (n++ == 0 || use_in_next_stages) {
+			app->qxSql()->updateRecord("runs", q.value(0).toInt(), rec, source);
+		}
+	}
+}
+
 void RunsPlugin::onInstalled()
 {
 	qfLogFuncFrame();
@@ -158,15 +175,15 @@ void RunsPlugin::onInstalled()
 	}
 	{
 		auto *dw = new qff::DockWidget(nullptr);
-		dw->setObjectName("qxLateRegistrationsDockWidget");
-		dw->setPersistentSettingsId("Runs/qxLateRegistrations");
-		dw->setWindowTitle(tr("Late registrations"));
-		auto *ew = new Event::services::qx::QxLateRegistrationsWidget();
+		dw->setObjectName("qxLateEntriesDockWidget");
+		dw->setPersistentSettingsId("Runs/qxLateEntries");
+		dw->setWindowTitle(tr("Late entries"));
+		auto *ew = new Event::services::qx::QxLateEntriesWidget();
 		dw->setWidget(ew);
 		fwk->addDockWidget(Qt::RightDockWidgetArea, dw);
 		dw->hide();
 
-		connect(dw, &qff::DockWidget::visibilityChanged, ew, &Event::services::qx::QxLateRegistrationsWidget::onVisibleChanged);
+		connect(dw, &qff::DockWidget::visibilityChanged, ew, &Event::services::qx::QxLateEntriesWidget::onVisibleChanged);
 
 		auto *a = dw->toggleViewAction();
 		// a->setShortcut(QKeySequence("ctrl+shift+E"));
@@ -1307,7 +1324,10 @@ QString RunsPlugin::resultsIofXml30Stage(int stage_id)
 					ix += 4;
 				}
 			}
-			result.insert(result.count(), QVariantList{"ControlCard", tt2_row.value(QStringLiteral("runs.siId"))});
+			int si_id = tt2_row.value(QStringLiteral("runs.siId")).toInt();
+			if (si_id > 0) {
+				result.insert(result.count(), QVariantList{"ControlCard", si_id});
+			}
 			person_result.insert(person_result.count(), result);
 			class_result.insert(class_result.count(), person_result);
 		}
@@ -1466,7 +1486,7 @@ qf::core::sql::QueryBuilder RunsPlugin::runsQuery(int stage_id, int class_id, bo
 	qfs::QueryBuilder qb;
 	qb.select2("runs", "*")
 			.select2("classes", "name")
-			.select2("competitors", "id, iofId, registration, licence, ranking, siId, note")
+			.select2("competitors", "id, firstName, lastName, iofId, registration, licence, ranking, siId, note")
 			.select("COALESCE(lastName, '') || ' ' || COALESCE(firstName, '') AS competitorName")
 			.select("lentcards.siid IS NOT NULL AS cardInLentTable")
 
@@ -1539,15 +1559,14 @@ void RunsPlugin::computeStageTime(int run_id)
 	static constexpr auto FLD_PENALTY_TIME_MS = "penaltytimems";
 	static constexpr auto FLD_TIME_MS = "timems";
 
-	const auto run = qff::Application::instance()->readDbRecord("runs", run_id,
+	const auto run = qff::Application::instance()->qxSql()->readRecord("runs", run_id,
 		QStringList{
 			FLD_STAGE_ID,
 			FLD_START_TIME_MS,
 			FLD_FINISH_TIME_MS,
 			FLD_START_GATE_TIME,
 			FLD_FINISH_GATE_TIME,
-			FLD_PENALTY_TIME_MS,
-			FLD_TIME_MS
+			FLD_PENALTY_TIME_MS
 		});
 	if(!run) {
 		qfWarning() << Q_FUNC_INFO << "run not found, run_id:" << run_id;
@@ -1555,7 +1574,6 @@ void RunsPlugin::computeStageTime(int run_id)
 	}
 	const QVariant start_ms_v = run->value(FLD_START_TIME_MS);
 	const QVariant finish_ms_v = run->value(FLD_FINISH_TIME_MS);
-	const QVariant orig_time_ms_v = run->value(FLD_TIME_MS);
 	QVariant time_ms_v;
 	if(start_ms_v.isValid() && finish_ms_v.isValid()) {
 		const int stage_id = run->value(FLD_STAGE_ID).toInt();
@@ -1581,8 +1599,7 @@ void RunsPlugin::computeStageTime(int run_id)
 			+ penalty_ms;
 		time_ms_v = time_ms;
 	}
-	qff::Application::instance()->updateDbRecord(
-		QStringLiteral("runs"), run_id, {{FLD_TIME_MS, time_ms_v}}, this);
+	qff::Application::instance()->qxSql()->updateRecord(QStringLiteral("runs"), run_id, {{FLD_TIME_MS, time_ms_v}}, this);
 }
 
 
@@ -3185,9 +3202,9 @@ QString RunsPlugin::startListStageIofXml30(int stage_id, quickevent::gui::Report
 				int stime_msec = tt2_row.value(QStringLiteral("startTimeMs")).toInt();
 				append_list(xml_start, QVariantList{"StartTime", datetime_to_string(start00.addMSecs(stime_msec))});
 			}
-			QVariant siId = tt2_row.value(QStringLiteral("runs.siId"));
-			if (siId.toBool()) {
-				append_list(xml_start, QVariantList{"ControlCard", siId.toInt()});
+			int si_id = tt2_row.value(QStringLiteral("runs.siId")).toInt();
+			if (si_id > 0) {
+				append_list(xml_start, QVariantList{"ControlCard", si_id});
 			}
 
 			if (!is_vacant) {

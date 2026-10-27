@@ -6,6 +6,7 @@
 #include "../service.h"
 
 #include <QMap>
+#include <QHash>
 #include <QSet>
 #include <QVariantMap>
 
@@ -97,6 +98,7 @@ public:
 						const QString &eventId,
 						const QString &eventPassword,
 						std::function<void(bool success, const QString &message)> callback);
+	void uploadRentalCards(std::function<void(bool success, int count, const QString &error)> callback);
 	int credentialsValid() const { return m_credentialsValid; }
 	int credentialCheckRemainingMs() const;
 	int credentialCheckIntervalMs() const;
@@ -124,6 +126,8 @@ private:
 	QSet<int> m_createsInFlight;
 	/// runs of competitors stored from OFeed, their insert DB event must not be sent back (consumed once per run)
 	QSet<int> m_runsInsertedFromOFeed;
+	/// failures of changelog entries by protocol id, the entry is given up after the limit (lost on restart)
+	QHash<int, int> m_changeFailures;
 	QNetworkAccessManager *m_networkManager = nullptr;
 	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
 	bool m_eventImageStartupAttempted = false;
@@ -155,7 +159,7 @@ private:
 	void clearCachedEventImage();
 	void checkCredentials();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr, std::function<void()> on_done = nullptr);
-	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
+	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId, std::function<void(bool)> on_done);
 	void sendCompetitorAdded(QString json_body, int run_id);
 	void sendCompetitorDeleted(int run_id);
 	void onCompetitorAdded(int competitor_id);
@@ -163,16 +167,20 @@ private:
 	void createCompetitorOrDefer(int run_id);
 	void queueRunChange(int run_id, const QString &table, const QVariantMap &fields);
 	void flushRunChanges();
+	void sendRentalCardReturned(int run_id, bool returned);
 	void onRunChanged(int run_id, const QVariantMap &run_fields, const QVariantMap &competitor_fields);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
 	void getChangesByOrigin(const QString &origin, std::function<void()> on_done = nullptr);
-	void processCompetitorsChanges(QJsonArray data_array);
+	QDateTime processCompetitorsChanges(QJsonArray data_array);
 	void markChangelogEntryAsProcessed(int protocolId);
-	void processCardChange(int runs_id, const QString &new_value);
+	void processCardChange(int runs_id, const QString &new_value, bool office);
 	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
 	void processCorridorTimeUpdate(int runs_id, const QDateTime &created_at);
-	void processNewRunner(int ofeed_competitor_id, int protocol_id);
+	bool processNewRunner(const QJsonObject &change);
+	bool processCompetitorChange(const QString &type, int runs_id, const QJsonObject &competitor);
+	bool setRunStartTime(int run_id, const QString &start_time);
+	bool retryChange(int protocol_id);
 	void storeChange(const QJsonObject &change);
 	QByteArray zlibCompress(QByteArray data);
 };

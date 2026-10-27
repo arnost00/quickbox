@@ -101,15 +101,15 @@ add_executable(quickevent
 	plugins/Event/src/services/serviceswidget.cpp
 	plugins/Event/src/services/servicewidget.cpp
 	plugins/Event/src/services/servicewidget.ui
-	plugins/Event/src/services/qx/qxclientservice.cpp
-	plugins/Event/src/services/qx/qxclientservice.h
-	plugins/Event/src/services/qx/qxclientservicewidget.cpp
-	plugins/Event/src/services/qx/qxclientservicewidget.h
-	plugins/Event/src/services/qx/qxclientservicewidget.ui
-	plugins/Event/src/services/qx/qxlateregistrationswidget.h
-	plugins/Event/src/services/qx/qxlateregistrationswidget.cpp
-	plugins/Event/src/services/qx/qxlateregistrationswidget.ui
-	plugins/Event/src/services/qx/runchangedialog.h plugins/Event/src/services/qx/runchangedialog.cpp plugins/Event/src/services/qx/runchangedialog.ui
+
+	plugins/Event/src/services/qx/qxnode.cpp
+	plugins/Event/src/services/qx/sqlapinode.cpp
+	plugins/Event/src/services/qx/sqlapi.cpp plugins/Event/src/services/qx/sqlapi.h
+	plugins/Event/src/services/qx/nodes.cpp
+	plugins/Event/src/services/qx/qxeventservice.cpp plugins/Event/src/services/qx/qxeventservice.h
+	plugins/Event/src/services/qx/qxeventservicewidget.cpp plugins/Event/src/services/qx/qxeventservicewidget.h plugins/Event/src/services/qx/qxeventservicewidget.ui
+	plugins/Event/src/services/qx/qxlateentrieswidget.h plugins/Event/src/services/qx/qxlateentrieswidget.cpp plugins/Event/src/services/qx/qxlateentrieswidget.ui
+	plugins/Event/src/services/qx/lateentrydialog.h plugins/Event/src/services/qx/lateentrydialog.cpp plugins/Event/src/services/qx/lateentrydialog.ui
 	plugins/Event/src/services/qx/runchange.h plugins/Event/src/services/qx/runchange.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservice.h plugins/Event/src/services/punchingtest/punchingtestservice.cpp
 	plugins/Event/src/services/punchingtest/punchingtestservicewidget.h plugins/Event/src/services/punchingtest/punchingtestservicewidget.cpp
@@ -134,9 +134,10 @@ add_executable(quickevent
 	plugins/Receipts/src/receiptssettings.cpp
 	plugins/Receipts/src/receiptssettingspage.cpp
 	plugins/Receipts/src/receiptssettingspage.ui
-	plugins/Receipts/src/thirdparty/qrcodegen.cpp
 	plugins/Receipts/src/receiptswidget.cpp
 	plugins/Receipts/src/receiptswidget.ui
+
+	plugins/Receipts/src/thirdparty/qrcodegen.cpp
 
 	plugins/Relays/src/addlegdialogwidget.cpp
 	plugins/Relays/src/addlegdialogwidget.ui
@@ -319,6 +320,10 @@ qt_add_resources(quickevent reports_resources
 
 target_include_directories(quickevent PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(quickevent PUBLIC libquickeventcore libquickeventgui libqfgui libsiut)
+if (QF_WITH_LIBSHV)
+	target_link_libraries(quickevent PUBLIC libshviotqt)
+	target_compile_definitions(quickevent PRIVATE QF_WITH_LIBSHV)
+endif()
 
 # Extract version from appversion.h
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/appversion.h" APP_VERSION_H)

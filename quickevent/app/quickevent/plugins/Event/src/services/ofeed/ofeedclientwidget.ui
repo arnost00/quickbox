@@ -1004,6 +1004,40 @@
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="rentalCardsLayout">
+            <item>
+             <widget class="QPushButton" name="btUploadRentalCards">
+              <property name="toolTip">
+               <string>One-time upload of the cards from "Cards to rent" in the settings to OFeed.</string>
+              </property>
+              <property name="text">
+               <string>Upload rental cards</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbRentalCardsResult">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="rentalCardsSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
