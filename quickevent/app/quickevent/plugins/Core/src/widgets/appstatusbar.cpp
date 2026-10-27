@@ -1,5 +1,7 @@
 #include "appstatusbar.h"
 
+#include <qf/gui/style.h>
+
 #include <QProgressBar>
 #include <QPushButton>
 #include <QLabel>
@@ -19,7 +21,7 @@ AppStatusBar::AppStatusBar(QWidget *parent)
 
 	m_btCurrentStage = new QPushButton(this);
 	m_btCurrentStage->setToolTip(tr("Set current stage"));
-	m_btCurrentStage->setStyleSheet("background: lime;");
+	m_btCurrentStage->setStyleSheet(qf::gui::isDarkTheme()? "background: darkgreen;": "background: lime;");
 	connect(m_btCurrentStage, &QPushButton::clicked, this, &AppStatusBar::stageClicked);
 	addPermanentWidget(m_btCurrentStage);
 
@@ -39,9 +41,13 @@ AppStatusBar::AppStatusBar(QWidget *parent)
 AppStatusBar::~AppStatusBar()
 = default;
 
-void AppStatusBar::setEventName(const QString &event_name)
+QString AppStatusBar::eventDbName() const
 {
-	m_eventName = event_name;
+	return m_lblEvent->text();
+}
+
+void AppStatusBar::setEventDbName(const QString &event_name)
+{
 	m_lblEvent->setText(event_name);
 }
 

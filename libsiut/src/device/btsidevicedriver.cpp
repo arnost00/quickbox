@@ -19,6 +19,11 @@
 
 #include <ios>
 
+#define logBtSiReaderD() qfCDebug("BtSiReader")
+#define logBtSiReaderM() qfCMessage("BtSiReader")
+#define logBtSiReaderI() qfCInfo("BtSiReader")
+#define logBtSiReaderW() qfCWarning("BtSiReader")
+
 namespace siut {
 
 // ===========================================================================
@@ -35,10 +40,13 @@ constexpr const char *CARD_DATA_UUID		= "bd510013-6aec-4628-a146-f3e95bc49e62";
 constexpr quint16 MSG_CARD_STATE		= 0x1101;
 constexpr quint16 MSG_CARD_MINIMAL		= 0x1102;
 constexpr quint16 MSG_CARD_COMPLETE		= 0x1103;
+constexpr quint16 MSG_FEEDBACK			= 0x1110;
 
-// Wrapper chunk flags (payload byte 0)
+// Max time to wait for card data after readout request
+constexpr int CARD_READOUT_TIMEOUT_MS	= 5000;
+
+// Wrapper chunk flags (payload byte 0), middle chunk has no flag set
 constexpr quint8 WRAP_FLAG_FIRST		= 0x01;
-constexpr quint8 WRAP_FLAG_MIDDLE		= 0x00;
 constexpr quint8 WRAP_FLAG_LAST			= 0x02;
 
 // Punch type codes
@@ -82,15 +90,22 @@ QByteArray BtSiReassembler::feed(const QByteArray &chunk)
 	quint16 payloadLen = static_cast<quint16>(static_cast<quint8>(chunk[2]))
 	                   | (static_cast<quint16>(static_cast<quint8>(chunk[3])) << 8);
 
-	if (chunk.size() < 4 + payloadLen || payloadLen < 1)
+	if (chunk.size() < 4 + payloadLen || payloadLen < 1) {
+		logBtSiReaderW() << "BtSiReassembler: wrapper chunk too short, size:" << chunk.size() << "payload len:" << payloadLen;
 		return {};
+	}
 
+	// flag is a bit mask, single chunk message has both FIRST and LAST bits set
 	auto flag = static_cast<quint8>(chunk[4]);
+	const int payloadEnd = 4 + payloadLen;
+	int dataStart = 5;
 
-	if (flag == WRAP_FLAG_FIRST) {
+	if (flag & WRAP_FLAG_FIRST) {
 		// payload[1..5] = total_len (u32le), payload[5..] = data
-		if (payloadLen < 5)
+		if (payloadLen < 5) {
+			logBtSiReaderW() << "BtSiReassembler: first chunk too short, payload len:" << payloadLen;
 			return {};
+		}
 		quint32 totalLen =
 			  static_cast<quint32>(static_cast<quint8>(chunk[5]))
 			| (static_cast<quint32>(static_cast<quint8>(chunk[6])) << 8)
@@ -100,29 +115,24 @@ QByteArray BtSiReassembler::feed(const QByteArray &chunk)
 		m_expectedLen = static_cast<int>(totalLen);
 		m_started = true;
 		// data starts at chunk[9] (4 header bytes + 1 flag + 4 total_len bytes)
-		if (chunk.size() > 9)
-			m_buf.append(chunk.constData() + 9, chunk.size() - 9);
+		dataStart = 9;
+	}
+	else if (!m_started) {
+		logBtSiReaderW() << "BtSiReassembler: continuation chunk without first chunk, flag:" << flag;
+		return {};
+	}
 
-	} else if (flag == WRAP_FLAG_MIDDLE) {
-		if (!m_started)
-			return {};
-		// data = payload[1..] → chunk[5..]
-		if (chunk.size() > 5)
-			m_buf.append(chunk.constData() + 5, chunk.size() - 5);
+	if (payloadEnd > dataStart)
+		m_buf.append(chunk.constData() + dataStart, payloadEnd - dataStart);
 
-	} else if (flag == WRAP_FLAG_LAST) {
-		if (!m_started)
-			return {};
-		// data = payload[1..] → chunk[5..]
-		if (chunk.size() > 5)
-			m_buf.append(chunk.constData() + 5, chunk.size() - 5);
-
+	if (flag & WRAP_FLAG_LAST) {
 		if (m_buf.size() == m_expectedLen) {
 			QByteArray result = m_buf;
 			reset();
 			return result;
 		}
-		// Size mismatch — discard
+		logBtSiReaderW() << "BtSiReassembler: size mismatch, expected:" << m_expectedLen << "got:" << m_buf.size()
+						 << "data:" << m_buf.toHex().toStdString();
 		reset();
 	}
 
@@ -165,6 +175,11 @@ BtSiDeviceDriver::BtSiDeviceDriver(QObject *parent)
 	, m_cardStateUuid(QString(CARD_STATE_UUID))
 	, m_cardDataUuid(QString(CARD_DATA_UUID))
 {
+	m_cardReadoutTimer = new QTimer(this);
+	m_cardReadoutTimer->setSingleShot(true);
+	m_cardReadoutTimer->setInterval(CARD_READOUT_TIMEOUT_MS);
+	connect(m_cardReadoutTimer, &QTimer::timeout, this, &BtSiDeviceDriver::onCardReadoutTimeout);
+
 	// m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
 	// m_discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
 
@@ -175,13 +190,10 @@ BtSiDeviceDriver::BtSiDeviceDriver(QObject *parent)
 
 BtSiDeviceDriver::~BtSiDeviceDriver()
 {
-	// Disconnect without emitting signals from a partially-destroyed object
-	// if (m_discoveryAgent->isActive())
-	// 	m_discoveryAgent->stop();
+	if (m_discoveryAgent)
+		m_discoveryAgent->stop();
 
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
+	clearServices();
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -199,38 +211,25 @@ bool BtSiDeviceDriver::isConnected() const
 	return m_connected;
 }
 
-// void BtSiDeviceDriver::connectToDevice(const QString &address)
-// {
-// 	if (address.isEmpty()) {
-// 		emitInfo(NecroLog::Level::Error, tr("connectToDevice: empty address."));
-// 		return;
-// 	}
-// 	m_targetAddress = address.toUpper().trimmed();
-// 	emitInfo(NecroLog::Level::Info,
-// 	         tr("Starting BLE scan for device %1 ...").arg(m_targetAddress));
-// 	startScan();
-// }
-
-void BtSiDeviceDriver::connectToDevice(const QBluetoothDeviceInfo &info)
+void BtSiDeviceDriver::connectToDevice(const QString &address)
 {
-	if (!info.isValid()) {
-		emitInfo(NecroLog::Level::Error, tr("connectToDevice: invalid QBluetoothDeviceInfo."));
+	const QString target_address = address.trimmed();
+	if (target_address.isEmpty()) {
+		emitInfo(NecroLog::Level::Error, tr("connectToDevice: empty Bluetooth address."));
 		return;
 	}
-	m_deviceInfo = info;
-	emitInfo(NecroLog::Level::Info,
-	         tr("Connecting to BLE device %1 %2 ...").arg(info.address().toString().toUpper()).arg(info.name()));
-	createController(info);
+
+	if (m_controller || (m_discoveryAgent && m_discoveryAgent->isActive()))
+		disconnectFromDevice();
+
+	emitInfo(NecroLog::Level::Info, tr("Looking for BLE device %1 ...").arg(target_address));
+	startScan(target_address);
 }
 
 void BtSiDeviceDriver::disconnectFromDevice()
 {
-	// if (m_discoveryAgent->isActive())
-	// 	m_discoveryAgent->stop();
 
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
+	clearServices();
 
 	if (m_controller) {
 		m_controller->disconnectFromDevice();
@@ -239,8 +238,6 @@ void BtSiDeviceDriver::disconnectFromDevice()
 	}
 
 	m_cardStateSubscribed = false;
-	m_cardDataSubscribed = false;
-	m_pendingServices = 0;
 	m_cardStateReassembler.reset();
 	m_cardDataReassembler.reset();
 
@@ -254,52 +251,47 @@ void BtSiDeviceDriver::disconnectFromDevice()
 // BtSiDeviceDriver — scan
 // ===========================================================================
 
-// void BtSiDeviceDriver::startScan()
-// {
-// 	if (m_discoveryAgent->isActive())
-// 		m_discoveryAgent->stop();
-// 	m_discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
-// }
+void BtSiDeviceDriver::startScan(const QString &address)
+{
+	if (!m_discoveryAgent) {
+		m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+		m_discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
+	}
 
-// void BtSiDeviceDriver::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
-// {
-// 	if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
-// 		return;
+	if (m_discoveryAgent->isActive())
+		m_discoveryAgent->stop();
 
-// 	bool matches = false;
-// 	qfInfo() << "BT device discovered:" << info.address().toString().toUpper() << info.name();
-// 	// MAC address format (Linux, Windows)
-// 	if (m_targetAddress.contains(':')) {
-// 		matches = info.address().toString().toUpper() == m_targetAddress;
-// 		// macOS: address() is always empty, fall back to name matching
-// 		if (!matches && info.address().isNull())
-// 			matches = !info.name().isEmpty() &&
-// 			          info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
-// 	} else {
-// 		// User entered a device name (useful on macOS where addresses are unavailable)
-// 		matches = info.name().compare(m_targetAddress, Qt::CaseInsensitive) == 0;
-// 	}
+	// The agent is reused, but each scan must use its current target address.
+	QObject::disconnect(m_discoveryAgent, nullptr, this, nullptr);
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+			this, [this, address](const QBluetoothDeviceInfo &info) {
+				if (info.address().toString().compare(address, Qt::CaseInsensitive) != 0)
+					return;
 
-// 	if (matches) {
-// 		emitInfo(NecroLog::Level::Info, tr("Found BLE device: %1 (%2)").arg(info.name(), info.address().toString()));
-// 		m_discoveryAgent->stop();
-// 		createController(info);
-// 	}
-// }
+				m_discoveryAgent->stop();
+				emitInfo(NecroLog::Level::Info,
+						tr("Found BLE device %1 %2, connecting ...")
+							.arg(info.address().toString().toUpper())
+							.arg(info.name()));
+				m_deviceInfo = info;
+				createController(info);
+			});
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this,
+				[this, address]() {
+					if (!m_controller)
+						emitInfo(NecroLog::Level::Error,
+								tr("BLE device %1 was not found.").arg(address));
+				});
+	connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this,
+				[this](QBluetoothDeviceDiscoveryAgent::Error error) {
+					Q_UNUSED(error)
+					emitInfo(NecroLog::Level::Error,
+							tr("BLE discovery error: %1").arg(m_discoveryAgent->errorString()));
+				});
 
-// void BtSiDeviceDriver::onScanFinished()
-// {
-// 	// Scan ended without finding the device (it would have been stopped early on match)
-// 	if (!m_controller) {
-// 		emitInfo(NecroLog::Level::Warning, tr("BLE scan finished — device %1 not found.").arg(m_targetAddress));
-// 	}
-// }
+	m_discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+}
 
-// void BtSiDeviceDriver::onScanError(QBluetoothDeviceDiscoveryAgent::Error error)
-// {
-// 	Q_UNUSED(error)
-// 	emitInfo(NecroLog::Level::Error, tr("BLE scan error: %1").arg(m_discoveryAgent->errorString()));
-// }
 
 // ===========================================================================
 // BtSiDeviceDriver — GATT controller
@@ -307,7 +299,13 @@ void BtSiDeviceDriver::disconnectFromDevice()
 
 void BtSiDeviceDriver::createController(const QBluetoothDeviceInfo &info)
 {
+	if (m_controller)
+		m_controller->deleteLater();
 	m_controller = QLowEnergyController::createCentral(info, this);
+	if (!m_controller) {
+		emitInfo(NecroLog::Level::Error, tr("Unable to create BLE controller."));
+		return;
+	}
 
 	connect(m_controller, &QLowEnergyController::connected, this, &BtSiDeviceDriver::onControllerConnected);
 	connect(m_controller, &QLowEnergyController::disconnected, this, &BtSiDeviceDriver::onControllerDisconnected);
@@ -315,6 +313,16 @@ void BtSiDeviceDriver::createController(const QBluetoothDeviceInfo &info)
 	connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BtSiDeviceDriver::onServiceDiscoveryFinished);
 
 	m_controller->connectToDevice();
+}
+
+void BtSiDeviceDriver::clearServices()
+{
+	m_cardReadoutTimer->stop();
+	for (auto *svc : m_services)
+		svc->deleteLater();
+	m_services.clear();
+	m_pendingServices.clear();
+	m_cardDataService = nullptr;
 }
 
 void BtSiDeviceDriver::onControllerConnected()
@@ -329,10 +337,7 @@ void BtSiDeviceDriver::onControllerDisconnected()
 	bool wasConnected = m_connected;
 	m_connected = false;
 	m_cardStateSubscribed = false;
-	m_cardDataSubscribed = false;
-	for (auto *svc : m_services)
-		svc->deleteLater();
-	m_services.clear();
+	clearServices();
 	if (wasConnected)
 		emit connectionStateChanged(false);
 }
@@ -356,33 +361,35 @@ void BtSiDeviceDriver::onControllerError(QLowEnergyController::Error error)
 void BtSiDeviceDriver::onServiceDiscoveryFinished()
 {
 	const auto uuids = m_controller->services();
-	m_pendingServices = uuids.count();
-
 	for (const QBluetoothUuid &uuid : uuids) {
 		QLowEnergyService *svc = m_controller->createServiceObject(uuid, this);
-		if (!svc) {
-			--m_pendingServices;
+		if (!svc)
 			continue;
-		}
 		m_services.append(svc);
-		connect(svc, &QLowEnergyService::stateChanged, this, &BtSiDeviceDriver::onServiceStateChanged);
-		svc->discoverDetails();
+		m_pendingServices.insert(svc);
+		connect(svc, &QLowEnergyService::stateChanged, this, [this, svc](QLowEnergyService::ServiceState state) {
+			onServiceStateChanged(svc, state);
+		});
 	}
+	// start discovery only after the pending set is complete, so a synchronous
+	// state change can't make it look empty too early
+	for (auto *svc : std::as_const(m_services))
+		svc->discoverDetails();
 
-	if (m_pendingServices == 0)
+	if (m_pendingServices.isEmpty())
 		checkAllServicesReady();
 }
 
-void BtSiDeviceDriver::onServiceStateChanged(QLowEnergyService::ServiceState state)
+void BtSiDeviceDriver::onServiceStateChanged(QLowEnergyService *svc, QLowEnergyService::ServiceState state)
 {
-	if (state == QLowEnergyService::RemoteServiceDiscovered) {
-		subscribeCharacteristicsFrom(qobject_cast<QLowEnergyService *>(sender()));
-		if (--m_pendingServices == 0)
-			checkAllServicesReady();
-	} else if (state == QLowEnergyService::InvalidService) {
-		if (--m_pendingServices == 0)
-			checkAllServicesReady();
-	}
+	if (state != QLowEnergyService::RemoteServiceDiscovered && state != QLowEnergyService::InvalidService)
+		return;
+	if (!m_pendingServices.remove(svc))
+		return; // already settled; ignore late transitions (e.g. InvalidService on disconnect)
+	if (state == QLowEnergyService::RemoteServiceDiscovered)
+		subscribeCharacteristicsFrom(svc);
+	if (m_pendingServices.isEmpty())
+		checkAllServicesReady();
 }
 
 void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
@@ -397,28 +404,45 @@ void BtSiDeviceDriver::subscribeCharacteristicsFrom(QLowEnergyService *svc)
 				connect(svc, &QLowEnergyService::characteristicChanged,
 				        this, &BtSiDeviceDriver::onCharacteristicChanged,
 				        Qt::UniqueConnection);
+				connect(svc, &QLowEnergyService::descriptorWritten, this, [](const QLowEnergyDescriptor &d, const QByteArray &value) {
+					logBtSiReaderI() << "CCCD written:" << d.uuid().toString().toStdString() << "value:" << value.toHex().toStdString();
+				});
+				connect(svc, &QLowEnergyService::errorOccurred, this, [this](QLowEnergyService::ServiceError err) {
+					emitInfo(NecroLog::Level::Error, tr("BT SI Reader service error: %1").arg(static_cast<int>(err)));
+				});
 				connectedSignal = true;
 			}
-			// Enable notifications via Client Characteristic Configuration Descriptor
+			logBtSiReaderI() << "Subscribing characteristic" << ch.uuid().toString().toStdString()
+							 << "properties:" << static_cast<int>(ch.properties());
+			// Enable notifications (or indications if notify is not supported)
+			// via Client Characteristic Configuration Descriptor
 			const QLowEnergyDescriptor cccd = ch.descriptor(
 				QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
-			if (cccd.isValid())
-				svc->writeDescriptor(cccd, QByteArray::fromHex("0100"));
+			if (cccd.isValid()) {
+				const bool use_indication = !(ch.properties() & QLowEnergyCharacteristic::Notify)
+											&& (ch.properties() & QLowEnergyCharacteristic::Indicate);
+				svc->writeDescriptor(cccd, use_indication? QLowEnergyCharacteristic::CCCDEnableIndication: QLowEnergyCharacteristic::CCCDEnableNotification);
+			}
+			else {
+				logBtSiReaderW() << "CCCD descriptor not found for characteristic" << ch.uuid().toString().toStdString();
+			}
 
-			if (ch.uuid() == m_cardStateUuid)
+			if (ch.uuid() == m_cardStateUuid) {
 				m_cardStateSubscribed = true;
-			else
-				m_cardDataSubscribed = true;
+			}
+			else if (ch.uuid() == m_cardDataUuid) {
+				m_cardDataService = svc;
+			}
 		}
 	}
 }
 
 void BtSiDeviceDriver::checkAllServicesReady()
 {
-	if (m_pendingServices > 0)
+	if (!m_pendingServices.isEmpty())
 		return;
 
-	if (m_cardStateSubscribed && m_cardDataSubscribed) {
+	if (isCardStateSubscribed() && isCardDataSubscribed()) {
 		m_connected = true;
 		emit connectionStateChanged(true);
 		emitInfo(NecroLog::Level::Info, tr("BT SI Reader ready."));
@@ -431,6 +455,7 @@ void BtSiDeviceDriver::checkAllServicesReady()
 
 void BtSiDeviceDriver::onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value)
 {
+	logBtSiReaderD() << "characteristic changed:" << ch.uuid().toString().toStdString() << "data:" << value.toHex().toStdString();
 	if (ch.uuid() == m_cardStateUuid) {
 		QByteArray msg = m_cardStateReassembler.feed(value);
 		if (!msg.isEmpty())
@@ -455,7 +480,7 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_STATE) {
-		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardState notification:"
+        logBtSiReaderW() << "BtSiDeviceDriver: unexpected msgId in cardState notification:"
 		          << std::hex << msgId;
 		return;
 	}
@@ -473,14 +498,60 @@ void BtSiDeviceDriver::handleCardStateMessage(const QByteArray &message)
 
 	m_lastStationNumber = static_cast<int>(codeNumber);
 
-	qfDebug() << "BtSiDeviceDriver: CardState card=" << cardNumber
-	          << "state=" << state << "station=" << codeNumber;
+    logBtSiReaderI() << "BtSiDeviceDriver: CardState card=" << cardNumber
+	          << "state=" << static_cast<int>(state) << "station=" << codeNumber;
 
 	if (state == 0) {
 		emitInfo(NecroLog::Level::Info, tr("SI card %1 removed from station %2.").arg(cardNumber).arg(codeNumber));
 	} else {
 		emitInfo(NecroLog::Level::Info, tr("SI card %1 inserted at station %2.").arg(cardNumber).arg(codeNumber));
+		requestCardReadout();
 	}
+}
+
+void BtSiDeviceDriver::requestCardReadout()
+{
+	// reader sends card data only on request, written to card data characteristic
+	// request: msg_id(u16le) | payload_len(u16le) = 0
+	if (!m_cardDataService) {
+		emitInfo(NecroLog::Level::Error, tr("Cannot request card readout, card data characteristic not available."));
+		return;
+	}
+	const QLowEnergyCharacteristic ch = m_cardDataService->characteristic(m_cardDataUuid);
+	if (!ch.isValid()) {
+		emitInfo(NecroLog::Level::Error, tr("Cannot request card readout, card data characteristic is invalid."));
+		return;
+	}
+	QByteArray request(4, 0);
+	request[0] = static_cast<char>(MSG_CARD_COMPLETE & 0xFF);
+	request[1] = static_cast<char>(MSG_CARD_COMPLETE >> 8);
+	logBtSiReaderI() << "Requesting card readout:" << request.toHex().toStdString();
+	m_cardDataService->writeCharacteristic(ch, request, QLowEnergyService::WriteWithResponse);
+	m_cardReadoutTimer->start();
+}
+
+void BtSiDeviceDriver::onCardReadoutTimeout()
+{
+	// card was detected, but readout data did not arrive (unsupported card, card removed too early, ...)
+	emitInfo(NecroLog::Level::Warning, tr("SI card readout timeout."));
+	sendFeedback(Feedback::Error);
+}
+
+void BtSiDeviceDriver::sendFeedback(Feedback feedback)
+{
+	// request: msg_id(u16le) | payload_len(u16le) = 1 | feedback_type(u8)
+	if (!m_cardDataService)
+		return;
+	const QLowEnergyCharacteristic ch = m_cardDataService->characteristic(m_cardDataUuid);
+	if (!ch.isValid())
+		return;
+	QByteArray request(5, 0);
+	request[0] = static_cast<char>(MSG_FEEDBACK & 0xFF);
+	request[1] = static_cast<char>(MSG_FEEDBACK >> 8);
+	request[2] = 1;
+	request[4] = static_cast<char>(feedback);
+	logBtSiReaderD() << "Sending feedback:" << request.toHex().toStdString();
+	m_cardDataService->writeCharacteristic(ch, request, QLowEnergyService::WriteWithResponse);
 }
 
 void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
@@ -491,10 +562,12 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 
 	quint16 msgId = readU16LE(message, 0);
 	if (msgId != MSG_CARD_MINIMAL && msgId != MSG_CARD_COMPLETE) {
-		qfDebug() << "BtSiDeviceDriver: unexpected msgId in cardData notification:"
+        logBtSiReaderW() << "BtSiDeviceDriver: unexpected msgId in cardData notification:"
 		           << std::hex << msgId;
 		return;
 	}
+
+	m_cardReadoutTimer->stop();
 
 	// payload starts at byte 4 (after 2-byte msg_id and 2-byte payload_len)
 	QByteArray payload = message.mid(4);
@@ -502,17 +575,19 @@ void BtSiDeviceDriver::handleCardDataMessage(const QByteArray &message)
 
 	if (card.cardNumber <= 0) {
 		emitInfo(NecroLog::Level::Warning, tr("Received card readout with invalid card number."));
+		sendFeedback(Feedback::Error);
 		return;
 	}
 
 	card.stationNumber = m_lastStationNumber;
 
-	qfDebug() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber;
+    logBtSiReaderI() << "BtSiDeviceDriver: card readout complete for card" << card.cardNumber;
 	emitInfo(NecroLog::Level::Info,
 	         tr("SI card %1 readout complete (%2 punches).")
 	             .arg(card.cardNumber)
 	             .arg(card.punchCount()));
 
+	sendFeedback(Feedback::Ok);
 	emit siTaskFinished(static_cast<int>(SiTask::Type::CardRead), QVariant(card.toVariantMap()));
 }
 

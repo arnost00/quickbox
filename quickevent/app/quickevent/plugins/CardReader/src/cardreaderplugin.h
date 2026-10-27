@@ -43,8 +43,8 @@ public:
 
 	static int resolveAltCode(int maybe_alt_code, int stage_id);
 
-	void emitSiTaskFinished(int task_type, QVariant result) { emit siTaskFinished(task_type, result); }
-	Q_SIGNAL void siTaskFinished(int task_type, QVariant result);
+	void emitSiTaskFinished(int task_type, QVariant result, QString reader_message = QString()) { emit siTaskFinished(task_type, result, reader_message); }
+	Q_SIGNAL void siTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 private:
 	void onInstalled();
 	QQmlListProperty<CardChecker> cardCheckersListProperty();

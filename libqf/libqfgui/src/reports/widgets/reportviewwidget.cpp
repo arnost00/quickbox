@@ -601,7 +601,7 @@ qf::gui::framework::DialogWidget::ActionMap ReportViewWidget::createActions()
 	{
 		qf::gui::Action *a;
 		a = new qf::gui::Action(tr("Zoom to fit width"), this);
-		a->setIcon(qf::gui::Style::icon("zoom-fitwidth"));
+		a->setIcon(qf::gui::Style::icon("zoom_fitwidth"));
 		ret[QStringLiteral("view.zoomFitWidth")] = a;
 		connect(a, &QAction::triggered, this, &ReportViewWidget::view_zoomToFitWidth);
 	}
@@ -973,19 +973,22 @@ void ReportViewWidget::print(QPrinter &printer, const QVariantMap &options)
 
 	framework::CursorOverrider cov(Qt::WaitCursor);
 
-	ReportPainter painter(&printer);
-
 	typedef ReportItem::Rect Rect;
 
 	int pg_no = options.value("fromPage", 1).toInt() - 1;
 	int to_page = options.value("toPage", pageCount()).toInt();
 	qfDebug() << "pg_no:" << pg_no << "to_page:" << to_page;
+
+	// Set orientation before QPainter::begin() so the first PDF page gets the correct layout
 	ReportItemMetaPaintFrame *frm = getPage(pg_no);
 	if(frm) {
 		Rect r = frm->renderedRect;
-		bool landscape = r.width() > r.height();
-		if(landscape)
-			printer.setPageOrientation(QPageLayout::Landscape);
+		printer.setPageOrientation(r.width() > r.height() ? QPageLayout::Landscape : QPageLayout::Portrait);
+	}
+
+	ReportPainter painter(&printer);
+
+	if(frm) {
 		//Rect printer_pg_rect = QRectF(printer.pageRect());
 		//qfWarning() << "\tprinter page rect:" << printer_pg_rect.toString();
 		//qfWarning() << "\tresolution:" << printer.resolution() << Size(printer_pg_rect.size()/printer.resolution()).toString(); /// resolution je v DPI

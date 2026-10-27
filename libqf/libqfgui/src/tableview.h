@@ -10,6 +10,8 @@
 
 #include <QTableView>
 
+#include <functional>
+
 class QAbstractProxyModel;
 class QSortFilterProxyModel;
 class QAbstractButton;
@@ -82,6 +84,8 @@ public:
 	void setCloneRowEnabled(bool b);
 	void setEditRowsMenuSectionEnabled(bool b);
 	void setDirtyRowsMenuSectionEnabled(bool b);
+	//! Custom question asked before selected rows are removed inline instead of the generic one.
+	void setRemoveRowsQuestion(std::function<QString (int row_count)> fn) {m_removeRowsQuestion = std::move(fn);}
 
 	Q_SLOT void resetColumnsSettings();
 
@@ -219,6 +223,7 @@ protected:
 	QAbstractButton *m_leftTopCornerButton = nullptr;
 private:
 	bool m_isReadOnly = false;
+	std::function<QString (int row_count)> m_removeRowsQuestion;
 };
 
 }}

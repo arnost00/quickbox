@@ -4,11 +4,18 @@
 #pragma once
 
 #include "../service.h"
+
+#include <QMap>
+#include <QHash>
+#include <QSet>
+#include <QVariantMap>
+
 #include <functional>
 
 class QTimer;
 class QNetworkAccessManager;
 
+namespace qf::core::sql { struct QxRecChng; }
 
 namespace Event::services {
 
@@ -17,6 +24,7 @@ class OFeedClientSettings : public ServiceSettings
 	using Super = ServiceSettings;
 
 	QF_VARIANTMAP_FIELD2(int, e, setE, xportIntervalSec, 60)
+	QF_VARIANTMAP_FIELD2(int, c, setC, hangesIntervalSec, 15)
 	QF_VARIANTMAP_FIELD2(int, c, setC, redentialCheckIntervalMin, 60)
 public:
 	OFeedClientSettings(const QVariantMap &o = QVariantMap()) : Super(o) {}
@@ -30,6 +38,7 @@ class OFeedClient : public Service
 signals:
 	void credentialsStatusChanged(bool valid);
 	void exportTimerFired();
+	void changesTimerFired();
 	void credentialCheckFired();
 
 public:
@@ -37,16 +46,16 @@ public:
 
 	void run() override;
 	void stop() override;
+	void setRunning(bool on) override;
 	OFeedClientSettings settings() const {return OFeedClientSettings(m_settings);}
 
 	static QString serviceName();
-	static bool isInsertFromOFeed;
 
 	void exportResultsIofXml3();
 	void exportStartListIofXml3(std::function<void()> on_success = nullptr);
-	void triggerChangesProcessing();
+	void processChanges(std::function<void()> on_done = nullptr);
 	void loadSettings() override;
-	void onDbEventNotify(const QString &domain, int connection_id, const QVariant &data);
+	void onQxRecChng(const qf::core::sql::QxRecChng &recchng, QObject *source);
 
 	QString hostUrl() const;
 	void setHostUrl(QString eventId);
@@ -54,14 +63,18 @@ public:
 	void setEventId(QString eventId);
 	QString eventPassword() const;
 	void setEventPassword(QString eventPassword);
-	QString changelogOrigin() const;
-	void setChangelogOrigin(QString changelogOrigin);
-	QDateTime lastChangelogCall();
-	void setLastChangelogCall(QDateTime lastChangelogCall);
+	QDateTime lastChangelogCall(const QString &origin);
+	void setLastChangelogCall(const QString &origin, QDateTime lastChangelogCall);
 	bool runXmlValidation();
 	void setRunXmlValidation(bool runXmlValidation);
-	bool runChangesProcessing();
-	void setRunChangesProcessing(bool runChangesProcessing);
+	bool runStartChangesProcessing();
+	void setRunStartChangesProcessing(bool runStartChangesProcessing);
+	bool runOfficeChangesProcessing();
+	void setRunOfficeChangesProcessing(bool runOfficeChangesProcessing);
+	bool uploadStartList();
+	void setUploadStartList(bool on);
+	bool uploadResults();
+	void setUploadResults(bool on);
 	bool printEventImageOnReceipt() const;
 	void setPrintEventImageOnReceipt(bool on);
 	bool printEventQrCodeOnReceipt() const;
@@ -84,15 +97,36 @@ public:
 						const QString &eventId,
 						const QString &eventPassword,
 						std::function<void(bool success, const QString &message)> callback);
+	void uploadRentalCards(std::function<void(bool success, int count, const QString &error)> callback);
 	int credentialsValid() const { return m_credentialsValid; }
 	int credentialCheckRemainingMs() const;
 	int credentialCheckIntervalMs() const;
 	int exportTimerRemainingMs() const;
 	int exportTimerIntervalMs() const;
+	int changesTimerRemainingMs() const;
+	int changesTimerIntervalMs() const;
 
 private:
+	/// changed fields of one runs record, collected between the flush timer shots
+	struct PendingRunChange
+	{
+		QVariantMap runFields;
+		QVariantMap competitorFields;
+	};
+
 	QTimer *m_exportTimer = nullptr;
+	QTimer *m_changesTimer = nullptr;
 	QTimer *m_credentialCheckTimer = nullptr;
+	QTimer *m_runChangeFlushTimer = nullptr;
+	QMap<int, PendingRunChange> m_pendingRunChanges;
+	/// runs not created in OFeed yet (start time is required, but not set, or the create request failed)
+	QSet<int> m_pendingNewRuns;
+	/// runs with a create request on the way, protects against duplicate creates
+	QSet<int> m_createsInFlight;
+	/// runs of competitors stored from OFeed, their insert DB event must not be sent back (consumed once per run)
+	QSet<int> m_runsInsertedFromOFeed;
+	/// failures of changelog entries by protocol id, the entry is given up after the limit (lost on restart)
+	QHash<int, int> m_changeFailures;
 	QNetworkAccessManager *m_networkManager = nullptr;
 	const QString OFEED_API_URL = "https://api.orienteerfeed.com";
 	bool m_eventImageStartupAttempted = false;
@@ -102,12 +136,21 @@ private:
 	bool m_startListExportInProgress = false;
 	bool m_changesProcessingInProgress = false;
 	bool m_processingOFeedChanges = false;
+	bool m_startupCheckInProgress = false;
+	/// export tick that was skipped because a changes cycle was running
+	bool m_exportDeferred = false;
 
 private:
 	qf::gui::framework::DialogWidget *createDetailWidget() override;
 	void onExportTimerTimeOut();
+	void onChangesTimerTimeOut();
+	void exportStartListAndResults(bool only_enabled = false);
+	void runDeferredExport();
 	void init();
 	void ensureEventImageCachedAtStartup();
+	void startService();
+	void setCredentialsInvalid();
+	void showStartupCredentialError(const QString &message);
 	// QString receiptConfigKey(const QString &suffix) const;
 	// QVariant receiptConfigValue(const QString &suffix, const QVariant &default_value = QVariant()) const;
 	// void setReceiptConfigValue(const QString &suffix, const QVariant &value);
@@ -115,21 +158,28 @@ private:
 	void clearCachedEventImage();
 	void checkCredentials();
 	void sendFile(QString name, QString request_path, QString file, std::function<void()> on_success = nullptr, std::function<void()> on_done = nullptr);
-	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId);
-	void sendCompetitorAdded(QString json_body);
+	void sendCompetitorUpdate(QString json_body, int competitor_id, bool usingExternalId, std::function<void(bool)> on_done);
+	void sendCompetitorAdded(QString json_body, int run_id);
 	void sendCompetitorDeleted(int run_id);
 	void onCompetitorAdded(int competitor_id);
-	void onRunChanged(int run_id, const QVariantMap &dirty_vals);
-	void onCompetitorReadOut(int competitor_id);
+	bool canCreateCompetitor(int run_id) const;
+	void createCompetitorOrDefer(int run_id);
+	void queueRunChange(int run_id, const QString &table, const QVariantMap &fields);
+	void flushRunChanges();
+	void sendRentalCardReturned(int run_id, bool returned);
+	void onRunChanged(int run_id, const QVariantMap &run_fields, const QVariantMap &competitor_fields);
 	void sendGraphQLRequest(const QString &query, const QJsonObject &variables, std::function<void(QJsonObject)> callback, bool withAuthorization);
-	void getChangesByOrigin(std::function<void()> on_done = nullptr);
-	void processCompetitorsChanges(QJsonArray data_array);
+	void getChangesByOrigin(const QString &origin, std::function<void()> on_done = nullptr);
+	QDateTime processCompetitorsChanges(QJsonArray data_array);
 	void markChangelogEntryAsProcessed(int protocolId);
-	void processCardChange(int runs_id, const QString &new_value);
+	void processCardChange(int runs_id, const QString &new_value, bool office);
 	void processStatusChange(int runs_id, const QString &new_value);
 	void processNoteChange(int runs_id, const QString &new_value);
 	void processCorridorTimeUpdate(int runs_id, const QDateTime &created_at);
-	void processNewRunner(int ofeed_competitor_id);
+	bool processNewRunner(const QJsonObject &change);
+	bool processCompetitorChange(const QString &type, int runs_id, const QJsonObject &competitor);
+	bool setRunStartTime(int run_id, const QString &start_time);
+	bool retryChange(int protocol_id);
 	void storeChange(const QJsonObject &change);
 	QByteArray zlibCompress(QByteArray data);
 };

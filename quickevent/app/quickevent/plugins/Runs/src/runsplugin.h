@@ -42,6 +42,14 @@ private:
 	typedef qf::gui::framework::Plugin Super;
 public:
 	static constexpr int UNREAL_TIME_MSEC = quickevent::core::og::TimeMs::UNREAL_TIME_MSEC;
+	/// SQL condition (in parentheses) for runs counted as finished, shared by statistics
+	static QString finishedSqlCondition() { return QStringLiteral("(runs.finishTimeMs > 0 OR (runs.disqualified AND NOT runs.notCompeting))"); }
+	/// Planned start time of a run (SQL expression, needs joined classdefs). Classes without start interval (start by punching the start unit) have the same start time for everybody, so it is NULL for them.
+	static QString plannedStartMsSqlExpression() { return QStringLiteral("CASE WHEN NOT (runs.relayId IS NULL AND COALESCE(classdefs.startIntervalMin, 0)=0) THEN runs.startTimeMs END"); }
+	/// SQL condition for started runs. A finished runner has started, even without a start time or a corridor entry.
+	static QString startedSqlCondition(qint64 started_until_ms) { return QStringLiteral("(%1 OR runs.notStart OR runs.corridorTime IS NOT NULL OR %2<=%3)").arg(finishedSqlCondition(), plannedStartMsSqlExpression()).arg(started_until_ms); }
+	/// NULL safe SQL condition for runs started and not finished yet
+	static QString onTrackSqlCondition(qint64 started_until_ms) { return QStringLiteral("(CASE WHEN %1 THEN 1 ELSE 0 END)=1 AND (CASE WHEN %2 THEN 1 ELSE 0 END)=0").arg(startedSqlCondition(started_until_ms), finishedSqlCondition()); }
 public:
 	RunsPlugin(QObject *parent = nullptr);
 	~RunsPlugin() Q_DECL_OVERRIDE;
@@ -52,6 +60,7 @@ public:
 
 	const qf::core::utils::Table& runnersTable(int stage_id);
 	Q_SLOT void clearRunnersTableCache();
+	void setCompetitorRunsSiId(int competitor_id, int stage_id, int si_id, bool use_in_next_stages, QObject *source);
 
 	Q_INVOKABLE int courseForRun(int run_id);
 	int courseForRelay(int relay_number, int leg);
@@ -66,18 +75,17 @@ public:
 	Q_INVOKABLE QVariant stageResultsTableData(int stage_id, const QString &class_filter, int max_competitors_in_class = 0, bool exclude_disq = false);
 	qf::core::utils::TreeTable stageResultsTable(int stage_id, const QString &class_filter = QString(), int max_competitors_in_class = 0, bool exclude_disq = false, bool add_laps = false, int max_points = 0);
 
-	qf::core::utils::Table nstagesClassResultsTable(int stages_count, int class_id, int places = -1, bool exclude_disq = true, int max_points = 0);
+	qf::core::utils::Table nstagesClassResultsTable(int stages_count, int class_id, int places = -1, bool exclude_disq = true, int max_points = 0, int best_results_count = 0);
 	qf::core::utils::TreeTable nstagesResultsTable(const QString &class_filter, int stages_count, int places = -1, bool exclude_disq = true);
-	qf::core::utils::TreeTable nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places = -1, bool exclude_disq = true);
+	qf::core::utils::TreeTable nstagesPointResultsTable(const QString &class_filter, int stages_count, int max_points, int places = -1, bool exclude_disq = true, int best_results_count = 0);
 	//Q_INVOKABLE QVariant nstagesResultsTableData(int stages_count, int places = -1, bool exclude_disq = true);
 	Q_INVOKABLE void showRunsTable(int stage_id, int class_id, bool show_offrace, const QString &sort_column = QString(), int select_competitor_id = 0);
 
 	Q_INVOKABLE QWidget* createReportOptionsDialog(QWidget *parent = nullptr);
-	Q_INVOKABLE QWidget* createNStagesReportOptionsDialog(QWidget *parent = nullptr);
 
 	Q_INVOKABLE bool reloadTimesFromCard(int run_id);
 
-	Q_INVOKABLE QVariantMap printAwardsOptionsWithDialog(const QVariantMap &opts);
+	Q_INVOKABLE QVariantMap editPrintAwardsOptionsInDialog(const QVariantMap &opts);
 
 	bool exportStartListStageIofXml30(int stage_id, const QString &file_name, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	bool exportStartListCurrentStageCsvSime(const QString &file_name, bool bibs, QString sql_where);
@@ -91,7 +99,7 @@ public:
 	Q_INVOKABLE bool exportResultsCsosStage(int stage_id, const QString &file_name);
 	Q_INVOKABLE bool exportResultsCsosOverall(int stage_count, const QString &file_name);
 
-	qf::core::sql::QueryBuilder runsQuery(int stage_id, int class_id = 0, bool show_offrace = false);
+	qf::core::sql::QueryBuilder runsQuery(int stage_id, int class_id = 0, bool show_offrace = false, bool only_on_track = false);
 	QVariantMap runsRecord(int run_id);
 
 	void computeStageTime(int run_id);
@@ -100,9 +108,9 @@ public:
 	qf::core::sql::QueryBuilder startListQuery();
 	QVariantMap startListRecord(int run_id);
 
-	qf::core::utils::TreeTable startListClassesTable(const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
-	qf::core::utils::TreeTable startListClubsTable(const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format, const quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy order_first_by);
-	qf::core::utils::TreeTable startListStartersTable(const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
+	qf::core::utils::TreeTable startListClassesTable(int stage_id, const QString &where_expr, const quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
+	qf::core::utils::TreeTable startListClubsTable(int stage_id, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format, const quickevent::gui::ReportOptionsDialog::StartlistOrderFirstBy order_first_by);
+	qf::core::utils::TreeTable startListStartersTable(int stage_id, const QString &where_expr, quickevent::gui::ReportOptionsDialog::VacantsOption vacants_option);
 	qf::core::utils::TreeTable startListClassesNStagesTable(const int stages_count, const QString &where_expr, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
 	qf::core::utils::TreeTable startListClubsNStagesTable(const int stages_count, const quickevent::gui::ReportOptionsDialog::StartTimeFormat start_time_format);
 
@@ -143,7 +151,7 @@ private:
 	Q_SLOT void onInstalled();
 
 	qf::core::utils::TreeTable addLapsToStageResultsTable(int course_id, const qf::core::utils::TreeTable &class_results);
-	void exportResultsHtmlStageWithLaps(const QString &laps_file_name, const qf::core::utils::TreeTable &tt);
+	void exportResultsHtmlStageWithLaps(const QString &laps_file_name, const qf::core::utils::TreeTable &tt, int stage_id);
 
 	int courseForRun_Classic(int run_id);
 	int courseForRun_Relays(int run_id);

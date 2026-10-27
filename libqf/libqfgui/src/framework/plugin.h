@@ -13,6 +13,8 @@ namespace qf {
 namespace gui {
 namespace framework {
 
+class ReportFileCache;
+
 class QFGUI_DECL_EXPORT Plugin : public QObject
 {
 	Q_OBJECT
@@ -22,10 +24,9 @@ public:
 	~Plugin() Q_DECL_OVERRIDE;
 
 	static QString pluginDataDir();
+	static ReportFileCache *reportFileCache();
 
-	static void setReportsDir(const QString &dir) { m_reportsDir = dir; }
-	static QString effectiveReportsDir();
-	static QString defaultReportsDir();
+
 
 	QString homeDir() const { return pluginDataDir() + '/' +  featureId(); }
 	QString qmlDir() const { return homeDir() + "/qml"; }
@@ -42,12 +43,13 @@ public:
 			return reportName == o.reportName && reportFilePath == o.reportFilePath;
 		}
 	};
-	QList<ReportFileInfo> listReportFiles(const QString &report_dir) const;
+	QList<ReportFileInfo> listReportFiles(const QString &report_dir,
+		const QString &suffix = QStringLiteral("qml")) const;
 
 	Q_SIGNAL void installed();
 private:
 	QString m_featureId;
-	static QString m_reportsDir;
+
 };
 
 }}}

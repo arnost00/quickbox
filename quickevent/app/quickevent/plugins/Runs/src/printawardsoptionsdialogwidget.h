@@ -20,7 +20,13 @@ public:
 
 	QVariantMap printOptions() const;
 	void setPrintOptions(const QVariantMap &opts);
+
 private:
+	void onDesignerClicked();
+
+private:
+	void refreshTemplateList();
+
 	Ui::PrintAwardsOptionsDialogWidget *ui;
 };
 

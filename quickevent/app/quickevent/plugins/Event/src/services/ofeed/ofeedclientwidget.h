@@ -32,22 +32,25 @@ private:
 	void onBtProcessChangesClicked();
 	void onBtPasteSetupLinkClicked();
 	void onBtTestConnectionClicked();
+	void onBtUploadRentalCardsClicked();
 	void onBtRefreshEventImageClicked();
 	void onBtOpenEventWebsiteClicked();
 	void updateTestConnectionState();
 	void updateCredentialStatus(bool valid);
+	void updateEventImagePreview();
 	void syncReceiptEventLinkWithDefaults();
 	QString defaultReceiptEventLink() const;
 	OFeedClient* service();
 	bool saveSettings();
+	bool acceptDialogDone(int result) override;
 private:
 	Ui::OFeedClientWidget *ui;
-	bool acceptDialogDone(int result) override;
 	bool m_isTestConnectionRunning = false;
 	bool m_isImageRefreshRunning = false;
 	QString m_lastAutoReceiptEventLink;
 	QTimer *m_uiTickTimer = nullptr;
 	CircularTimerWidget *m_exportTimerIndicator = nullptr;
+	CircularTimerWidget *m_changesTimerIndicator = nullptr;
 	CircularTimerWidget *m_credentialTimerIndicator = nullptr;
 };
 

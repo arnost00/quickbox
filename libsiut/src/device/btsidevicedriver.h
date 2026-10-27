@@ -19,6 +19,8 @@
 #include <QLowEnergyController>
 #include <QLowEnergyService>
 #include <QObject>
+#include <QSet>
+#include <QTimer>
 #include <QVariantMap>
 #include <qbluetoothdeviceinfo.h>
 
@@ -62,15 +64,14 @@ public:
 	explicit BtSiDeviceDriver(QObject *parent = nullptr);
 	~BtSiDeviceDriver() override;
 
-	// void connectToDevice(const QString &address);
-	void connectToDevice(const QBluetoothDeviceInfo &info);
+	void connectToDevice(const QString &address);
 	void disconnectFromDevice();
 	bool isConnected() const;
 
 	const QBluetoothDeviceInfo& deviceInfo() const { return m_deviceInfo; }
 
 	Q_SIGNAL void driverInfo(NecroLog::Level level, const QString &msg);
-	Q_SIGNAL void siTaskFinished(int task_type, QVariant result);
+	Q_SIGNAL void siTaskFinished(int task_type, QVariant result, QString reader_message = QString());
 	Q_SIGNAL void connectionStateChanged(bool connected);
 
 private:
@@ -78,18 +79,27 @@ private:
 	void onControllerDisconnected();
 	void onControllerError(QLowEnergyController::Error error);
 	void onServiceDiscoveryFinished();
-	void onServiceStateChanged(QLowEnergyService::ServiceState state);
+	void onServiceStateChanged(QLowEnergyService *svc, QLowEnergyService::ServiceState state);
 	void onCharacteristicChanged(const QLowEnergyCharacteristic &ch, const QByteArray &value);
 
 private:
-	void startScan();
+	void startScan(const QString &address);
 	void createController(const QBluetoothDeviceInfo &info);
 	void subscribeCharacteristicsFrom(QLowEnergyService *svc);
+	void clearServices();
 	void checkAllServicesReady();
+	bool isCardStateSubscribed() const { return m_cardStateSubscribed; }
+	bool isCardDataSubscribed() const { return m_cardDataService != nullptr; }
 
 	// Message handlers
 	void handleCardStateMessage(const QByteArray &message);
 	void handleCardDataMessage(const QByteArray &message);
+	void requestCardReadout();
+	void onCardReadoutTimeout();
+
+	// Station feedback (LED/buzzer), reader does not play it in readout mode by itself
+	enum class Feedback : quint8 { Ok = 1, Error = 2 };
+	void sendFeedback(Feedback feedback);
 
 	// SI card building
 	SICard buildSICard(const QByteArray &payload);
@@ -100,12 +110,14 @@ private:
 
 	void emitInfo(NecroLog::Level level, const QString &msg);
 
+private:
 	QBluetoothDeviceInfo m_deviceInfo;
 
 	// Qt Bluetooth objects
-	// QBluetoothDeviceDiscoveryAgent *m_discoveryAgent = nullptr;
+	QBluetoothDeviceDiscoveryAgent *m_discoveryAgent = nullptr;
 	QLowEnergyController *m_controller = nullptr;
 	QList<QLowEnergyService *>	m_services;
+	QLowEnergyService *m_cardDataService = nullptr;
 
 	// Known characteristic UUIDs
 	QBluetoothUuid m_cardStateUuid;
@@ -114,9 +126,9 @@ private:
 	// State
 	bool m_connected = false;
 	bool m_cardStateSubscribed = false;
-	bool m_cardDataSubscribed = false;
-	int m_pendingServices = 0;
+	QSet<QLowEnergyService *> m_pendingServices;
 	int m_lastStationNumber = 0;
+	QTimer *m_cardReadoutTimer = nullptr;
 
 	// Reassemblers — one per characteristic
 	BtSiReassembler m_cardStateReassembler;
