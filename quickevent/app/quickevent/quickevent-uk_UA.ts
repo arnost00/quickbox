@@ -923,6 +923,16 @@
     </message>
 </context>
 <context>
+    <name>CardReader::services::QrOPunch</name>
+    <message>
+        <location filename="plugins/CardReader/src/services/qropunch.cpp" line="51"/>
+        <source>Receives punches over TCP from the QR-O-Punch mobile app.
+https://github.com/sakhnik/qr-o-punch</source>
+        <translation>Приймає відмітки через TCP з мобільного застосунку QR-O-Punch.
+https://github.com/sakhnik/qr-o-punch</translation>
+    </message>
+</context>
+<context>
     <name>CardReader::services::QrOPunchWidget</name>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="14"/>
@@ -958,6 +968,14 @@
         <location filename="plugins/CardReader/src/services/qropunchwidget.cpp" line="74"/>
         <source>Choose file to log requests</source>
         <translation>Виберіть файл для запису запитів</translation>
+    </message>
+</context>
+<context>
+    <name>CardReader::services::RacomClient</name>
+    <message>
+        <location filename="plugins/CardReader/src/services/racomclient.cpp" line="227"/>
+        <source>Connects to Racom radio controls.</source>
+        <translation>Підключення до радіо-КП Racom.</translation>
     </message>
 </context>
 <context>
@@ -3933,6 +3951,15 @@ Please open OFeed service settings and update your credentials.</source>
         <source>Unknown exception occurred while executing query.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="140"/>
+        <source>Platform for sharing data during a race, e.g. integration with OChecklist or the OFB visualization.
+https://orienteerfeed.com
+Docs: https://docs.orienteerfeed.com</source>
+        <translation>Платформа для обміну даними під час змагань, напр. інтеграція з OChecklist або візуалізацією OFB.
+https://orienteerfeed.com
+Документація: https://docs.orienteerfeed.com</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::OFeedClientWidget</name>
@@ -4425,6 +4452,16 @@ Please open OFeed service settings and update your credentials.</source>
     </message>
 </context>
 <context>
+    <name>Event::services::OResultsClient</name>
+    <message>
+        <location filename="plugins/Event/src/services/oresultsclient.cpp" line="46"/>
+        <source>Uploads start lists and results to the OResults online results service.
+https://oresults.eu</source>
+        <translation>Завантажує стартові протоколи та результати до онлайн-сервісу результатів OResults.
+https://oresults.eu</translation>
+    </message>
+</context>
+<context>
     <name>Event::services::OResultsClientWidget</name>
     <message>
         <location filename="plugins/Event/src/services/oresultsclientwidget.ui" line="14"/>
@@ -4552,6 +4589,13 @@ In case of unexpected errors, contact support@oresults.eu </oldsource>
         <source>Card SI %1, %2 controls</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/punchingtest/punchingtestservice.cpp" line="37"/>
+        <source>For learning the program and testing. Generates random punch data simulating situations that can occur during a real race. Generated data has TEST written in the last column.
+Do not run it in a live race!</source>
+        <translation>Для навчання роботі з програмою та тестування. Генерує випадкові дані відміток і імітує ситуації, що можуть виникнути під час реальних змагань. Згенеровані дані мають TEST в останньому стовпці.
+Не запускайте під час реальних змагань!</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::PunchingTestServiceWidget</name>
@@ -4673,6 +4717,11 @@ In case of unexpected errors, contact support@oresults.eu </oldsource>
         <source>Listening, %1 sender(s) connected</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/radiosender/radiosenderservice.cpp" line="33"/>
+        <source>TCP service broadcasting run data, with start/stop controls in the UI (start gate use case).</source>
+        <translation>TCP-служба для трансляції даних забігів, з керуванням старт/стоп в інтерфейсі (напр. для стартових воріт).</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::RadioSenderServiceWidget</name>
@@ -4758,6 +4807,19 @@ In case of unexpected errors, contact support@oresults.eu </oldsource>
         <location filename="plugins/Event/src/services/servicewidget.ui" line="88"/>
         <source>neco neco</source>
         <translation>neco neco</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/servicewidget.cpp" line="25"/>
+        <source>Show / hide service in the list</source>
+        <translation>Показати / приховати службу в списку</translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::ServicesWidget</name>
+    <message>
+        <location filename="plugins/Event/src/services/serviceswidget.cpp" line="29"/>
+        <source>Choose visible services</source>
+        <translation>Вибрати видимі служби</translation>
     </message>
 </context>
 <context>
@@ -4894,7 +4956,17 @@ In case of unexpected errors, contact support@oresults.eu </oldsource>
     </message>
 </context>
 <context>
-    <name>Event::services::qx::QxClientServiceWidget</name>
+    <name>Event::services::qx::QxEventService</name>
+    <message>
+        <location filename="plugins/Event/src/services/qx/qxeventservice.cpp" line="62"/>
+        <source>Electronic late entries.
+https://qxqx.org</source>
+        <translation>Електронні пізні заявки.
+https://qxqx.org</translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::qx::QxLateRegistrationsWidget</name>
     <message>
         <source>Current stage</source>
         <translation type="obsolete">Поточний забіг</translation>
@@ -7688,6 +7760,14 @@ Press refresh button to show imported data.</source>
         <location filename="plugins/Runs/src/runssettingspage.cpp" line="35"/>
         <source>Runs</source>
         <translation type="unfinished">Забіги</translation>
+    </message>
+</context>
+<context>
+    <name>Runs::services::ResultsExporter</name>
+    <message>
+        <location filename="plugins/Runs/src/services/resultsexporter.cpp" line="42"/>
+        <source>Exports results in the selected format (XML, HTML, ...) at the selected interval to the selected directory.</source>
+        <translation>Експортує результати у вибраному форматі (XML, HTML, ...) з вибраним інтервалом до вибраної теки.</translation>
     </message>
 </context>
 <context>

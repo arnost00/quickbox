@@ -923,6 +923,16 @@
     </message>
 </context>
 <context>
+    <name>CardReader::services::QrOPunch</name>
+    <message>
+        <location filename="plugins/CardReader/src/services/qropunch.cpp" line="51"/>
+        <source>Receives punches over TCP from the QR-O-Punch mobile app.
+https://github.com/sakhnik/qr-o-punch</source>
+        <translation>Přijímá ražení přes TCP z mobilní aplikace QR-O-Punch.
+https://github.com/sakhnik/qr-o-punch</translation>
+    </message>
+</context>
+<context>
     <name>CardReader::services::QrOPunchWidget</name>
     <message>
         <location filename="plugins/CardReader/src/services/qropunchwidget.ui" line="14"/>
@@ -958,6 +968,14 @@
         <location filename="plugins/CardReader/src/services/qropunchwidget.cpp" line="74"/>
         <source>Choose file to log requests</source>
         <translation>Vyber soubor pro zápis požadavků</translation>
+    </message>
+</context>
+<context>
+    <name>CardReader::services::RacomClient</name>
+    <message>
+        <location filename="plugins/CardReader/src/services/racomclient.cpp" line="227"/>
+        <source>Connects to Racom radio controls.</source>
+        <translation>Připojení k rádiovým kontrolám Racom.</translation>
     </message>
 </context>
 <context>
@@ -3994,6 +4012,15 @@ Otevř prosím nastavení služby OFeed a aktualizuj své přihlašovací údaje
         <source>No data received or an error occurred.</source>
         <translation type="obsolete">Nebyla přijata žádná data nebo došlo k chybě.</translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/ofeed/ofeedclient.cpp" line="140"/>
+        <source>Platform for sharing data during a race, e.g. integration with OChecklist or the OFB visualization.
+https://orienteerfeed.com
+Docs: https://docs.orienteerfeed.com</source>
+        <translation>Platforma pro sdílení dat během závodu, např. integrace s OChecklist nebo vizualizace OFB.
+https://orienteerfeed.com
+Dokumentace: https://docs.orienteerfeed.com</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::OFeedClientWidget</name>
@@ -4558,6 +4585,16 @@ Otevř prosím nastavení služby OFeed a aktualizuj své přihlašovací údaje
     </message>
 </context>
 <context>
+    <name>Event::services::OResultsClient</name>
+    <message>
+        <location filename="plugins/Event/src/services/oresultsclient.cpp" line="46"/>
+        <source>Uploads start lists and results to the OResults online results service.
+https://oresults.eu</source>
+        <translation>Nahrává startovky a výsledky do online výsledkového servisu OResults.
+https://oresults.eu</translation>
+    </message>
+</context>
+<context>
     <name>Event::services::OResultsClientWidget</name>
     <message>
         <location filename="plugins/Event/src/services/oresultsclientwidget.ui" line="14"/>
@@ -4685,6 +4722,13 @@ V případě chyb neváhejte napsat na support@oresults.eu</translation>
         <source>Card SI %1, %2 controls</source>
         <translation type="unfinished">Čip SI %1, %2 kontrol</translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/punchingtest/punchingtestservice.cpp" line="37"/>
+        <source>For learning the program and testing. Generates random punch data simulating situations that can occur during a real race. Generated data has TEST written in the last column.
+Do not run it in a live race!</source>
+        <translation>Pro výuku programu a testování. Generuje náhodná data ražení a simuluje situace, které mohou nastat během skutečného závodu. Vygenerovaná data mají v posledním sloupci napsáno TEST.
+Nespouštějte během ostrého závodu!</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::PunchingTestServiceWidget</name>
@@ -4808,6 +4852,11 @@ Slouží pro testování zpracování výsledků bez fyzických SI čipů.</tran
         <source>Listening, %1 sender(s) connected</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="plugins/Event/src/services/radiosender/radiosenderservice.cpp" line="33"/>
+        <source>TCP service broadcasting run data, with start/stop controls in the UI (start gate use case).</source>
+        <translation>TCP služba vysílající data běhů, s ovládáním start/stop v rozhraní (použití např. pro startovní bránu).</translation>
+    </message>
 </context>
 <context>
     <name>Event::services::RadioSenderServiceWidget</name>
@@ -4893,6 +4942,19 @@ Slouží pro testování zpracování výsledků bez fyzických SI čipů.</tran
         <location filename="plugins/Event/src/services/servicewidget.ui" line="88"/>
         <source>neco neco</source>
         <translation>neco neco</translation>
+    </message>
+    <message>
+        <location filename="plugins/Event/src/services/servicewidget.cpp" line="25"/>
+        <source>Show / hide service in the list</source>
+        <translation>Zobrazit / skrýt službu v seznamu</translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::ServicesWidget</name>
+    <message>
+        <location filename="plugins/Event/src/services/serviceswidget.cpp" line="29"/>
+        <source>Choose visible services</source>
+        <translation>Vybrat zobrazené služby</translation>
     </message>
 </context>
 <context>
@@ -5124,6 +5186,19 @@ Slouží pro testování zpracování výsledků bez fyzických SI čipů.</tran
         <source>API token is not set.</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>Event::services::qx::QxEventService</name>
+    <message>
+        <location filename="plugins/Event/src/services/qx/qxeventservice.cpp" line="62"/>
+        <source>Electronic late entries.
+https://qxqx.org</source>
+        <translation>Elektronické dohlášky.
+https://qxqx.org</translation>
+    </message>
+</context>
+<context>
+    <name>Event::services::qx::QxLateRegistrationsWidget</name>
     <message>
         <location filename="plugins/Event/src/services/qx/qxeventservice.cpp" line="490"/>
         <source>Client info discovery error: %1</source>
@@ -8029,6 +8104,14 @@ Stskněte tlačítko pro obnovení pro zobrazení importovaných dat.</translati
         <location filename="plugins/Runs/src/runssettingspage.cpp" line="35"/>
         <source>Runs</source>
         <translation>Úseky / Etapy</translation>
+    </message>
+</context>
+<context>
+    <name>Runs::services::ResultsExporter</name>
+    <message>
+        <location filename="plugins/Runs/src/services/resultsexporter.cpp" line="42"/>
+        <source>Exports results in the selected format (XML, HTML, ...) at the selected interval to the selected directory.</source>
+        <translation>Exportuje výsledky ve zvoleném formátu (XML, HTML, ...) ve zvoleném intervalu do zvoleného adresáře.</translation>
     </message>
 </context>
 <context>
